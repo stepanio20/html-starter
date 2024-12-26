@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bubble Game - Telegram Web App</title>
+    <title>Bubble Game - Telegram Integration</title>
     <style>
         body {
             margin: 0;
@@ -50,6 +50,9 @@
     <button id="restartButton">Restart Game</button>
     <canvas id="gameCanvas"></canvas>
     <script>
+        // Initialize Telegram Web App
+        Telegram.WebApp.ready();
+
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
@@ -57,7 +60,8 @@
 
         const mapWidth = 4000;
         const mapHeight = 4000;
-        
+        const minimapScale = 200 / mapWidth;
+
         let gameTime = 40;
         let playerBalance = 0;
         let gameOver = false;
@@ -67,36 +71,149 @@
         const timerElement = document.getElementById('timer');
         const restartButton = document.getElementById('restartButton');
 
-        // Telegram Web App Integration
-        const tg = window.Telegram.WebApp;
-        tg.ready();
+        class Bubble {
+            constructor(x, y, size, color, value) {
+                this.x = x;
+                this.y = y;
+                this.size = size;
+                this.color = color;
+                this.value = value;
+                this.dx = Math.random() * 2 - 1;
+                this.dy = Math.random() * 2 - 1;
+                this.speed = Math.max(0.2, 3 / Math.sqrt(size));
+            }
 
-        function initializeTelegramContext() {
-            tg.expand(); // Expands the Web App to full screen
+            draw(offsetX, offsetY) {
+                ctx.beginPath();
+                ctx.arc(
+                    this.x - offsetX,
+                    this.y - offsetY,
+                    this.size,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.closePath();
 
-            tg.MainButton.text = "Start Game";
-            tg.MainButton.show();
+                ctx.fillStyle = "#000";
+                ctx.font = `14px Arial`;
+                ctx.textAlign = "center";
+                ctx.fillText(
+                    `$${this.value.toFixed(2)}`,
+                    this.x - offsetX,
+                    this.y - offsetY + 5
+                );
+            }
 
-            tg.MainButton.onClick(() => {
-                const startBalance = parseFloat(prompt("Enter your starting balance (1-100):", "10")) || 10;
-                restartButton.style.display = 'none';
-                initializeGame(startBalance);
-                tg.MainButton.hide();
-            });
+            moveTo(targetX, targetY) {
+                const dx = targetX - this.x;
+                const dy = targetY - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance > 1) {
+                    this.x += (dx / distance) * this.speed;
+                    this.y += (dy / distance) * this.speed;
+                }
+            }
+
+            moveRandom() {
+                this.x += this.dx * this.speed;
+                this.y += this.dy * this.speed;
+
+                if (this.x - this.size < 0 || this.x + this.size > mapWidth) {
+                    this.dx *= -1;
+                }
+                if (this.y - this.size < 0 || this.y + this.size > mapHeight) {
+                    this.dy *= -1;
+                }
+            }
         }
 
-        // Initialize the game environment
+        const playerBubble = new Bubble(mapWidth / 2, mapHeight / 2, 40, "blue", 10);
+        playerBubble.vx = 0;
+        playerBubble.vy = 0;
+        const acceleration = 0.2;
+        const friction = 0.98;
+
+        const bubbles = [];
+        const bots = [];
+        const keysPressed = {
+            ArrowUp: false,
+            ArrowDown: false,
+            ArrowLeft: false,
+            ArrowRight: false
+        };
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key in keysPressed) keysPressed[e.key] = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.key in keysPressed) keysPressed[e.key] = false;
+        });
+
+        restartButton.addEventListener('click', () => {
+            const startBalance = parseFloat(prompt("Enter your starting balance (1-100):", "10")) || 10;
+            restartButton.style.display = 'none';
+            initializeGame(startBalance);
+        });
+
         function initializeGame(startBalance) {
             playerBalance = startBalance;
-            console.log(`Starting balance: ${startBalance}`);
+            playerBubble.size = Math.sqrt(startBalance) * 2 + 20;
+            playerBubble.value = startBalance;
+
+            console.log(`Starting balance: ${startBalance}, Bubble size: ${playerBubble.size}`);
 
             balanceElement.textContent = `Balance: $${playerBalance.toFixed(2)}`;
 
-            // Game Initialization Logic (Omitted for brevity)
+            bubbles.length = 0;
+            bots.length = 0;
+
+            for (let i = 0; i < 50; i++) {
+                const size = Math.random() * 20 + 15;
+                const value = Math.random() * (1 - 0.01) + 0.01;
+                const x = Math.random() * mapWidth;
+                const y = Math.random() * mapHeight;
+                const color = "lightgreen";
+                bubbles.push(new Bubble(x, y, size, color, value));
+            }
+
+            for (let i = 0; i < 10; i++) {
+                const bot = new Bubble(
+                    Math.random() * mapWidth,
+                    Math.random() * mapHeight,
+                    Math.random() * 30 + 20,
+                    `hsl(${Math.random() * 360}, 70%, 50%)`,
+                    Math.random() * 5 + 5
+                );
+                bots.push(bot);
+            }
+
             gameTime = 40;
             gameOver = false;
             gameRunning = true;
+            animate();
             startTimer();
+        }
+
+        function drawGrid(offsetX, offsetY) {
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 0.5;
+
+            for (let x = 0; x <= mapWidth; x += 100) {
+                ctx.beginPath();
+                ctx.moveTo(x - offsetX, 0 - offsetY);
+                ctx.lineTo(x - offsetX, mapHeight - offsetY);
+                ctx.stroke();
+            }
+
+            for (let y = 0; y <= mapHeight; y += 100) {
+                ctx.beginPath();
+                ctx.moveTo(0 - offsetX, y - offsetY);
+                ctx.lineTo(mapWidth - offsetX, y - offsetY);
+                ctx.stroke();
+            }
         }
 
         function startTimer() {
@@ -118,17 +235,93 @@
 
         function endGame() {
             gameRunning = false;
-            alert(`Game Over! Final Score: $${playerBalance.toFixed(2)}`);
+            playerBalance += playerBubble.value;
+            balanceElement.textContent = `Balance: $${playerBalance.toFixed(2)}`;
+            alert(`Round Over! Final Score: $${playerBubble.value.toFixed(2)}`);
             restartButton.style.display = 'block';
         }
 
-        restartButton.addEventListener('click', () => {
-            const startBalance = parseFloat(prompt("Enter your starting balance (1-100):", "10")) || 10;
-            restartButton.style.display = 'none';
-            initializeGame(startBalance);
-        });
+        function movePlayer() {
+            if (keysPressed.ArrowUp) playerBubble.vy -= acceleration;
+            if (keysPressed.ArrowDown) playerBubble.vy += acceleration;
+            if (keysPressed.ArrowLeft) playerBubble.vx -= acceleration;
+            if (keysPressed.ArrowRight) playerBubble.vx += acceleration;
 
-        initializeTelegramContext();
+            playerBubble.vx *= friction;
+            playerBubble.vy *= friction;
+
+            playerBubble.x += playerBubble.vx;
+            playerBubble.y += playerBubble.vy;
+
+            playerBubble.x = Math.max(playerBubble.size, Math.min(playerBubble.x, mapWidth - playerBubble.size));
+            playerBubble.y = Math.max(playerBubble.size, Math.min(playerBubble.y, mapHeight - playerBubble.size));
+
+            playerBubble.speed = Math.max(0.2, 3 / Math.sqrt(playerBubble.size));
+        }
+
+        function checkCollisions() {
+            for (let i = bubbles.length - 1; i >= 0; i--) {
+                const bubble = bubbles[i];
+                const dx = playerBubble.x - bubble.x;
+                const dy = playerBubble.y - bubble.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < playerBubble.size + bubble.size) {
+                    playerBubble.size += bubble.size * 0.1;
+                    playerBubble.value += bubble.value;
+                    bubbles.splice(i, 1);
+                }
+            }
+
+            for (let i = bots.length - 1; i >= 0; i--) {
+                const bot = bots[i];
+                const dx = playerBubble.x - bot.x;
+                const dy = playerBubble.y - bot.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < playerBubble.size + bot.size) {
+                    if (playerBubble.size > bot.size) {
+                        playerBubble.size += bot.size * 0.2;
+                        playerBubble.value += bot.value;
+                        bots.splice(i, 1);
+                    } else {
+                        gameOver = true;
+                        alert(`Game Over! You were eaten by a bot!`);
+                        restartButton.style.display = 'block';
+                        return;
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            if (gameOver || !gameRunning) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const offsetX = playerBubble.x - canvas.width / 2;
+            const offsetY = playerBubble.y - canvas.height / 2;
+
+            drawGrid(offsetX, offsetY);
+            movePlayer();
+            playerBubble.draw(offsetX, offsetY);
+
+            bubbles.forEach(bubble => bubble.draw(offsetX, offsetY));
+            bots.forEach(bot => {
+                bot.speed = Math.max(0.2, 3 / Math.sqrt(bot.size));
+                if (bot.size > playerBubble.size) {
+                    bot.moveTo(playerBubble.x, playerBubble.y);
+                } else {
+                    bot.moveRandom();
+                }
+                bot.draw(offsetX, offsetY);
+            });
+
+            checkCollisions();
+            requestAnimationFrame(animate);
+        }
+
+        const startBalance = parseFloat(prompt("Enter your starting balance (1-100):", "10")) || 10;
+        initializeGame(startBalance);
     </script>
 </body>
 </html>
