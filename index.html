@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bubble Game - Enhanced with Joystick</title>
+    <title>Bubble Game Update</title>
     <style>
         body {
             margin: 0;
@@ -61,8 +61,8 @@
             position: absolute;
             top: 10px;
             right: 10px;
-            width: 200px;
-            height: 200px;
+            width: 100px;
+            height: 100px;
             background: rgba(0, 0, 0, 0.1);
             border: 1px solid #ccc;
         }
@@ -87,8 +87,8 @@
 
         const minimapCanvas = document.getElementById('minimap');
         const minimapCtx = minimapCanvas.getContext('2d');
-        minimapCanvas.width = 200;
-        minimapCanvas.height = 200;
+        minimapCanvas.width = 100;
+        minimapCanvas.height = 100;
 
         const mapWidth = 4000;
         const mapHeight = 4000;
@@ -140,15 +140,15 @@
         });
 
         class Bubble {
-            constructor(x, y, size, color, value) {
+            constructor(x, y, value, color) {
                 this.x = x;
                 this.y = y;
-                this.size = size;
-                this.color = color;
                 this.value = value;
+                this.size = Math.sqrt(value) * 10;
+                this.color = color;
                 this.dx = Math.random() * 2 - 1;
                 this.dy = Math.random() * 2 - 1;
-                this.speed = Math.max(0.2, 3 / Math.sqrt(size));
+                this.speed = Math.max(0.2, 3 / Math.sqrt(this.size));
             }
 
             draw(offsetX, offsetY) {
@@ -197,7 +197,7 @@
             }
         }
 
-        const playerBubble = new Bubble(mapWidth / 2, mapHeight / 2, 40, "blue", 10);
+        const playerBubble = new Bubble(mapWidth / 2, mapHeight / 2, 10, "blue");
         const bubbles = [];
         const bots = [];
 
@@ -209,8 +209,8 @@
 
         function initializeGame(startBalance) {
             playerBalance = startBalance;
-            playerBubble.size = Math.sqrt(startBalance) * 2 + 20;
             playerBubble.value = startBalance;
+            playerBubble.size = Math.sqrt(startBalance) * 10;
 
             balanceElement.textContent = `Balance: $${playerBalance.toFixed(2)}`;
 
@@ -218,23 +218,19 @@
             bots.length = 0;
 
             for (let i = 0; i < 50; i++) {
-                const size = Math.random() * 20 + 15;
                 const value = Math.random() * (1 - 0.01) + 0.01;
                 const x = Math.random() * mapWidth;
                 const y = Math.random() * mapHeight;
                 const color = "lightgreen";
-                bubbles.push(new Bubble(x, y, size, color, value));
+                bubbles.push(new Bubble(x, y, value, color));
             }
 
             for (let i = 0; i < 10; i++) {
-                const bot = new Bubble(
-                    Math.random() * mapWidth,
-                    Math.random() * mapHeight,
-                    Math.random() * 30 + 20,
-                    `hsl(${Math.random() * 360}, 70%, 50%)`,
-                    Math.random() * 5 + 5
-                );
-                bots.push(bot);
+                const value = Math.random() * 5 + 5;
+                const x = Math.random() * mapWidth;
+                const y = Math.random() * mapHeight;
+                const color = `hsl(${Math.random() * 360}, 70%, 50%)`;
+                bots.push(new Bubble(x, y, value, color));
             }
 
             gameTime = 40;
@@ -242,6 +238,76 @@
             gameRunning = true;
             animate();
             startTimer();
+        }
+
+        function checkCollisions() {
+            for (let i = bubbles.length - 1; i >= 0; i--) {
+                const bubble = bubbles[i];
+                const dx = playerBubble.x - bubble.x;
+                const dy = playerBubble.y - bubble.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < playerBubble.size + bubble.size) {
+                    playerBubble.size += bubble.size * 0.1;
+                    playerBubble.value += bubble.value;
+                    bubbles.splice(i, 1);
+                }
+            }
+
+            for (let i = bots.length - 1; i >= 0; i--) {
+                const bot = bots[i];
+                const dx = playerBubble.x - bot.x;
+                const dy = playerBubble.y - bot.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < playerBubble.size + bot.size) {
+                    if (playerBubble.size > bot.size) {
+                        playerBubble.size += bot.size * 0.2;
+                        playerBubble.value += bot.value;
+                        bots.splice(i, 1);
+                    } else {
+                        gameOver = true;
+                        alert(`Game Over! You were eaten by a bot!`);
+                        restartButton.style.display = 'block';
+                        return;
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            if (gameOver || !gameRunning) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const offsetX = playerBubble.x - canvas.width / 2;
+            const offsetY = playerBubble.y - canvas.height / 2;
+
+            drawGrid(offsetX, offsetY);
+            movePlayer();
+            playerBubble.draw(offsetX, offsetY);
+
+            bubbles.forEach(bubble => bubble.draw(offsetX, offsetY));
+            bots.forEach(bot => {
+                bot.speed = Math.max(0.2, 3 / Math.sqrt(bot.size));
+                if (bot.size > playerBubble.size) {
+                    bot.moveTo(playerBubble.x, playerBubble.y);
+                } else {
+                    bot.moveRandom();
+                }
+                bot.draw(offsetX, offsetY);
+            });
+
+            checkCollisions();
+            drawMinimap(offsetX, offsetY);
+            requestAnimationFrame(animate);
+        }
+
+        function movePlayer() {
+            playerBubble.x += joystickDeltaX * playerBubble.speed;
+            playerBubble.y += joystickDeltaY * playerBubble.speed;
+
+            playerBubble.x = Math.max(playerBubble.size, Math.min(playerBubble.x, mapWidth - playerBubble.size));
+            playerBubble.y = Math.max(playerBubble.size, Math.min(playerBubble.y, mapHeight - playerBubble.size));
         }
 
         function drawGrid(offsetX, offsetY) {
@@ -266,4 +332,48 @@
         function drawMinimap(offsetX, offsetY) {
             minimapCtx.clearRect(0, 0, minimapCanvas.width, minimapCanvas.height);
             minimapCtx.fillStyle = "#ddd";
-            minimapCtx.fillRect(0, 0, minimapCanvas
+            minimapCtx.fillRect(0, 0, minimapCanvas.width, minimapCanvas.height);
+
+            minimapCtx.fillStyle = "blue";
+            minimapCtx.beginPath();
+            minimapCtx.arc(
+                playerBubble.x * minimapScale,
+                playerBubble.y * minimapScale,
+                playerBubble.size * minimapScale,
+                0,
+                Math.PI * 2
+            );
+            minimapCtx.fill();
+
+            bubbles.forEach(bubble => {
+                minimapCtx.fillStyle = "lightgreen";
+                minimapCtx.beginPath();
+                minimapCtx.arc(
+                    bubble.x * minimapScale,
+                    bubble.y * minimapScale,
+                    bubble.size * minimapScale,
+                    0,
+                    Math.PI * 2
+                );
+                minimapCtx.fill();
+            });
+
+            bots.forEach(bot => {
+                minimapCtx.fillStyle = bot.color;
+                minimapCtx.beginPath();
+                minimapCtx.arc(
+                    bot.x * minimapScale,
+                    bot.y * minimapScale,
+                    bot.size * minimapScale,
+                    0,
+                    Math.PI * 2
+                );
+                minimapCtx.fill();
+            });
+        }
+
+        const startBalance = parseFloat(prompt("Enter your starting balance (1-100):", "10")) || 10;
+        initializeGame(startBalance);
+    </script>
+</body>
+</html>
