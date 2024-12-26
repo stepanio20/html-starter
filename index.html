@@ -48,7 +48,11 @@
     </div>
     <button id="restartButton">Restart Game</button>
     <canvas id="gameCanvas"></canvas>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
@@ -321,4 +325,3 @@
     </script>
 </body>
 </html>
-
