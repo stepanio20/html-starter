@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bubble Game - Mobile Controls</title>
+    <title>Bubble Game - Enhanced with Joystick</title>
     <style>
         body {
             margin: 0;
@@ -41,21 +41,31 @@
         }
         #joystick {
             position: absolute;
-            bottom: 50px;
-            left: 50px;
+            bottom: 20px;
+            left: 20px;
             width: 100px;
             height: 100px;
             background: rgba(0, 0, 0, 0.1);
             border-radius: 50%;
+            touch-action: none;
         }
-        #joystickInner {
+        #joystickHandle {
             position: absolute;
-            top: 25%;
-            left: 25%;
+            top: 25px;
+            left: 25px;
             width: 50px;
             height: 50px;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 50%;
+        }
+        #minimap {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 200px;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.1);
+            border: 1px solid #ccc;
         }
     </style>
 </head>
@@ -67,26 +77,64 @@
     <button id="restartButton">Restart Game</button>
     <canvas id="gameCanvas"></canvas>
     <div id="joystick">
-        <div id="joystickInner"></div>
+        <div id="joystickHandle"></div>
     </div>
+    <canvas id="minimap"></canvas>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
+        const minimapCanvas = document.getElementById('minimap');
+        const minimapCtx = minimapCanvas.getContext('2d');
+        minimapCanvas.width = 200;
+        minimapCanvas.height = 200;
+
         const mapWidth = 4000;
         const mapHeight = 4000;
-        const joystick = document.getElementById("joystick");
-        const joystickInner = document.getElementById("joystickInner");
-        const joystickRect = joystick.getBoundingClientRect();
-        let joystickActive = false;
-        let joystickCenter = { x: joystickRect.left + joystickRect.width / 2, y: joystickRect.top + joystickRect.height / 2 };
-        let joystickOffset = { x: 0, y: 0 };
+        const minimapScale = minimapCanvas.width / mapWidth;
+
+        let gameTime = 40;
+        let playerBalance = 0;
+        let gameOver = false;
+        let gameRunning = false;
 
         const balanceElement = document.getElementById('balance');
         const timerElement = document.getElementById('timer');
         const restartButton = document.getElementById('restartButton');
+        const joystick = document.getElementById('joystick');
+        const joystickHandle = document.getElementById('joystickHandle');
+
+        let joystickActive = false;
+        let joystickStartX, joystickStartY;
+        let joystickDeltaX = 0, joystickDeltaY = 0;
+
+        joystick.addEventListener('pointerdown', (e) => {
+            joystickActive = true;
+            joystickStartX = e.clientX;
+            joystickStartY = e.clientY;
+        });
+
+        window.addEventListener('pointermove', (e) => {
+            if (!joystickActive) return;
+            const dx = e.clientX - joystickStartX;
+            const dy = e.clientY - joystickStartY;
+            const distance = Math.min(50, Math.sqrt(dx * dx + dy * dy));
+            const angle = Math.atan2(dy, dx);
+
+            joystickDeltaX = Math.cos(angle) * distance / 50;
+            joystickDeltaY = Math.sin(angle) * distance / 50;
+
+            joystickHandle.style.transform = `translate(${joystickDeltaX * 50}px, ${joystickDeltaY * 50}px)`;
+        });
+
+        window.addEventListener('pointerup', () => {
+            joystickActive = false;
+            joystickDeltaX = 0;
+            joystickDeltaY = 0;
+            joystickHandle.style.transform = 'translate(0, 0)';
+        });
 
         class Bubble {
             constructor(x, y, size, color, value) {
@@ -147,71 +195,211 @@
         }
 
         const playerBubble = new Bubble(mapWidth / 2, mapHeight / 2, 40, "blue", 10);
-        playerBubble.vx = 0;
-        playerBubble.vy = 0;
-        const acceleration = 0.2;
-        const friction = 0.98;
-
         const bubbles = [];
         const bots = [];
 
-        joystick.addEventListener("touchstart", (e) => {
-            joystickActive = true;
+        restartButton.addEventListener('click', () => {
+            const startBalance = parseFloat(prompt("Enter your starting balance (1-100):", "10")) || 10;
+            restartButton.style.display = 'none';
+            initializeGame(startBalance);
         });
 
-        joystick.addEventListener("touchmove", (e) => {
-            if (joystickActive) {
-                const touch = e.touches[0];
-                const dx = touch.clientX - joystickCenter.x;
-                const dy = touch.clientY - joystickCenter.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
+        function initializeGame(startBalance) {
+            playerBalance = startBalance;
+            playerBubble.size = Math.sqrt(startBalance) * 2 + 20;
+            playerBubble.value = startBalance;
 
-                if (distance < joystickRect.width / 2) {
-                    joystickOffset = { x: dx, y: dy };
-                    joystickInner.style.transform = `translate(${dx}px, ${dy}px)`;
+            balanceElement.textContent = `Balance: $${playerBalance.toFixed(2)}`;
+
+            bubbles.length = 0;
+            bots.length = 0;
+
+            for (let i = 0; i < 50; i++) {
+                const size = Math.random() * 20 + 15;
+                const value = Math.random() * (1 - 0.01) + 0.01;
+                const x = Math.random() * mapWidth;
+                const y = Math.random() * mapHeight;
+                const color = "lightgreen";
+                bubbles.push(new Bubble(x, y, size, color, value));
+            }
+
+            for (let i = 0; i < 10; i++) {
+                const bot = new Bubble(
+                    Math.random() * mapWidth,
+                    Math.random() * mapHeight,
+                    Math.random() * 30 + 20,
+                    `hsl(${Math.random() * 360}, 70%, 50%)`,
+                    Math.random() * 5 + 5
+                );
+                bots.push(bot);
+            }
+
+            gameTime = 40;
+            gameOver = false;
+            gameRunning = true;
+            animate();
+            startTimer();
+        }
+
+        function drawGrid(offsetX, offsetY) {
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 0.5;
+
+            for (let x = 0; x <= mapWidth; x += 100) {
+                ctx.beginPath();
+                ctx.moveTo(x - offsetX, 0 - offsetY);
+                ctx.lineTo(x - offsetX, mapHeight - offsetY);
+                ctx.stroke();
+            }
+
+            for (let y = 0; y <= mapHeight; y += 100) {
+                ctx.beginPath();
+                ctx.moveTo(0 - offsetX, y - offsetY);
+                ctx.lineTo(mapWidth - offsetX, y - offsetY);
+                ctx.stroke();
+            }
+        }
+
+        function drawMinimap(offsetX, offsetY) {
+            minimapCtx.clearRect(0, 0, minimapCanvas.width, minimapCanvas.height);
+            minimapCtx.fillStyle = "#ddd";
+            minimapCtx.fillRect(0, 0, minimapCanvas.width, minimapCanvas.height);
+
+            minimapCtx.fillStyle = "blue";
+            minimapCtx.beginPath();
+            minimapCtx.arc(
+                playerBubble.x * minimapScale,
+                playerBubble.y * minimapScale,
+                playerBubble.size * minimapScale,
+                0,
+                Math.PI * 2
+            );
+            minimapCtx.fill();
+
+            bubbles.forEach(bubble => {
+                minimapCtx.fillStyle = "lightgreen";
+                minimapCtx.beginPath();
+                minimapCtx.arc(
+                    bubble.x * minimapScale,
+                    bubble.y * minimapScale,
+                    bubble.size * minimapScale,
+                    0,
+                    Math.PI * 2
+                );
+                minimapCtx.fill();
+            });
+
+            bots.forEach(bot => {
+                minimapCtx.fillStyle = bot.color;
+                minimapCtx.beginPath();
+                minimapCtx.arc(
+                    bot.x * minimapScale,
+                    bot.y * minimapScale,
+                    bot.size * minimapScale,
+                    0,
+                    Math.PI * 2
+                );
+                minimapCtx.fill();
+            });
+        }
+
+        function startTimer() {
+            const timerInterval = setInterval(() => {
+                if (gameOver) {
+                    clearInterval(timerInterval);
+                    return;
                 }
 
-                playerBubble.vx += dx * 0.01;
-                playerBubble.vy += dy * 0.01;
-            }
-        });
+                gameTime--;
+                timerElement.textContent = `Time Left: ${gameTime}`;
 
-        joystick.addEventListener("touchend", () => {
-            joystickActive = false;
-            joystickOffset = { x: 0, y: 0 };
-            joystickInner.style.transform = `translate(0, 0)`;
-        });
+                if (gameTime <= 0) {
+                    clearInterval(timerInterval);
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            gameRunning = false;
+            playerBalance += playerBubble.value;
+            balanceElement.textContent = `Balance: $${playerBalance.toFixed(2)}`;
+            alert(`Round Over! Final Score: $${playerBubble.value.toFixed(2)}`);
+            restartButton.style.display = 'block';
+        }
 
         function movePlayer() {
-            playerBubble.vx *= friction;
-            playerBubble.vy *= friction;
-
-            playerBubble.x += playerBubble.vx;
-            playerBubble.y += playerBubble.vy;
+            playerBubble.x += joystickDeltaX * playerBubble.speed;
+            playerBubble.y += joystickDeltaY * playerBubble.speed;
 
             playerBubble.x = Math.max(playerBubble.size, Math.min(playerBubble.x, mapWidth - playerBubble.size));
             playerBubble.y = Math.max(playerBubble.size, Math.min(playerBubble.y, mapHeight - playerBubble.size));
         }
 
+        function checkCollisions() {
+            for (let i = bubbles.length - 1; i >= 0; i--) {
+                const bubble = bubbles[i];
+                const dx = playerBubble.x - bubble.x;
+                const dy = playerBubble.y - bubble.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < playerBubble.size + bubble.size) {
+                    playerBubble.size += bubble.size * 0.1;
+                    playerBubble.value += bubble.value;
+                    bubbles.splice(i, 1);
+                }
+            }
+
+            for (let i = bots.length - 1; i >= 0; i--) {
+                const bot = bots[i];
+                const dx = playerBubble.x - bot.x;
+                const dy = playerBubble.y - bot.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < playerBubble.size + bot.size) {
+                    if (playerBubble.size > bot.size) {
+                        playerBubble.size += bot.size * 0.2;
+                        playerBubble.value += bot.value;
+                        bots.splice(i, 1);
+                    } else {
+                        gameOver = true;
+                        alert(`Game Over! You were eaten by a bot!`);
+                        restartButton.style.display = 'block';
+                        return;
+                    }
+                }
+            }
+        }
+
         function animate() {
+            if (gameOver || !gameRunning) return;
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const offsetX = playerBubble.x - canvas.width / 2;
             const offsetY = playerBubble.y - canvas.height / 2;
 
+            drawGrid(offsetX, offsetY);
             movePlayer();
             playerBubble.draw(offsetX, offsetY);
 
             bubbles.forEach(bubble => bubble.draw(offsetX, offsetY));
-            bots.forEach(bot => bot.moveRandom());
+            bots.forEach(bot => {
+                bot.speed = Math.max(0.2, 3 / Math.sqrt(bot.size));
+                if (bot.size > playerBubble.size) {
+                    bot.moveTo(playerBubble.x, playerBubble.y);
+                } else {
+                    bot.moveRandom();
+                }
+                bot.draw(offsetX, offsetY);
+            });
 
+            checkCollisions();
+            drawMinimap(offsetX, offsetY);
             requestAnimationFrame(animate);
         }
 
-        function initializeGame() {
-            animate();
-        }
-
-        initializeGame();
+        const startBalance = parseFloat(prompt("Enter your starting balance (1-100):", "10")) || 10;
+        initializeGame(startBalance);
     </script>
 </body>
 </html>
