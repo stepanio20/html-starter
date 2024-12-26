@@ -41,8 +41,7 @@
         }
         #joystick {
             position: absolute;
-            bottom: 20px;
-            left: 20px;
+            display: none;
             width: 100px;
             height: 100px;
             background: rgba(0, 0, 0, 0.1);
@@ -110,8 +109,11 @@
         let joystickStartX, joystickStartY;
         let joystickDeltaX = 0, joystickDeltaY = 0;
 
-        joystick.addEventListener('pointerdown', (e) => {
+        canvas.addEventListener('pointerdown', (e) => {
             joystickActive = true;
+            joystick.style.display = 'block';
+            joystick.style.left = `${e.clientX - 50}px`;
+            joystick.style.top = `${e.clientY - 50}px`;
             joystickStartX = e.clientX;
             joystickStartY = e.clientY;
         });
@@ -131,6 +133,7 @@
 
         window.addEventListener('pointerup', () => {
             joystickActive = false;
+            joystick.style.display = 'none';
             joystickDeltaX = 0;
             joystickDeltaY = 0;
             joystickHandle.style.transform = 'translate(0, 0)';
@@ -263,143 +266,4 @@
         function drawMinimap(offsetX, offsetY) {
             minimapCtx.clearRect(0, 0, minimapCanvas.width, minimapCanvas.height);
             minimapCtx.fillStyle = "#ddd";
-            minimapCtx.fillRect(0, 0, minimapCanvas.width, minimapCanvas.height);
-
-            minimapCtx.fillStyle = "blue";
-            minimapCtx.beginPath();
-            minimapCtx.arc(
-                playerBubble.x * minimapScale,
-                playerBubble.y * minimapScale,
-                playerBubble.size * minimapScale,
-                0,
-                Math.PI * 2
-            );
-            minimapCtx.fill();
-
-            bubbles.forEach(bubble => {
-                minimapCtx.fillStyle = "lightgreen";
-                minimapCtx.beginPath();
-                minimapCtx.arc(
-                    bubble.x * minimapScale,
-                    bubble.y * minimapScale,
-                    bubble.size * minimapScale,
-                    0,
-                    Math.PI * 2
-                );
-                minimapCtx.fill();
-            });
-
-            bots.forEach(bot => {
-                minimapCtx.fillStyle = bot.color;
-                minimapCtx.beginPath();
-                minimapCtx.arc(
-                    bot.x * minimapScale,
-                    bot.y * minimapScale,
-                    bot.size * minimapScale,
-                    0,
-                    Math.PI * 2
-                );
-                minimapCtx.fill();
-            });
-        }
-
-        function startTimer() {
-            const timerInterval = setInterval(() => {
-                if (gameOver) {
-                    clearInterval(timerInterval);
-                    return;
-                }
-
-                gameTime--;
-                timerElement.textContent = `Time Left: ${gameTime}`;
-
-                if (gameTime <= 0) {
-                    clearInterval(timerInterval);
-                    endGame();
-                }
-            }, 1000);
-        }
-
-        function endGame() {
-            gameRunning = false;
-            playerBalance += playerBubble.value;
-            balanceElement.textContent = `Balance: $${playerBalance.toFixed(2)}`;
-            alert(`Round Over! Final Score: $${playerBubble.value.toFixed(2)}`);
-            restartButton.style.display = 'block';
-        }
-
-        function movePlayer() {
-            playerBubble.x += joystickDeltaX * playerBubble.speed;
-            playerBubble.y += joystickDeltaY * playerBubble.speed;
-
-            playerBubble.x = Math.max(playerBubble.size, Math.min(playerBubble.x, mapWidth - playerBubble.size));
-            playerBubble.y = Math.max(playerBubble.size, Math.min(playerBubble.y, mapHeight - playerBubble.size));
-        }
-
-        function checkCollisions() {
-            for (let i = bubbles.length - 1; i >= 0; i--) {
-                const bubble = bubbles[i];
-                const dx = playerBubble.x - bubble.x;
-                const dy = playerBubble.y - bubble.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-
-                if (distance < playerBubble.size + bubble.size) {
-                    playerBubble.size += bubble.size * 0.1;
-                    playerBubble.value += bubble.value;
-                    bubbles.splice(i, 1);
-                }
-            }
-
-            for (let i = bots.length - 1; i >= 0; i--) {
-                const bot = bots[i];
-                const dx = playerBubble.x - bot.x;
-                const dy = playerBubble.y - bot.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-
-                if (distance < playerBubble.size + bot.size) {
-                    if (playerBubble.size > bot.size) {
-                        playerBubble.size += bot.size * 0.2;
-                        playerBubble.value += bot.value;
-                        bots.splice(i, 1);
-                    } else {
-                        gameOver = true;
-                        alert(`Game Over! You were eaten by a bot!`);
-                        restartButton.style.display = 'block';
-                        return;
-                    }
-                }
-            }
-        }
-
-        function animate() {
-            if (gameOver || !gameRunning) return;
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const offsetX = playerBubble.x - canvas.width / 2;
-            const offsetY = playerBubble.y - canvas.height / 2;
-
-            drawGrid(offsetX, offsetY);
-            movePlayer();
-            playerBubble.draw(offsetX, offsetY);
-
-            bubbles.forEach(bubble => bubble.draw(offsetX, offsetY));
-            bots.forEach(bot => {
-                bot.speed = Math.max(0.2, 3 / Math.sqrt(bot.size));
-                if (bot.size > playerBubble.size) {
-                    bot.moveTo(playerBubble.x, playerBubble.y);
-                } else {
-                    bot.moveRandom();
-                }
-                bot.draw(offsetX, offsetY);
-            });
-
-            checkCollisions();
-            drawMinimap(offsetX, offsetY);
-            requestAnimationFrame(animate);
-        }
-
-        const startBalance = parseFloat(prompt("Enter your starting balance (1-100):", "10")) || 10;
-        initializeGame(startBalance);
-    </script>
-</body>
-</html>
+            minimapCtx.fillRect(0, 0, minimapCanvas
