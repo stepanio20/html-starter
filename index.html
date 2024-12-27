@@ -80,6 +80,9 @@
         <h1>Bubble Game</h1>
         <div id="balanceDisplay">Balance: $10.00</div>
         <button id="playButton">Play</button>
+        <button id="connectWalletButton">Connect Wallet</button>
+        <button id="depositButton">Deposit</button>
+        <button id="withdrawButton">Withdraw</button>
     </div>
     <div id="ui">
         <div id="balance">Balance: $0</div>
@@ -113,6 +116,9 @@
         const balanceDisplay = document.getElementById('balanceDisplay');
         const joystick = document.getElementById('joystick');
         const joystickHandle = document.getElementById('joystickHandle');
+        const connectWalletButton = document.getElementById('connectWalletButton');
+        const depositButton = document.getElementById('depositButton');
+        const withdrawButton = document.getElementById('withdrawButton');
 
         let joystickActive = false;
         let joystickStartX, joystickStartY;
@@ -161,7 +167,7 @@
                 this.value = value;
                 this.dx = Math.random() * 2 - 1;
                 this.dy = Math.random() * 2 - 1;
-                this.speed = Math.max(0.6, 6 / Math.sqrt(size));
+                this.speed = Math.max(2.4, 12 / Math.sqrt(size)); // Speed increased by 400%
             }
 
             draw(offsetX, offsetY) {
@@ -338,6 +344,18 @@
         });
 
         balanceDisplay.textContent = `Balance: $${playerBalance.toFixed(2)}`;
+
+        connectWalletButton.addEventListener('click', () => {
+            alert('Connect Wallet functionality will be implemented later.');
+        });
+
+        depositButton.addEventListener('click', () => {
+            alert('Deposit functionality will be implemented later.');
+        });
+
+        withdrawButton.addEventListener('click', () => {
+            alert('Withdraw functionality will be implemented later.');
+        });
     </script>
 </body>
 </html>
