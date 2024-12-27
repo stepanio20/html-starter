@@ -12,7 +12,8 @@
         }
         canvas {
             display: block;
-            background: #f5f5f5;
+            background: url('https://via.placeholder.com/4000x4000') no-repeat center center;
+            background-size: cover;
         }
         #ui {
             position: absolute;
@@ -80,9 +81,6 @@
         <h1>Bubble Game</h1>
         <div id="balanceDisplay">Balance: $10.00</div>
         <button id="playButton">Play</button>
-        <button id="connectWalletButton">Connect Wallet</button>
-        <button id="depositButton">Deposit</button>
-        <button id="withdrawButton">Withdraw</button>
     </div>
     <div id="ui">
         <div id="balance">Balance: $0</div>
@@ -116,9 +114,6 @@
         const balanceDisplay = document.getElementById('balanceDisplay');
         const joystick = document.getElementById('joystick');
         const joystickHandle = document.getElementById('joystickHandle');
-        const connectWalletButton = document.getElementById('connectWalletButton');
-        const depositButton = document.getElementById('depositButton');
-        const withdrawButton = document.getElementById('withdrawButton');
 
         let joystickActive = false;
         let joystickStartX, joystickStartY;
@@ -159,15 +154,15 @@
         });
 
         class Bubble {
-            constructor(x, y, size, color, value) {
+            constructor(x, y, value, color) {
+                this.value = value;
+                this.size = Math.sqrt(value) * 15; // Adjusted size
                 this.x = x;
                 this.y = y;
-                this.size = size;
                 this.color = color;
-                this.value = value;
                 this.dx = Math.random() * 2 - 1;
                 this.dy = Math.random() * 2 - 1;
-                this.speed = Math.max(2.4, 12 / Math.sqrt(size)); // Speed increased by 400%
+                this.speed = Math.max(0.2, 3 / Math.sqrt(this.size));
             }
 
             draw(offsetX, offsetY) {
@@ -206,12 +201,12 @@
             }
         }
 
-        const playerBubble = new Bubble(mapWidth / 2, mapHeight / 2, 40, "blue", 10);
+        const playerBubble = new Bubble(mapWidth / 2, mapHeight / 2, 10, "blue");
         const bubbles = [];
         const bots = [];
 
         function initializeGame() {
-            playerBubble.size = Math.sqrt(playerBalance) * 2 + 20;
+            playerBubble.size = Math.sqrt(playerBalance) * 15;
             playerBubble.value = playerBalance;
 
             balanceElement.textContent = `Balance: $${playerBalance.toFixed(2)}`;
@@ -223,18 +218,16 @@
 
             for (let i = 0; i < 50; i++) {
                 const value = Math.random() * 5 + 1;
-                const size = Math.sqrt(value) * 10;
                 const x = Math.random() * mapWidth;
                 const y = Math.random() * mapHeight;
-                bubbles.push(new Bubble(x, y, size, "lightgreen", value));
+                bubbles.push(new Bubble(x, y, value, "lightgreen"));
             }
 
             for (let i = 0; i < 10; i++) {
                 const value = Math.random() * 10 + 5;
-                const size = Math.sqrt(value) * 10;
                 const x = Math.random() * mapWidth;
                 const y = Math.random() * mapHeight;
-                bots.push(new Bubble(x, y, size, `hsl(${Math.random() * 360}, 70%, 50%)`, value));
+                bots.push(new Bubble(x, y, value, `hsl(${Math.random() * 360}, 70%, 50%)`));
             }
 
             gameRunning = true;
@@ -312,8 +305,8 @@
             const offsetX = playerBubble.x - canvas.width / 2;
             const offsetY = playerBubble.y - canvas.height / 2;
 
-            playerBubble.x += joystickDeltaX * playerBubble.speed;
-            playerBubble.y += joystickDeltaY * playerBubble.speed;
+            playerBubble.x += joystickDeltaX * playerBubble.speed * 2; // Increased speed
+            playerBubble.y += joystickDeltaY * playerBubble.speed * 2; // Increased speed
 
             playerBubble.x = Math.max(playerBubble.size, Math.min(playerBubble.x, mapWidth - playerBubble.size));
             playerBubble.y = Math.max(playerBubble.size, Math.min(playerBubble.y, mapHeight - playerBubble.size));
@@ -344,18 +337,6 @@
         });
 
         balanceDisplay.textContent = `Balance: $${playerBalance.toFixed(2)}`;
-
-        connectWalletButton.addEventListener('click', () => {
-            alert('Connect Wallet functionality will be implemented later.');
-        });
-
-        depositButton.addEventListener('click', () => {
-            alert('Deposit functionality will be implemented later.');
-        });
-
-        withdrawButton.addEventListener('click', () => {
-            alert('Withdraw functionality will be implemented later.');
-        });
     </script>
 </body>
 </html>
