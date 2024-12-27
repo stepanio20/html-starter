@@ -1,6 +1,7 @@
 {
   "private": true,
   "dependencies": {
+    "@tonconnect/ui": "^2.0.9",
     "@vercel/edge": "^0.1.2"
   }
 }

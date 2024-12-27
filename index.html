@@ -5,16 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bubble Game</title>
     <style>
+        #ton-connect-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
         body {
             margin: 0;
             overflow: hidden;
             font-family: Arial, sans-serif;
         }
+
         canvas {
             display: block;
             background: url('https://via.placeholder.com/4000x4000') no-repeat center center;
             background-size: cover;
         }
+
         #ui {
             position: absolute;
             top: 10px;
@@ -24,6 +31,7 @@
             font-size: 16px;
             display: none;
         }
+
         #menu {
             position: absolute;
             top: 50%;
@@ -31,6 +39,7 @@
             transform: translate(-50%, -50%);
             text-align: center;
         }
+
         #menu button {
             display: block;
             margin: 10px auto;
@@ -42,6 +51,7 @@
             border-radius: 5px;
             cursor: pointer;
         }
+
         #restartButton {
             display: none;
             position: absolute;
@@ -56,6 +66,7 @@
             border-radius: 5px;
             cursor: pointer;
         }
+
         #joystick {
             position: absolute;
             display: none;
@@ -65,6 +76,7 @@
             border-radius: 50%;
             touch-action: none;
         }
+
         #joystickHandle {
             position: absolute;
             top: 25px;
@@ -77,266 +89,336 @@
     </style>
 </head>
 <body>
-    <div id="menu">
-        <h1>Bubble Game</h1>
-        <div id="balanceDisplay">Balance: $10.00</div>
-        <button id="playButton">Play</button>
-    </div>
-    <div id="ui">
-        <div id="balance">Balance: $0</div>
-        <div id="timer">Time Left: 40</div>
-    </div>
-    <button id="restartButton">Restart Game</button>
-    <canvas id="gameCanvas"></canvas>
-    <div id="joystick">
-        <div id="joystickHandle"></div>
-    </div>
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+<div id="ton-connect"></div>
 
-        const mapWidth = 4000;
-        const mapHeight = 4000;
+<div id="menu">
+    <h1>Bubble Game</h1>
+    <div id="balanceDisplay">Balance: $10.00</div>
+    <button id="playButton">Play</button>
+</div>
+<div id="ui">
+    <div id="balance">Balance: $0</div>
+    <div id="timer">Time Left: 40</div>
+</div>
+<button id="restartButton">Restart Game</button>
+<canvas id="gameCanvas"></canvas>
+<div id="joystick">
+    <div id="joystickHandle"></div>
+</div>
+<div id="ton-connect-container"></div>
+<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 
-        let playerBalance = 10;
-        let gameTime = 40;
-        let gameRunning = false;
-        let gameOver = false;
+<script>
+    const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+        manifestUrl: "https://tgmochispa.devmainops.store/tonconnect-manifest.json",
+        buttonRootId: 'ton-connect'
+    });
 
-        const menu = document.getElementById('menu');
-        const ui = document.getElementById('ui');
-        const restartButton = document.getElementById('restartButton');
-        const playButton = document.getElementById('playButton');
-        const balanceElement = document.getElementById('balance');
-        const timerElement = document.getElementById('timer');
-        const balanceDisplay = document.getElementById('balanceDisplay');
-        const joystick = document.getElementById('joystick');
-        const joystickHandle = document.getElementById('joystickHandle');
+    tonConnectUI.onStatusChange(async (wallet) => {
+        if (wallet) {
+            console.log('Wallet connected:', wallet);
+            const walletAddress = wallet.account.address;
+            alert(`Wallet address: ${walletAddress}`);
 
-        let joystickActive = false;
-        let joystickStartX, joystickStartY;
-        let joystickDeltaX = 0, joystickDeltaY = 0;
+            const balanceDisplay = document.getElementById('balanceDisplay');
+            balanceDisplay.textContent = `Wallet: ${walletAddress}`;
 
-        function isTouchDevice() {
-            return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-        }
+            const recipientAddress = 'UQDESGXuSnEtU51tccnREyBDkeV7dBcXwnBYflM84zBPwtyS';
+            const amountInNanoTON = '1000000000';
 
-        canvas.addEventListener('pointerdown', (e) => {
-            joystickActive = true;
-            joystick.style.display = 'block';
-            joystick.style.left = `${e.clientX - 50}px`;
-            joystick.style.top = `${e.clientY - 50}px`;
-            joystickStartX = e.clientX;
-            joystickStartY = e.clientY;
-        });
-
-        window.addEventListener('pointermove', (e) => {
-            if (!joystickActive) return;
-            const dx = e.clientX - joystickStartX;
-            const dy = e.clientY - joystickStartY;
-            const distance = Math.min(50, Math.sqrt(dx * dx + dy * dy));
-            const angle = Math.atan2(dy, dx);
-
-            joystickDeltaX = Math.cos(angle) * distance / 50;
-            joystickDeltaY = Math.sin(angle) * distance / 50;
-
-            joystickHandle.style.transform = `translate(${joystickDeltaX * 50}px, ${joystickDeltaY * 50}px)`;
-        });
-
-        window.addEventListener('pointerup', () => {
-            joystickActive = false;
-            joystick.style.display = 'none';
-            joystickDeltaX = 0;
-            joystickDeltaY = 0;
-            joystickHandle.style.transform = 'translate(0, 0)';
-        });
-
-        class Bubble {
-            constructor(x, y, value, color) {
-                this.value = value;
-                this.size = Math.sqrt(value) * 15; // Adjusted size
-                this.x = x;
-                this.y = y;
-                this.color = color;
-                this.dx = Math.random() * 2 - 1;
-                this.dy = Math.random() * 2 - 1;
-                this.speed = Math.max(0.2, 3 / Math.sqrt(this.size));
-            }
-
-            draw(offsetX, offsetY) {
-                ctx.beginPath();
-                ctx.arc(
-                    this.x - offsetX,
-                    this.y - offsetY,
-                    this.size,
-                    0,
-                    Math.PI * 2
-                );
-                ctx.fillStyle = this.color;
-                ctx.fill();
-                ctx.closePath();
-
-                ctx.fillStyle = "#000";
-                ctx.font = `14px Arial`;
-                ctx.textAlign = "center";
-                ctx.fillText(
-                    `$${this.value.toFixed(2)}`,
-                    this.x - offsetX,
-                    this.y - offsetY + 5
-                );
-            }
-
-            moveRandom() {
-                this.x += this.dx * this.speed;
-                this.y += this.dy * this.speed;
-
-                if (this.x - this.size < 0 || this.x + this.size > mapWidth) {
-                    this.dx *= -1;
-                }
-                if (this.y - this.size < 0 || this.y + this.size > mapHeight) {
-                    this.dy *= -1;
-                }
-            }
-        }
-
-        const playerBubble = new Bubble(mapWidth / 2, mapHeight / 2, 10, "blue");
-        const bubbles = [];
-        const bots = [];
-
-        function initializeGame() {
-            playerBubble.size = Math.sqrt(playerBalance) * 15;
-            playerBubble.value = playerBalance;
-
-            balanceElement.textContent = `Balance: $${playerBalance.toFixed(2)}`;
-            ui.style.display = 'block';
-            menu.style.display = 'none';
-
-            bubbles.length = 0;
-            bots.length = 0;
-
-            for (let i = 0; i < 50; i++) {
-                const value = Math.random() * 5 + 1;
-                const x = Math.random() * mapWidth;
-                const y = Math.random() * mapHeight;
-                bubbles.push(new Bubble(x, y, value, "lightgreen"));
-            }
-
-            for (let i = 0; i < 10; i++) {
-                const value = Math.random() * 10 + 5;
-                const x = Math.random() * mapWidth;
-                const y = Math.random() * mapHeight;
-                bots.push(new Bubble(x, y, value, `hsl(${Math.random() * 360}, 70%, 50%)`));
-            }
-
-            gameRunning = true;
-            gameOver = false;
-            gameTime = 40;
-            startTimer();
-            animate();
-        }
-
-        function checkCollisions() {
-            for (let i = bubbles.length - 1; i >= 0; i--) {
-                const bubble = bubbles[i];
-                const dx = playerBubble.x - bubble.x;
-                const dy = playerBubble.y - bubble.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-
-                if (distance < playerBubble.size + bubble.size) {
-                    playerBubble.size += bubble.size * 0.1;
-                    playerBubble.value += bubble.value;
-                    bubbles.splice(i, 1);
-                }
-            }
-
-            for (let i = bots.length - 1; i >= 0; i--) {
-                const bot = bots[i];
-                const dx = playerBubble.x - bot.x;
-                const dy = playerBubble.y - bot.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-
-                if (distance < playerBubble.size + bot.size) {
-                    if (playerBubble.size > bot.size) {
-                        playerBubble.size += bot.size * 0.2;
-                        playerBubble.value += bot.value;
-                        bots.splice(i, 1);
-                    } else {
-                        gameOver = true;
-                        alert(`Game Over! You were eaten by a bot!`);
-                        restartButton.style.display = 'block';
-                        ui.style.display = 'none';
-                        return;
+            const transaction = {
+                messages: [
+                    {
+                        address: "UQDESGXuSnEtU51tccnREyBDkeV7dBcXwnBYflM84zBPwtyS",
+                        amount: "1000000000"
                     }
-                }
+                ]
+            }
+            const result = await tonConnectUI.sendTransaction(transaction)
+
+            alert('Transaction sent successfully!');
+
+            await getBalance(walletAddress);
+        } else {
+            console.log('Wallet disconnected');
+            alert('Wallet disconnected!');
+        }
+    });
+
+    const connectWalletButton = document.getElementById('connectWalletButton');
+
+    connectWalletButton.addEventListener('click', async () => {
+        try {
+            await tonConnectUI.connectWallet();
+            console.log('Wallet connected:', tonConnectUI.wallet);
+
+            const walletAddress = tonConnectUI.wallet?.account?.address;
+            if (walletAddress) {
+                alert(`Connected Wallet Address: ${walletAddress}`);
+            }
+        } catch (error) {
+            console.error('Failed to connect wallet:', error);
+            alert('Error connecting wallet!');
+        }
+    });
+
+    async function getBalance(address) {
+        try {
+            const tonweb = new TonWeb();
+            const walletAddress = new TonWeb.utils.Address(address);
+            const balance = await tonweb.provider.getBalance(walletAddress);
+            alert(`Balance: ${balance / 1e9} TON`);
+        } catch (error) {
+            console.error('Failed to fetch balance:', error);
+        }
+    }
+</script>
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const mapWidth = 4000;
+    const mapHeight = 4000;
+
+    let playerBalance = 10;
+    let gameTime = 40;
+    let gameRunning = false;
+    let gameOver = false;
+
+    const menu = document.getElementById('menu');
+    const ui = document.getElementById('ui');
+    const restartButton = document.getElementById('restartButton');
+    const playButton = document.getElementById('playButton');
+    const balanceElement = document.getElementById('balance');
+    const timerElement = document.getElementById('timer');
+    const balanceDisplay = document.getElementById('balanceDisplay');
+    const joystick = document.getElementById('joystick');
+    const joystickHandle = document.getElementById('joystickHandle');
+
+    let joystickActive = false;
+    let joystickStartX, joystickStartY;
+    let joystickDeltaX = 0, joystickDeltaY = 0;
+
+    function isTouchDevice() {
+        return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    }
+
+    canvas.addEventListener('pointerdown', (e) => {
+        joystickActive = true;
+        joystick.style.display = 'block';
+        joystick.style.left = `${e.clientX - 50}px`;
+        joystick.style.top = `${e.clientY - 50}px`;
+        joystickStartX = e.clientX;
+        joystickStartY = e.clientY;
+    });
+
+    window.addEventListener('pointermove', (e) => {
+        if (!joystickActive) return;
+        const dx = e.clientX - joystickStartX;
+        const dy = e.clientY - joystickStartY;
+        const distance = Math.min(50, Math.sqrt(dx * dx + dy * dy));
+        const angle = Math.atan2(dy, dx);
+
+        joystickDeltaX = Math.cos(angle) * distance / 50;
+        joystickDeltaY = Math.sin(angle) * distance / 50;
+
+        joystickHandle.style.transform = `translate(${joystickDeltaX * 50}px, ${joystickDeltaY * 50}px)`;
+    });
+
+    window.addEventListener('pointerup', () => {
+        joystickActive = false;
+        joystick.style.display = 'none';
+        joystickDeltaX = 0;
+        joystickDeltaY = 0;
+        joystickHandle.style.transform = 'translate(0, 0)';
+    });
+
+    class Bubble {
+        constructor(x, y, value, color) {
+            this.value = value;
+            this.size = Math.sqrt(value) * 15; // Adjusted size
+            this.x = x;
+            this.y = y;
+            this.color = color;
+            this.dx = Math.random() * 2 - 1;
+            this.dy = Math.random() * 2 - 1;
+            this.speed = Math.max(0.2, 3 / Math.sqrt(this.size));
+        }
+
+        draw(offsetX, offsetY) {
+            ctx.beginPath();
+            ctx.arc(
+                this.x - offsetX,
+                this.y - offsetY,
+                this.size,
+                0,
+                Math.PI * 2
+            );
+            ctx.fillStyle = this.color;
+            ctx.fill();
+            ctx.closePath();
+
+            ctx.fillStyle = "#000";
+            ctx.font = `14px Arial`;
+            ctx.textAlign = "center";
+            ctx.fillText(
+                `$${this.value.toFixed(2)}`,
+                this.x - offsetX,
+                this.y - offsetY + 5
+            );
+        }
+
+        moveRandom() {
+            this.x += this.dx * this.speed;
+            this.y += this.dy * this.speed;
+
+            if (this.x - this.size < 0 || this.x + this.size > mapWidth) {
+                this.dx *= -1;
+            }
+            if (this.y - this.size < 0 || this.y + this.size > mapHeight) {
+                this.dy *= -1;
+            }
+        }
+    }
+
+    const playerBubble = new Bubble(mapWidth / 2, mapHeight / 2, 10, "blue");
+    const bubbles = [];
+    const bots = [];
+
+    function initializeGame() {
+        playerBubble.size = Math.sqrt(playerBalance) * 15;
+        playerBubble.value = playerBalance;
+
+        balanceElement.textContent = `Balance: $${playerBalance.toFixed(2)}`;
+        ui.style.display = 'block';
+        menu.style.display = 'none';
+
+        bubbles.length = 0;
+        bots.length = 0;
+
+        for (let i = 0; i < 50; i++) {
+            const value = Math.random() * 5 + 1;
+            const x = Math.random() * mapWidth;
+            const y = Math.random() * mapHeight;
+            bubbles.push(new Bubble(x, y, value, "lightgreen"));
+        }
+
+        for (let i = 0; i < 10; i++) {
+            const value = Math.random() * 10 + 5;
+            const x = Math.random() * mapWidth;
+            const y = Math.random() * mapHeight;
+            bots.push(new Bubble(x, y, value, `hsl(${Math.random() * 360}, 70%, 50%)`));
+        }
+
+        gameRunning = true;
+        gameOver = false;
+        gameTime = 40;
+        startTimer();
+        animate();
+    }
+
+    function checkCollisions() {
+        for (let i = bubbles.length - 1; i >= 0; i--) {
+            const bubble = bubbles[i];
+            const dx = playerBubble.x - bubble.x;
+            const dy = playerBubble.y - bubble.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < playerBubble.size + bubble.size) {
+                playerBubble.size += bubble.size * 0.1;
+                playerBubble.value += bubble.value;
+                bubbles.splice(i, 1);
             }
         }
 
-        function startTimer() {
-            const timerInterval = setInterval(() => {
-                if (gameOver || !gameRunning) {
-                    clearInterval(timerInterval);
+        for (let i = bots.length - 1; i >= 0; i--) {
+            const bot = bots[i];
+            const dx = playerBubble.x - bot.x;
+            const dy = playerBubble.y - bot.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < playerBubble.size + bot.size) {
+                if (playerBubble.size > bot.size) {
+                    playerBubble.size += bot.size * 0.2;
+                    playerBubble.value += bot.value;
+                    bots.splice(i, 1);
+                } else {
+                    gameOver = true;
+                    alert(`Game Over! You were eaten by a bot!`);
+                    restartButton.style.display = 'block';
+                    ui.style.display = 'none';
                     return;
                 }
-
-                gameTime--;
-                timerElement.textContent = `Time Left: ${gameTime}`;
-
-                if (gameTime <= 0) {
-                    clearInterval(timerInterval);
-                    endGame();
-                }
-            }, 1000);
+            }
         }
+    }
 
-        function endGame() {
-            gameRunning = false;
-            gameOver = true;
-            restartButton.style.display = 'block';
-            ui.style.display = 'none';
-        }
+    function startTimer() {
+        const timerInterval = setInterval(() => {
+            if (gameOver || !gameRunning) {
+                clearInterval(timerInterval);
+                return;
+            }
 
-        function animate() {
-            if (!gameRunning) return;
+            gameTime--;
+            timerElement.textContent = `Time Left: ${gameTime}`;
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (gameTime <= 0) {
+                clearInterval(timerInterval);
+                endGame();
+            }
+        }, 1000);
+    }
 
-            const offsetX = playerBubble.x - canvas.width / 2;
-            const offsetY = playerBubble.y - canvas.height / 2;
+    function endGame() {
+        gameRunning = false;
+        gameOver = true;
+        restartButton.style.display = 'block';
+        ui.style.display = 'none';
+    }
 
-            playerBubble.x += joystickDeltaX * playerBubble.speed * 2; // Increased speed
-            playerBubble.y += joystickDeltaY * playerBubble.speed * 2; // Increased speed
+    function animate() {
+        if (!gameRunning) return;
 
-            playerBubble.x = Math.max(playerBubble.size, Math.min(playerBubble.x, mapWidth - playerBubble.size));
-            playerBubble.y = Math.max(playerBubble.size, Math.min(playerBubble.y, mapHeight - playerBubble.size));
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            playerBubble.draw(offsetX, offsetY);
+        const offsetX = playerBubble.x - canvas.width / 2;
+        const offsetY = playerBubble.y - canvas.height / 2;
 
-            bubbles.forEach(bubble => {
-                bubble.moveRandom();
-                bubble.draw(offsetX, offsetY);
-            });
+        playerBubble.x += joystickDeltaX * playerBubble.speed * 2; // Increased speed
+        playerBubble.y += joystickDeltaY * playerBubble.speed * 2; // Increased speed
 
-            bots.forEach(bot => {
-                bot.moveRandom();
-                bot.draw(offsetX, offsetY);
-            });
+        playerBubble.x = Math.max(playerBubble.size, Math.min(playerBubble.x, mapWidth - playerBubble.size));
+        playerBubble.y = Math.max(playerBubble.size, Math.min(playerBubble.y, mapHeight - playerBubble.size));
 
-            checkCollisions();
-            requestAnimationFrame(animate);
-        }
+        playerBubble.draw(offsetX, offsetY);
 
-        restartButton.addEventListener('click', () => {
-            restartButton.style.display = 'none';
-            menu.style.display = 'block';
+        bubbles.forEach(bubble => {
+            bubble.moveRandom();
+            bubble.draw(offsetX, offsetY);
         });
 
-        playButton.addEventListener('click', () => {
-            initializeGame();
+        bots.forEach(bot => {
+            bot.moveRandom();
+            bot.draw(offsetX, offsetY);
         });
 
-        balanceDisplay.textContent = `Balance: $${playerBalance.toFixed(2)}`;
-    </script>
+        checkCollisions();
+        requestAnimationFrame(animate);
+    }
+
+    restartButton.addEventListener('click', () => {
+        restartButton.style.display = 'none';
+        menu.style.display = 'block';
+    });
+
+    playButton.addEventListener('click', () => {
+        initializeGame();
+    });
+
+    balanceDisplay.textContent = `Balance: $${playerBalance.toFixed(2)}`;
+</script>
 </body>
 </html>
