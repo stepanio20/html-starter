@@ -98,6 +98,9 @@
                 this.size = size;
                 this.color = color;
                 this.value = value;
+                this.dx = Math.random() * 2 - 1;
+                this.dy = Math.random() * 2 - 1;
+                this.speed = Math.max(0.2, 3 / Math.sqrt(size));
             }
 
             draw(offsetX, offsetY) {
@@ -122,9 +125,23 @@
                     this.y - offsetY + 5
                 );
             }
+
+            moveRandom() {
+                this.x += this.dx * this.speed;
+                this.y += this.dy * this.speed;
+
+                if (this.x - this.size < 0 || this.x + this.size > mapWidth) {
+                    this.dx *= -1;
+                }
+                if (this.y - this.size < 0 || this.y + this.size > mapHeight) {
+                    this.dy *= -1;
+                }
+            }
         }
 
         const playerBubble = new Bubble(mapWidth / 2, mapHeight / 2, 40, "blue", 10);
+        const bubbles = [];
+        const bots = [];
 
         function initializeGame() {
             playerBubble.size = Math.sqrt(playerBalance) * 2 + 20;
@@ -133,6 +150,25 @@
             balanceElement.textContent = `Balance: $${playerBalance.toFixed(2)}`;
             ui.style.display = 'block';
             menu.style.display = 'none';
+
+            bubbles.length = 0;
+            bots.length = 0;
+
+            for (let i = 0; i < 50; i++) {
+                const size = Math.random() * 20 + 10;
+                const value = Math.random() * 5 + 1;
+                const x = Math.random() * mapWidth;
+                const y = Math.random() * mapHeight;
+                bubbles.push(new Bubble(x, y, size, "lightgreen", value));
+            }
+
+            for (let i = 0; i < 10; i++) {
+                const size = Math.random() * 30 + 20;
+                const value = Math.random() * 10 + 5;
+                const x = Math.random() * mapWidth;
+                const y = Math.random() * mapHeight;
+                bots.push(new Bubble(x, y, size, `hsl(${Math.random() * 360}, 70%, 50%)`, value));
+            }
 
             gameRunning = true;
             gameOver = false;
@@ -170,7 +206,20 @@
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            playerBubble.draw(canvas.width / 2, canvas.height / 2);
+            const offsetX = playerBubble.x - canvas.width / 2;
+            const offsetY = playerBubble.y - canvas.height / 2;
+
+            playerBubble.draw(offsetX, offsetY);
+
+            bubbles.forEach(bubble => {
+                bubble.moveRandom();
+                bubble.draw(offsetX, offsetY);
+            });
+
+            bots.forEach(bot => {
+                bot.moveRandom();
+                bot.draw(offsetX, offsetY);
+            });
 
             requestAnimationFrame(animate);
         }
