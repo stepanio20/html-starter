@@ -4,6 +4,7 @@ using Api.Common.Static;
 using Api.Common.Static.Sockets;
 using BubbleGame.Application.Services.Players;
 using BubbleGame.Cache.Services;
+using BubbleGame.Core.Games;
 using BubbleGame.Core.Players;
 using Microsoft.AspNetCore.SignalR;
 
@@ -12,8 +13,24 @@ namespace Api.Hubs;
 internal sealed class GameHub(IPlayerGameService playerGameService) : Hub
 {
     public async Task UpdatePlayerPosition(PlayerDto playerDto)
-    {
+    {   
+        // await playerGameService.CreateGame(new Game
+        // {
+        //     Id = playerDto.GameId
+        //
+        // });
+        // await playerGameService.AddPlayerAsync(new Player
+        // {
+        //     Id = playerDto.PlayerId,
+        //     GameId = playerDto.GameId,
+        //     UserId = playerDto.PlayerId,
+        //     PositionX = playerDto.PositionX,
+        //     PositionY = playerDto.PositionY,
+        // });
         var player = await playerGameService.GetById(playerDto.GameId, playerDto.PlayerId);
+        if (player is null)
+            return;
+        
         player.PositionX = playerDto.PositionX;
         player.PositionY = playerDto.PositionY;
         player.LastUpdated = DateTime.UtcNow;

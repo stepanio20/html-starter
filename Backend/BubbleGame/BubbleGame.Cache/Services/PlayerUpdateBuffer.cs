@@ -13,7 +13,7 @@ internal sealed class PlayerUpdateBuffer : IPlayerUpdateBuffer
     {
         lock (_lock)
         {
-            _buffer[player.Id] = player;
+            _buffer[player.GameId] = player;
 
             if (_buffer.Count >= _maxBufferSize)
             {

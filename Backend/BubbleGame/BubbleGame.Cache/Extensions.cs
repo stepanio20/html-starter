@@ -17,10 +17,10 @@ public static class Extensions
             options.InstanceName = "BubbleGame.Cache:";         
         });
         
-        services.AddScoped<ICacheService, CacheService>();
-        services.AddSingleton<IPlayerUpdateBuffer, PlayerUpdateBuffer>();
-        services.AddScoped<IPlayerGameService, PlayerGameService>();
-        
+        services.AddSingleton<ICacheService, CacheService>();
+        services.AddSingleton<IPlayerUpdateBuffer, PlayerUpdateBuffer>(); 
+        services.AddSingleton<IPlayerGameService, PlayerGameService>(); 
+
         services.AddHostedService<PlayerGameService>();
 
         return services;

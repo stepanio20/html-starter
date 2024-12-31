@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Joystick from '../../features/Joystick'
 import styles from './style.module.css'
+import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
+import {io, Socket} from "socket.io-client";
 
 const App: React.FC = () => {
   const [playerBalance, setPlayerBalance] = useState(10);
@@ -14,6 +16,10 @@ const App: React.FC = () => {
 
   const mapWidth = 4000;
   const mapHeight = 4000;
+
+  const [connection, setConnection] = useState<HubConnection | null>(null);
+  const socketRef = useRef<Socket | null>(null);
+
 
   class PlayerBubble {
     x: number;
@@ -71,15 +77,15 @@ const App: React.FC = () => {
     }
 
     moveRandom() {
-      this.x += this.dx * this.speed;
-      this.y += this.dy * this.speed;
-
-      if (this.x - this.size < 0 || this.x + this.size > mapWidth) {
-        this.dx *= -1;
-      }
-      if (this.y - this.size < 0 || this.y + this.size > mapHeight) {
-        this.dy *= -1;
-      }
+      // this.x += this.dx * this.speed;
+      // this.y += this.dy * this.speed;
+      //
+      // if (this.x - this.size < 0 || this.x + this.size > mapWidth) {
+      //   this.dx *= -1;
+      // }
+      // if (this.y - this.size < 0 || this.y + this.size > mapHeight) {
+      //   this.dy *= -1;
+      // }
     }
 
     draw(ctx: CanvasRenderingContext2D, offsetX: number, offsetY: number) {
@@ -181,38 +187,78 @@ const App: React.FC = () => {
     }
   };
 
+  let lastSentTime = 0;  // Время последней отправки запроса
+  const sendInterval = 100;
+  let lastPosition = { x: 0, y: 0 };  // Последняя отправленная позиция
+
   const animate = () => {
     if (!gameRunning) return;
-  
+
     const canvas = canvasRef.current!;
     const ctx = canvas.getContext('2d')!;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
+
     const offsetX = playerBubble.current.x - canvas.width / 2;
     const offsetY = playerBubble.current.y - canvas.height / 2;
-  
-    console.log('playerBubble position:', playerBubble.current.x, playerBubble.current.y);
-  
+
     playerBubble.current.x += joystickRef.current.deltaX * playerBubble.current.speed * 5;
     playerBubble.current.y += joystickRef.current.deltaY * playerBubble.current.speed * 5;
-  
+
+    // Ограничение позиции
     playerBubble.current.x = Math.max(playerBubble.current.size, Math.min(playerBubble.current.x, mapWidth - playerBubble.current.size));
     playerBubble.current.y = Math.max(playerBubble.current.size, Math.min(playerBubble.current.y, mapHeight - playerBubble.current.size));
-  
+
+    // Отображение игрока
     playerBubble.current.draw(ctx, offsetX, offsetY);
-  
+
+    // Отображение остальных объектов
     bubbles.current.forEach((bubble) => {
       bubble.moveRandom();
       bubble.draw(ctx, offsetX, offsetY);
     });
-  
+
     bots.current.forEach((bot) => {
       bot.moveRandom();
       bot.draw(ctx, offsetX, offsetY);
     });
-  
+
+    // Проверка изменений позиции игрока
+    const currentTime = Date.now();
+    const positionChanged = playerBubble.current.x !== lastPosition.x || playerBubble.current.y !== lastPosition.y;
+
+    // Если прошло достаточно времени или позиция игрока изменилась
+    if (currentTime - lastSentTime > sendInterval || positionChanged) {
+      sendPlayerPosition(
+          "f2940113-723e-4339-a32b-49d901b44b6c",
+          "f2940113-723e-4339-a32b-49d901b44b6a",
+          playerBubble.current.x,
+          playerBubble.current.y,
+          1
+      );
+
+      // Обновление времени последней отправки и последней позиции
+      lastSentTime = currentTime;
+      lastPosition = { x: playerBubble.current.x, y: playerBubble.current.y };
+    }
+
+    // Проверка столкновений
     checkCollisions();
+
+    // Продолжаем анимацию
     requestAnimationFrame(animate);
+  };
+
+  const sendPlayerPosition = (gameId: string, playerId: string, x: number, y: number, ballSize: number) => {
+    const playerDto = {
+      GameId: gameId,
+      PlayerId: playerId,
+      PositionX: x,
+      PositionY: y,
+      BallSize: ballSize
+    };
+
+    connection?.invoke("UpdatePlayerPosition", playerDto)
+        .catch(err => console.error(err.toString()));
   };
 
   useEffect(() => {
@@ -225,6 +271,26 @@ const App: React.FC = () => {
     joystickRef.current.deltaX = deltaX;
     joystickRef.current.deltaY = deltaY;
   };
+
+  useEffect(() => {
+    const connection = new HubConnectionBuilder()
+        .withUrl('https://localhost:7073/gameHub')
+        .build();
+
+    setConnection(connection);
+
+    connection.start().catch(err => console.error('Connection failed: ', err));
+
+    connection.on('PlayerPositionUpdated', (gameState) => {
+      console.log(gameState);
+    });
+
+    return () => {
+      if (connection) {
+        connection.stop();
+      }
+    };
+  }, []);
 
   return (
     <div>
