@@ -1,11 +1,30 @@
 {
   "version": 3,
   "targets": {
-    "net9.0": {}
+    "net9.0": {
+      "BubbleGame.Domain/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/BubbleGame.Domain.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/BubbleGame.Domain.dll": {}
+        }
+      }
+    }
   },
-  "libraries": {},
+  "libraries": {
+    "BubbleGame.Domain/1.0.0": {
+      "type": "project",
+      "path": "../BubbleGame.Domain/BubbleGame.Domain.csproj",
+      "msbuildProject": "../BubbleGame.Domain/BubbleGame.Domain.csproj"
+    }
+  },
   "projectFileDependencyGroups": {
-    "net9.0": []
+    "net9.0": [
+      "BubbleGame.Domain >= 1.0.0"
+    ]
   },
   "packageFolders": {
     "/Users/viacheslavmw/.nuget/packages/": {}
@@ -32,7 +51,11 @@
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "/Users/viacheslavmw/projects/html-starter/Backend/BubbleGame/BubbleGame.Domain/BubbleGame.Domain.csproj": {
+              "projectPath": "/Users/viacheslavmw/projects/html-starter/Backend/BubbleGame/BubbleGame.Domain/BubbleGame.Domain.csproj"
+            }
+          }
         }
       },
       "warningProperties": {

@@ -1,6 +1,6 @@
 using BubbleGame.Core.Players;
 
-namespace BubbleGame.Cache.Services;
+namespace BubbleGame.Application.Services.Players;
 
 public interface IPlayerUpdateService
 {

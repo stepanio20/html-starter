@@ -1,3 +1,4 @@
+using BubbleGame.Application.Services.Players;
 using BubbleGame.Cache.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,10 +14,15 @@ public static class Extensions
         services.AddStackExchangeRedisCache(options =>
         {
             options.Configuration = "localhost:6379"; 
-            options.InstanceName = "MyApp:";         
+            options.InstanceName = "BubbleGame.Cache:";         
         });
-
+        
+        services.AddScoped<ICacheService, CacheService>();
         services.AddSingleton<IPlayerUpdateBuffer, PlayerUpdateBuffer>();
+        services.AddScoped<IPlayerUpdateService, PlayerUpdateService>();
+        
+        services.AddHostedService<PlayerUpdateService>();
+
         return services;
     }
 }
