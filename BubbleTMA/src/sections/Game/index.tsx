@@ -27,19 +27,21 @@ const App: React.FC = () => {
     size: number;
     value: number;
     speed: number;
+    color: string; 
 
-    constructor(x: number, y: number, value: number) {
+    constructor(x: number, y: number, value: number, color: string) {
       this.x = x;
       this.y = y;
       this.value = value;
       this.size = Math.sqrt(value) * 15;
       this.speed = 0.2;
+      this.color = color;
     }
 
-    draw(ctx: CanvasRenderingContext2D, offsetX: number, offsetY: number) {
+    draw(ctx: CanvasRenderingContext2D, offsetX: number, offsetY: number, color: string) {
       ctx.beginPath();
       ctx.arc(this.x - offsetX, this.y - offsetY, this.size, 0, Math.PI * 2);
-      ctx.fillStyle = 'blue';
+      ctx.fillStyle = color;
       ctx.fill();
       ctx.closePath();
 
@@ -52,56 +54,6 @@ const App: React.FC = () => {
 
   const playerBubble = useRef(new PlayerBubble(mapWidth / 2, mapHeight / 2, playerBalance));
 
-  const bubbles = useRef<Bubble[]>([]);
-  const bots = useRef<Bubble[]>([]);
-
-  class Bubble {
-    value: number;
-    size: number;
-    x: number;
-    y: number;
-    color: string;
-    dx: number;
-    dy: number;
-    speed: number;
-
-    constructor(x: number, y: number, value: number, color: string) {
-      this.value = value;
-      this.size = Math.sqrt(value) * 15;
-      this.x = x;
-      this.y = y;
-      this.color = color;
-      this.dx = Math.random() * 2 - 1;
-      this.dy = Math.random() * 2 - 1;
-      this.speed = Math.max(0.2, 3 / Math.sqrt(this.size));
-    }
-
-    moveRandom() {
-      // this.x += this.dx * this.speed;
-      // this.y += this.dy * this.speed;
-      //
-      // if (this.x - this.size < 0 || this.x + this.size > mapWidth) {
-      //   this.dx *= -1;
-      // }
-      // if (this.y - this.size < 0 || this.y + this.size > mapHeight) {
-      //   this.dy *= -1;
-      // }
-    }
-
-    draw(ctx: CanvasRenderingContext2D, offsetX: number, offsetY: number) {
-      ctx.beginPath();
-      ctx.arc(this.x - offsetX, this.y - offsetY, this.size, 0, Math.PI * 2);
-      ctx.fillStyle = this.color;
-      ctx.fill();
-      ctx.closePath();
-
-      ctx.fillStyle = "#000";
-      ctx.font = `14px Arial`;
-      ctx.textAlign = "center";
-      ctx.fillText(`$${this.value.toFixed(2)}`, this.x - offsetX, this.y - offsetY + 5);
-    }
-  }
-
   const initializeGame = () => {
     playerBubble.current.size = Math.sqrt(playerBalance) * 15;
     playerBubble.current.value = playerBalance;
@@ -109,22 +61,6 @@ const App: React.FC = () => {
     setGameTime(40);
     setGameRunning(true);
     setGameOver(false);
-
-    bubbles.current = [];
-    bots.current = [];
-    for (let i = 0; i < 50; i++) {
-      const value = Math.random() * 5 + 1;
-      const x = Math.random() * mapWidth;
-      const y = Math.random() * mapHeight;
-      bubbles.current.push(new Bubble(x, y, value, "lightgreen"));
-    }
-
-    for (let i = 0; i < 10; i++) {
-      const value = Math.random() * 10 + 5;
-      const x = Math.random() * mapWidth;
-      const y = Math.random() * mapHeight;
-      bots.current.push(new Bubble(x, y, value, `hsl(${Math.random() * 360}, 70%, 50%)`));
-    }
 
     startTimer();
   };
@@ -154,42 +90,67 @@ const App: React.FC = () => {
   };
 
   const checkCollisions = () => {
-    for (let i = bubbles.current.length - 1; i >= 0; i--) {
-      const bubble = bubbles.current[i];
-      const dx = playerBubble.current.x - bubble.x;
-      const dy = playerBubble.current.y - bubble.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-
-      if (distance < playerBubble.current.size + bubble.size) {
-        playerBubble.current.size += bubble.size * 0.1;
-        playerBubble.current.value += bubble.value;
-        bubbles.current.splice(i, 1);
-      }
-    }
-
-    for (let i = bots.current.length - 1; i >= 0; i--) {
-      const bot = bots.current[i];
-      const dx = playerBubble.current.x - bot.x;
-      const dy = playerBubble.current.y - bot.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-
-      if (distance < playerBubble.current.size + bot.size) {
-        if (playerBubble.current.size > bot.size) {
-          playerBubble.current.size += bot.size * 0.2;
-          playerBubble.current.value += bot.value;
-          bots.current.splice(i, 1);
-        } else {
-          setGameOver(true);
-          setGameRunning(false)
-          return;
-        }
-      }
-    }
+    // for (let i = bubbles.current.length - 1; i >= 0; i--) {
+    //   const bubble = bubbles.current[i];
+    //   const dx = playerBubble.current.x - bubble.x;
+    //   const dy = playerBubble.current.y - bubble.y;
+    //   const distance = Math.sqrt(dx * dx + dy * dy);
+    //
+    //   if (distance < playerBubble.current.size + bubble.size) {
+    //     playerBubble.current.size += bubble.size * 0.1;
+    //     playerBubble.current.value += bubble.value;
+    //     bubbles.current.splice(i, 1);
+    //   }
+    // }
+    //
+    // for (let i = bots.current.length - 1; i >= 0; i--) {
+    //   const bot = bots.current[i];
+    //   const dx = playerBubble.current.x - bot.x;
+    //   const dy = playerBubble.current.y - bot.y;
+    //   const distance = Math.sqrt(dx * dx + dy * dy);
+    //
+    //   if (distance < playerBubble.current.size + bot.size) {
+    //     if (playerBubble.current.size > bot.size) {
+    //       playerBubble.current.size += bot.size * 0.2;
+    //       playerBubble.current.value += bot.value;
+    //       bots.current.splice(i, 1);
+    //     } else {
+    //       setGameOver(true);
+    //       setGameRunning(false)
+    //       return;
+    //     }
+    //   }
+    // }
   };
 
-  let lastSentTime = 0;  // Время последней отправки запроса
+  interface PlayerDto {
+    gameId: string;
+    playerId: string;
+    positionX: number;
+    positionY: number;
+    ballSize: number;
+  }
+
+  let lastSentTime = 0;
   const sendInterval = 100;
-  let lastPosition = { x: 0, y: 0 };  // Последняя отправленная позиция
+  let lastPosition = { x: 0, y: 0 };
+
+  const [players, setPlayers] = useState<{ id: string, x: number, y: number, size: number, color: string }[]>([]);
+
+  const getRandomColor = (): string => {
+    const hue = Math.floor(Math.random() * 360);
+    return `hsl(${hue}, 70%, 50%)`;
+  };
+
+  const generateRandomGuid = (): string => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  };
+
+  const randomGuid = generateRandomGuid();
 
   const animate = () => {
     if (!gameRunning) return;
@@ -204,47 +165,35 @@ const App: React.FC = () => {
     playerBubble.current.x += joystickRef.current.deltaX * playerBubble.current.speed * 5;
     playerBubble.current.y += joystickRef.current.deltaY * playerBubble.current.speed * 5;
 
-    // Ограничение позиции
     playerBubble.current.x = Math.max(playerBubble.current.size, Math.min(playerBubble.current.x, mapWidth - playerBubble.current.size));
     playerBubble.current.y = Math.max(playerBubble.current.size, Math.min(playerBubble.current.y, mapHeight - playerBubble.current.size));
 
-    // Отображение игрока
-    playerBubble.current.draw(ctx, offsetX, offsetY);
+    playerBubble.current.draw(ctx, offsetX, offsetY, "black");
 
-    // Отображение остальных объектов
-    bubbles.current.forEach((bubble) => {
-      bubble.moveRandom();
-      bubble.draw(ctx, offsetX, offsetY);
+    players.forEach((player) => {
+      const playerBubble = new PlayerBubble(player.x, player.y, player.size, player.color);
+      playerBubble.draw(ctx, offsetX, offsetY, player.color);
     });
 
-    bots.current.forEach((bot) => {
-      bot.moveRandom();
-      bot.draw(ctx, offsetX, offsetY);
-    });
 
-    // Проверка изменений позиции игрока
     const currentTime = Date.now();
     const positionChanged = playerBubble.current.x !== lastPosition.x || playerBubble.current.y !== lastPosition.y;
 
-    // Если прошло достаточно времени или позиция игрока изменилась
     if (currentTime - lastSentTime > sendInterval || positionChanged) {
       sendPlayerPosition(
           "f2940113-723e-4339-a32b-49d901b44b6c",
-          "f2940113-723e-4339-a32b-49d901b44b6a",
+          randomGuid,
           playerBubble.current.x,
           playerBubble.current.y,
           1
       );
 
-      // Обновление времени последней отправки и последней позиции
       lastSentTime = currentTime;
       lastPosition = { x: playerBubble.current.x, y: playerBubble.current.y };
     }
 
-    // Проверка столкновений
     checkCollisions();
 
-    // Продолжаем анимацию
     requestAnimationFrame(animate);
   };
 
@@ -274,17 +223,43 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const connection = new HubConnectionBuilder()
-        .withUrl('https://localhost:7073/gameHub')
+        .withUrl('https://localhost:7073/gameHub') //замени на порт докера
         .build();
 
     setConnection(connection);
 
     connection.start().catch(err => console.error('Connection failed: ', err));
 
-    connection.on('PlayerPositionUpdated', (gameState) => {
-      console.log(gameState);
-    });
+    connection.on('PlayerPositionUpdated', (gameState: PlayerDto) => {
 
+      if (!gameState.playerId || gameState.positionY === undefined || gameState.positionX === undefined) {
+        console.error("Ошибка: данные игрока некорректны", gameState);
+        return;
+      }
+
+      setPlayers(prevPlayers => {
+        const updatedPlayers = [...prevPlayers];
+        const existingPlayer = updatedPlayers.find(player => player.id === gameState.playerId);
+
+        if (existingPlayer) {
+          existingPlayer.x = gameState.positionX;
+          existingPlayer.y = gameState.positionY;
+          existingPlayer.size = gameState.ballSize;
+          existingPlayer.size = 50;
+          existingPlayer.color = existingPlayer.color || "black";
+        } else {
+          updatedPlayers.push({
+            id: gameState.playerId,
+            x: gameState.positionX,
+            y: gameState.positionY,
+            size: 50,
+            color: "black"
+          });
+        }
+
+        return updatedPlayers;
+      });
+    });
     return () => {
       if (connection) {
         connection.stop();
