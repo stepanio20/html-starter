@@ -4,9 +4,7 @@ export function Home() {
 	const navigate = useNavigate()
 	return (
 		<div className={styles?.menu}>
-			<h1>Bubble Game</h1>
-			<div>Balance: $10.00</div>
-			<button onClick={() => navigate('/game')}>Play</button>
+			<button onClick={() => navigate('/game')}>Go to game</button>
 		</div>
 	)
 }
