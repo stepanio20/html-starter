@@ -5,15 +5,15 @@ namespace BubbleGame.Cache.Services;
 
 internal sealed class PlayerUpdateBuffer : IPlayerUpdateBuffer
 {
-    private readonly ConcurrentDictionary<string, Player> _buffer = new();
+    private readonly ConcurrentDictionary<Guid ,Player> _buffer = new();
     private const int _maxBufferSize = 100;
     private readonly Lock _lock = new();
 
-    public void AddOrUpdatePlayer(string playerId, Player player)
+    public void AddOrUpdatePlayer(Player player)
     {
         lock (_lock)
         {
-            _buffer[playerId] = player;
+            _buffer[player.Id] = player;
 
             if (_buffer.Count >= _maxBufferSize)
             {
@@ -22,11 +22,11 @@ internal sealed class PlayerUpdateBuffer : IPlayerUpdateBuffer
         }
     }
 
-    public Dictionary<string, Player> GetAndClearBuffer()
+    public Dictionary<Guid, Player> GetAndClearBuffer()
     {
         lock (_lock)
         {
-            var toFlush = new Dictionary<string, Player>(_buffer);
+            var toFlush = new Dictionary<Guid, Player>(_buffer);
             _buffer.Clear();
             return toFlush;
         }

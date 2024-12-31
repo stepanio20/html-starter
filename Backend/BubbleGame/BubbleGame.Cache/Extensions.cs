@@ -19,9 +19,9 @@ public static class Extensions
         
         services.AddScoped<ICacheService, CacheService>();
         services.AddSingleton<IPlayerUpdateBuffer, PlayerUpdateBuffer>();
-        services.AddScoped<IPlayerUpdateService, PlayerUpdateService>();
+        services.AddScoped<IPlayerGameService, PlayerGameService>();
         
-        services.AddHostedService<PlayerUpdateService>();
+        services.AddHostedService<PlayerGameService>();
 
         return services;
     }

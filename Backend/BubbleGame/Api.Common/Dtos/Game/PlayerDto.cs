@@ -1,3 +1,9 @@
 namespace Api.Common.Game;
 
-public record PlayerDto(Guid PlayerId, float PositionX, float PositionY, float BallSize);
+public record PlayerDto(
+    Guid GameId,
+    Guid PlayerId, 
+    float PositionX, 
+    float PositionY, 
+    double BallSize
+    );

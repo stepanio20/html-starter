@@ -1,5 +1,8 @@
 namespace BubbleGame.Cache;
 
 public interface ICacheService
-{ Task SavaAsync<T>(string key, string value);
+{ 
+    Task<List<T>> GetAsync<T>(string key);
+    Task<T> GetByKeyAsync<T>(string key);
+    Task SaveAsync<T>(string key, T value);
 }
