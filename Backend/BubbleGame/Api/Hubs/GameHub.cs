@@ -19,17 +19,20 @@ internal sealed class GameHub(IPlayerGameService playerGameService) : Hub
         //     Id = playerDto.GameId
         //
         // });
-        // await playerGameService.AddPlayerAsync(new Player
-        // {
-        //     Id = playerDto.PlayerId,
-        //     GameId = playerDto.GameId,
-        //     UserId = playerDto.PlayerId,
-        //     PositionX = playerDto.PositionX,
-        //     PositionY = playerDto.PositionY,
-        // });
+       
         var player = await playerGameService.GetById(playerDto.GameId, playerDto.PlayerId);
         if (player is null)
+        {
+            await playerGameService.AddPlayerAsync(new Player//todo
+            {
+                Id = playerDto.PlayerId,
+                GameId = playerDto.GameId,
+                UserId = playerDto.PlayerId,
+                PositionX = playerDto.PositionX,
+                PositionY = playerDto.PositionY,
+            });
             return;
+        }
         
         player.PositionX = playerDto.PositionX;
         player.PositionY = playerDto.PositionY;
