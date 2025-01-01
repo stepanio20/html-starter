@@ -14,11 +14,13 @@ internal sealed class GameHub(IPlayerGameService playerGameService) : Hub
 {
     public async Task UpdatePlayerPosition(PlayerDto playerDto)
     {   
-        // await playerGameService.CreateGame(new Game
-        // {
-        //     Id = playerDto.GameId
-        //
-        // });
+    try{
+        await playerGameService.CreateGame(new Game
+        {
+             Id = playerDto.GameId
+        
+        });
+        Console.WriteLine("Game added");
        
         var player = await playerGameService.GetById(playerDto.GameId, playerDto.PlayerId);
         if (player is null)
@@ -31,6 +33,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService) : Hub
                 PositionX = playerDto.PositionX,
                 PositionY = playerDto.PositionY,
             });
+            Console.WriteLine("Player added");
             return;
         }
         
@@ -39,7 +42,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService) : Hub
         player.LastUpdated = DateTime.UtcNow;
         
         playerGameService.UpdatePlayer(player);
-        
+        Console.WriteLine("pl update");
         var players = await playerGameService.GetAsync(player.GameId);
         foreach (var otherPlayer in players)
         {
@@ -64,5 +67,10 @@ internal sealed class GameHub(IPlayerGameService playerGameService) : Hub
             SocketMessages.PLAYER_POSITION_UPDATED, 
             new PlayerDto(player.GameId, player.Id, player.PositionX, player.PositionY, player.Size)
             );
+            }
+            catch(Exception ex)
+            {
+            Console.WriteLine(ex);
+            }
     }
 }
