@@ -9,6 +9,7 @@ public interface IPlayerGameService
     Task<Player> GetById(Guid gameId, Guid playerId);
     Task AddPlayerAsync(Player player);
     void UpdatePlayer(Player player);
+    Task<Game> GetGameById(Guid id);
     Task RemovePlayerAsync(Player id);
     Task CreateGame(Game game);
     Task FlushBufferAsync();
