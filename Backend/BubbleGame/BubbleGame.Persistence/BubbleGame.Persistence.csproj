@@ -10,10 +10,18 @@
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
       <PackageReference Include="StackExchange.Redis" Version="2.8.24" />
+      <PackageReference Include="TonSdk.Client" Version="0.3.11" />
+      <PackageReference Include="TonSdk.Connect" Version="0.2.4" />
+      <PackageReference Include="TonSdk.Contracts" Version="0.3.2" />
+      <PackageReference Include="TonSdk.Core" Version="0.3.9" />
     </ItemGroup>
 
     <ItemGroup>
       <Folder Include="Services\GameBuffer\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\BubbleGame.Application\BubbleGame.Application.csproj" />
     </ItemGroup>
 
 </Project>

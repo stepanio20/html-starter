@@ -2,6 +2,24 @@
   "version": 3,
   "targets": {
     "net9.0": {
+      "JustCRC32C/1.1.0": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/JustCRC32C.dll": {}
+        },
+        "runtime": {
+          "lib/net8.0/JustCRC32C.dll": {}
+        }
+      },
+      "Microsoft.CSharp/4.7.0": {
+        "type": "package",
+        "compile": {
+          "ref/netcoreapp2.0/_._": {}
+        },
+        "runtime": {
+          "lib/netcoreapp2.0/_._": {}
+        }
+      },
       "Microsoft.Extensions.Configuration/9.0.0": {
         "type": "package",
         "dependencies": {
@@ -108,6 +126,32 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
+      "NaCl.Net/0.1.13": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.1/NaCl.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.1/NaCl.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Newtonsoft.Json/13.0.3": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/Newtonsoft.Json.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/Newtonsoft.Json.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Pipelines.Sockets.Unofficial/2.2.8": {
         "type": "package",
         "dependencies": {
@@ -120,6 +164,19 @@
         },
         "runtime": {
           "lib/net5.0/Pipelines.Sockets.Unofficial.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Portable.BouncyCastle/1.9.0": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/BouncyCastle.Crypto.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.0/BouncyCastle.Crypto.dll": {
             "related": ".xml"
           }
         }
@@ -153,10 +210,188 @@
             "related": ".xml"
           }
         }
+      },
+      "TonSdk.Adnl/0.2.4": {
+        "type": "package",
+        "dependencies": {
+          "TonSdk.Core": "0.3.3"
+        },
+        "compile": {
+          "lib/net7.0/TonSdk.Adnl.dll": {}
+        },
+        "runtime": {
+          "lib/net7.0/TonSdk.Adnl.dll": {}
+        }
+      },
+      "TonSdk.Client/0.3.11": {
+        "type": "package",
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.3",
+          "TonSdk.Adnl": "0.2.4",
+          "TonSdk.Core": "0.3.9"
+        },
+        "compile": {
+          "lib/net7.0/TonSdk.Client.dll": {}
+        },
+        "runtime": {
+          "lib/net7.0/TonSdk.Client.dll": {}
+        }
+      },
+      "TonSdk.Connect/0.2.4": {
+        "type": "package",
+        "dependencies": {
+          "JustCRC32C": "1.1.0",
+          "Microsoft.CSharp": "4.7.0",
+          "NaCl.Net": "0.1.13",
+          "Newtonsoft.Json": "13.0.3",
+          "TonSdk.Core": "0.3.2"
+        },
+        "compile": {
+          "lib/net7.0/TonSdk.Connect.dll": {}
+        },
+        "runtime": {
+          "lib/net7.0/TonSdk.Connect.dll": {}
+        }
+      },
+      "TonSdk.Contracts/0.3.2": {
+        "type": "package",
+        "dependencies": {
+          "TonSdk.Core": "0.3.1"
+        },
+        "compile": {
+          "lib/net7.0/TonSdk.Contracts.dll": {}
+        },
+        "runtime": {
+          "lib/net7.0/TonSdk.Contracts.dll": {}
+        }
+      },
+      "TonSdk.Core/0.3.9": {
+        "type": "package",
+        "dependencies": {
+          "JustCRC32C": "1.1.0",
+          "Portable.BouncyCastle": "1.9.0"
+        },
+        "compile": {
+          "lib/net7.0/TonSdk.Core.dll": {}
+        },
+        "runtime": {
+          "lib/net7.0/TonSdk.Core.dll": {}
+        }
+      },
+      "BubbleGame.Application/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "BubbleGame.Domain": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/BubbleGame.Application.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/BubbleGame.Application.dll": {}
+        }
+      },
+      "BubbleGame.Domain/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/BubbleGame.Domain.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/BubbleGame.Domain.dll": {}
+        }
       }
     }
   },
   "libraries": {
+    "JustCRC32C/1.1.0": {
+      "sha512": "Nfwf2BNPlknDyzloxiFUPphYmJ4+jRN0KyA65oqGGM1TfMIIp9b4W+RvH16JU3g5nuh6jPAHuliJj3LMdRfrbA==",
+      "type": "package",
+      "path": "justcrc32c/1.1.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "justcrc32c.1.1.0.nupkg.sha512",
+        "justcrc32c.nuspec",
+        "lib/net5.0/JustCRC32C.dll",
+        "lib/net6.0/JustCRC32C.dll",
+        "lib/net7.0/JustCRC32C.dll",
+        "lib/net8.0/JustCRC32C.dll",
+        "lib/netcoreapp3.1/JustCRC32C.dll",
+        "lib/netstandard2.0/JustCRC32C.dll",
+        "lib/netstandard2.0/libJustCRC32C_Native.dll"
+      ]
+    },
+    "Microsoft.CSharp/4.7.0": {
+      "sha512": "pTj+D3uJWyN3My70i2Hqo+OXixq3Os2D1nJ2x92FFo6sk8fYS1m1WLNTs0Dc1uPaViH0YvEEwvzddQ7y4rhXmA==",
+      "type": "package",
+      "path": "microsoft.csharp/4.7.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.TXT",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/MonoAndroid10/_._",
+        "lib/MonoTouch10/_._",
+        "lib/net45/_._",
+        "lib/netcore50/Microsoft.CSharp.dll",
+        "lib/netcoreapp2.0/_._",
+        "lib/netstandard1.3/Microsoft.CSharp.dll",
+        "lib/netstandard2.0/Microsoft.CSharp.dll",
+        "lib/netstandard2.0/Microsoft.CSharp.xml",
+        "lib/portable-net45+win8+wp8+wpa81/_._",
+        "lib/uap10.0.16299/_._",
+        "lib/win8/_._",
+        "lib/wp80/_._",
+        "lib/wpa81/_._",
+        "lib/xamarinios10/_._",
+        "lib/xamarinmac20/_._",
+        "lib/xamarintvos10/_._",
+        "lib/xamarinwatchos10/_._",
+        "microsoft.csharp.4.7.0.nupkg.sha512",
+        "microsoft.csharp.nuspec",
+        "ref/MonoAndroid10/_._",
+        "ref/MonoTouch10/_._",
+        "ref/net45/_._",
+        "ref/netcore50/Microsoft.CSharp.dll",
+        "ref/netcore50/Microsoft.CSharp.xml",
+        "ref/netcore50/de/Microsoft.CSharp.xml",
+        "ref/netcore50/es/Microsoft.CSharp.xml",
+        "ref/netcore50/fr/Microsoft.CSharp.xml",
+        "ref/netcore50/it/Microsoft.CSharp.xml",
+        "ref/netcore50/ja/Microsoft.CSharp.xml",
+        "ref/netcore50/ko/Microsoft.CSharp.xml",
+        "ref/netcore50/ru/Microsoft.CSharp.xml",
+        "ref/netcore50/zh-hans/Microsoft.CSharp.xml",
+        "ref/netcore50/zh-hant/Microsoft.CSharp.xml",
+        "ref/netcoreapp2.0/_._",
+        "ref/netstandard1.0/Microsoft.CSharp.dll",
+        "ref/netstandard1.0/Microsoft.CSharp.xml",
+        "ref/netstandard1.0/de/Microsoft.CSharp.xml",
+        "ref/netstandard1.0/es/Microsoft.CSharp.xml",
+        "ref/netstandard1.0/fr/Microsoft.CSharp.xml",
+        "ref/netstandard1.0/it/Microsoft.CSharp.xml",
+        "ref/netstandard1.0/ja/Microsoft.CSharp.xml",
+        "ref/netstandard1.0/ko/Microsoft.CSharp.xml",
+        "ref/netstandard1.0/ru/Microsoft.CSharp.xml",
+        "ref/netstandard1.0/zh-hans/Microsoft.CSharp.xml",
+        "ref/netstandard1.0/zh-hant/Microsoft.CSharp.xml",
+        "ref/netstandard2.0/Microsoft.CSharp.dll",
+        "ref/netstandard2.0/Microsoft.CSharp.xml",
+        "ref/portable-net45+win8+wp8+wpa81/_._",
+        "ref/uap10.0.16299/_._",
+        "ref/win8/_._",
+        "ref/wp80/_._",
+        "ref/wpa81/_._",
+        "ref/xamarinios10/_._",
+        "ref/xamarinmac20/_._",
+        "ref/xamarintvos10/_._",
+        "ref/xamarinwatchos10/_._",
+        "useSharedDesignerContext.txt",
+        "version.txt"
+      ]
+    },
     "Microsoft.Extensions.Configuration/9.0.0": {
       "sha512": "YIMO9T3JL8MeEXgVozKt2v79hquo/EFtnY0vgxmLnUvk1Rei/halI7kOWZL2RBeV9FMGzgM9LZA8CVaNwFMaNA==",
       "type": "package",
@@ -353,6 +588,57 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "NaCl.Net/0.1.13": {
+      "sha512": "AVg1455RQnyTy6tiessudruZHvbl70QWRPyx3og2I1Fei17LDNc7Z3DRgqN2+PsySBui/1EDP4A7adhQXydi6g==",
+      "type": "package",
+      "path": "nacl.net/0.1.13",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net45/NaCl.dll",
+        "lib/net45/NaCl.xml",
+        "lib/net472/NaCl.dll",
+        "lib/net472/NaCl.xml",
+        "lib/netstandard1.3/NaCl.dll",
+        "lib/netstandard1.3/NaCl.xml",
+        "lib/netstandard2.0/NaCl.dll",
+        "lib/netstandard2.0/NaCl.xml",
+        "lib/netstandard2.1/NaCl.dll",
+        "lib/netstandard2.1/NaCl.xml",
+        "nacl.net.0.1.13.nupkg.sha512",
+        "nacl.net.nuspec"
+      ]
+    },
+    "Newtonsoft.Json/13.0.3": {
+      "sha512": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ==",
+      "type": "package",
+      "path": "newtonsoft.json/13.0.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.md",
+        "README.md",
+        "lib/net20/Newtonsoft.Json.dll",
+        "lib/net20/Newtonsoft.Json.xml",
+        "lib/net35/Newtonsoft.Json.dll",
+        "lib/net35/Newtonsoft.Json.xml",
+        "lib/net40/Newtonsoft.Json.dll",
+        "lib/net40/Newtonsoft.Json.xml",
+        "lib/net45/Newtonsoft.Json.dll",
+        "lib/net45/Newtonsoft.Json.xml",
+        "lib/net6.0/Newtonsoft.Json.dll",
+        "lib/net6.0/Newtonsoft.Json.xml",
+        "lib/netstandard1.0/Newtonsoft.Json.dll",
+        "lib/netstandard1.0/Newtonsoft.Json.xml",
+        "lib/netstandard1.3/Newtonsoft.Json.dll",
+        "lib/netstandard1.3/Newtonsoft.Json.xml",
+        "lib/netstandard2.0/Newtonsoft.Json.dll",
+        "lib/netstandard2.0/Newtonsoft.Json.xml",
+        "newtonsoft.json.13.0.3.nupkg.sha512",
+        "newtonsoft.json.nuspec",
+        "packageIcon.png"
+      ]
+    },
     "Pipelines.Sockets.Unofficial/2.2.8": {
       "sha512": "zG2FApP5zxSx6OcdJQLbZDk2AVlN2BNQD6MorwIfV6gVj0RRxWPEp2LXAxqDGZqeNV1Zp0BNPcNaey/GXmTdvQ==",
       "type": "package",
@@ -374,6 +660,21 @@
         "lib/netstandard2.1/Pipelines.Sockets.Unofficial.xml",
         "pipelines.sockets.unofficial.2.2.8.nupkg.sha512",
         "pipelines.sockets.unofficial.nuspec"
+      ]
+    },
+    "Portable.BouncyCastle/1.9.0": {
+      "sha512": "eZZBCABzVOek+id9Xy04HhmgykF0wZg9wpByzrWN7q8qEI0Qen9b7tfd7w8VA3dOeesumMG7C5ZPy0jk7PSRHw==",
+      "type": "package",
+      "path": "portable.bouncycastle/1.9.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net40/BouncyCastle.Crypto.dll",
+        "lib/net40/BouncyCastle.Crypto.xml",
+        "lib/netstandard2.0/BouncyCastle.Crypto.dll",
+        "lib/netstandard2.0/BouncyCastle.Crypto.xml",
+        "portable.bouncycastle.1.9.0.nupkg.sha512",
+        "portable.bouncycastle.nuspec"
       ]
     },
     "StackExchange.Redis/2.8.24": {
@@ -424,13 +725,110 @@
         "useSharedDesignerContext.txt",
         "version.txt"
       ]
+    },
+    "TonSdk.Adnl/0.2.4": {
+      "sha512": "/vcIUbiWo8DTg2KtXIhWDlw/CFJGXTD94k5B9YKuK0APODWCCj4VrOHFJ4mD0+/BtW0nLiPt4uQg6GMiUhdlDw==",
+      "type": "package",
+      "path": "tonsdk.adnl/0.2.4",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "README.MD",
+        "lib/net6.0/TonSdk.Adnl.dll",
+        "lib/net7.0/TonSdk.Adnl.dll",
+        "lib/netstandard2.1/TonSdk.Adnl.dll",
+        "tonsdk.adnl.0.2.4.nupkg.sha512",
+        "tonsdk.adnl.nuspec"
+      ]
+    },
+    "TonSdk.Client/0.3.11": {
+      "sha512": "GgApDsRwKYiw2mPKcpiALVrQJaWjc4IC6VAo6VOOMBSp4dBjOt4Qb8VMMlMZO7WwHUElqJugnZb0eT9V96gpsA==",
+      "type": "package",
+      "path": "tonsdk.client/0.3.11",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "README.md",
+        "lib/net6.0/TonSdk.Client.dll",
+        "lib/net7.0/TonSdk.Client.dll",
+        "lib/netstandard2.1/TonSdk.Client.dll",
+        "tonsdk.client.0.3.11.nupkg.sha512",
+        "tonsdk.client.nuspec"
+      ]
+    },
+    "TonSdk.Connect/0.2.4": {
+      "sha512": "VTxdVUkVuPVs1jfjH6d2EsxGnasVYqjlkaoE7jQibMslS0QL7AKGYsZLYFeawgjTg8Rn1g54YDXCRd/F83c0Jw==",
+      "type": "package",
+      "path": "tonsdk.connect/0.2.4",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "README.MD",
+        "lib/net6.0/TonSdk.Connect.dll",
+        "lib/net7.0/TonSdk.Connect.dll",
+        "lib/netstandard2.1/TonSdk.Connect.dll",
+        "tonsdk.connect.0.2.4.nupkg.sha512",
+        "tonsdk.connect.nuspec"
+      ]
+    },
+    "TonSdk.Contracts/0.3.2": {
+      "sha512": "S71P5j/DKxDzyfZVckrgHtuGnnZu2h4UjwkCGh9TsyL8jpPFUB+DpoL43Ku48QPZXqF2Y11n7dD3/8tZy9Vzog==",
+      "type": "package",
+      "path": "tonsdk.contracts/0.3.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "README.md",
+        "lib/net6.0/TonSdk.Contracts.dll",
+        "lib/net7.0/TonSdk.Contracts.dll",
+        "lib/netstandard2.0/TonSdk.Contracts.dll",
+        "lib/netstandard2.1/TonSdk.Contracts.dll",
+        "tonsdk.contracts.0.3.2.nupkg.sha512",
+        "tonsdk.contracts.nuspec"
+      ]
+    },
+    "TonSdk.Core/0.3.9": {
+      "sha512": "hyvqsSLunbg/McL99dBKeOgjmkynNthgdzsCtffXCqVIBs9SVzEqerWWPB8MZSmkRiOaKYWWYXAz4KZxNu0IgQ==",
+      "type": "package",
+      "path": "tonsdk.core/0.3.9",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "README.md",
+        "lib/net6.0/TonSdk.Core.dll",
+        "lib/net7.0/TonSdk.Core.dll",
+        "lib/netstandard2.0/TonSdk.Core.dll",
+        "lib/netstandard2.1/TonSdk.Core.dll",
+        "tonsdk.core.0.3.9.nupkg.sha512",
+        "tonsdk.core.nuspec"
+      ]
+    },
+    "BubbleGame.Application/1.0.0": {
+      "type": "project",
+      "path": "../BubbleGame.Application/BubbleGame.Application.csproj",
+      "msbuildProject": "../BubbleGame.Application/BubbleGame.Application.csproj"
+    },
+    "BubbleGame.Domain/1.0.0": {
+      "type": "project",
+      "path": "../BubbleGame.Domain/BubbleGame.Domain.csproj",
+      "msbuildProject": "../BubbleGame.Domain/BubbleGame.Domain.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net9.0": [
+      "BubbleGame.Application >= 1.0.0",
       "Microsoft.Extensions.Configuration >= 9.0.0",
       "Microsoft.Extensions.DependencyInjection >= 9.0.0",
-      "StackExchange.Redis >= 2.8.24"
+      "StackExchange.Redis >= 2.8.24",
+      "TonSdk.Client >= 0.3.11",
+      "TonSdk.Connect >= 0.2.4",
+      "TonSdk.Contracts >= 0.3.2",
+      "TonSdk.Core >= 0.3.9"
     ]
   },
   "packageFolders": {
@@ -458,7 +856,11 @@
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "/Users/viacheslavmw/projects/html-starter/Backend/BubbleGame/BubbleGame.Application/BubbleGame.Application.csproj": {
+              "projectPath": "/Users/viacheslavmw/projects/html-starter/Backend/BubbleGame/BubbleGame.Application/BubbleGame.Application.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
@@ -487,6 +889,22 @@
           "StackExchange.Redis": {
             "target": "Package",
             "version": "[2.8.24, )"
+          },
+          "TonSdk.Client": {
+            "target": "Package",
+            "version": "[0.3.11, )"
+          },
+          "TonSdk.Connect": {
+            "target": "Package",
+            "version": "[0.2.4, )"
+          },
+          "TonSdk.Contracts": {
+            "target": "Package",
+            "version": "[0.3.2, )"
+          },
+          "TonSdk.Core": {
+            "target": "Package",
+            "version": "[0.3.9, )"
           }
         },
         "imports": [

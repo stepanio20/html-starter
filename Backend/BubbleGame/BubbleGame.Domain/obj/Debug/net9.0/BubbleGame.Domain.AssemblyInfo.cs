@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BubbleGame.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+824756d9c3be679d8dac4d3471d2107a853b197e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+94a610dc6e15604af1554a03eb0308ecb6cf5a58")]
 [assembly: System.Reflection.AssemblyProductAttribute("BubbleGame.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BubbleGame.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
