@@ -1,14 +1,28 @@
+using System.Text.Json.Serialization;
 using BubbleGame.Core.Base;
 
 namespace BubbleGame.Core.Players;
 
-public class Player : BaseEntity
+public class Player
 {
-    public Guid UserId { get; set; }
+    [JsonPropertyName("Id")]
+    public Guid Id { get; set; }
+
+    [JsonPropertyName("GameId")]
     public Guid GameId { get; set; }
+
+    [JsonPropertyName("UserId")]
+    public Guid UserId { get; set; }
+
+    [JsonPropertyName("PositionX")]
     public float PositionX { get; set; }
+
+    [JsonPropertyName("PositionY")]
     public float PositionY { get; set; }
+
+    [JsonPropertyName("LastUpdated")]
     public DateTime LastUpdated { get; set; }
-    
-    public double Size { get; set; }
+
+    [JsonPropertyName("Size")]
+    public float Size { get; set; }
 }
