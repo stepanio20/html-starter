@@ -1,8 +1,8 @@
+import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr'
 import React, { useEffect, useRef, useState } from 'react'
+import { Socket } from "socket.io-client"
 import Joystick from '../../features/Joystick'
 import styles from './style.module.css'
-import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
-import {io, Socket} from "socket.io-client";
 
 const App: React.FC = () => {
   const [playerBalance, setPlayerBalance] = useState(10);
@@ -19,7 +19,7 @@ const App: React.FC = () => {
 
   const [connection, setConnection] = useState<HubConnection | null>(null);
   const socketRef = useRef<Socket | null>(null);
-
+  
 
   class PlayerBubble {
     x: number;
@@ -52,7 +52,7 @@ const App: React.FC = () => {
     }
   }
 
-  const playerBubble = useRef(new PlayerBubble(mapWidth / 2, mapHeight / 2, playerBalance));
+  const playerBubble = useRef(new PlayerBubble(mapWidth / 2, mapHeight / 2, playerBalance, 'red'));
 
   const initializeGame = () => {
     playerBubble.current.size = Math.sqrt(playerBalance) * 15;
@@ -154,48 +154,53 @@ const App: React.FC = () => {
 
   const animate = () => {
     if (!gameRunning) return;
-
+  
     const canvas = canvasRef.current!;
-    const ctx = canvas.getContext('2d')!;
+    const ctx = canvas.getContext("2d")!;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+  
     const offsetX = playerBubble.current.x - canvas.width / 2;
     const offsetY = playerBubble.current.y - canvas.height / 2;
-
+  
     playerBubble.current.x += joystickRef.current.deltaX * playerBubble.current.speed * 5;
     playerBubble.current.y += joystickRef.current.deltaY * playerBubble.current.speed * 5;
-
-    playerBubble.current.x = Math.max(playerBubble.current.size, Math.min(playerBubble.current.x, mapWidth - playerBubble.current.size));
-    playerBubble.current.y = Math.max(playerBubble.current.size, Math.min(playerBubble.current.y, mapHeight - playerBubble.current.size));
-
-    playerBubble.current.draw(ctx, offsetX, offsetY, "black");
-
+  
+    playerBubble.current.x = Math.max(
+      playerBubble.current.size,
+      Math.min(playerBubble.current.x, mapWidth - playerBubble.current.size)
+    );
+    playerBubble.current.y = Math.max(
+      playerBubble.current.size,
+      Math.min(playerBubble.current.y, mapHeight - playerBubble.current.size)
+    );
+  
+    playerBubble.current.draw(ctx, offsetX, offsetY, "red");
+  
     players.forEach((player) => {
-      const playerBubble = new PlayerBubble(player.x, player.y, player.size, player.color);
-      playerBubble.draw(ctx, offsetX, offsetY, player.color);
+      const otherBubble = new PlayerBubble(player.x, player.y, player.size, player.color);
+      otherBubble.draw(ctx, offsetX, offsetY, player.color);
     });
-
-
-    const currentTime = Date.now();
-    const positionChanged = playerBubble.current.x !== lastPosition.x || playerBubble.current.y !== lastPosition.y;
-
-    if (currentTime - lastSentTime > sendInterval || positionChanged) {
+  
+    if (
+      playerBubble.current.x !== lastPosition.x ||
+      playerBubble.current.y !== lastPosition.y
+    ) {
       sendPlayerPosition(
-          "f2940113-723e-4339-a32b-49d901b44b6c",
-          randomGuid,
-          playerBubble.current.x,
-          playerBubble.current.y,
-          1
+        "f2940113-723e-4339-a32b-49d901b44b6c",
+        randomGuid,
+        playerBubble.current.x,
+        playerBubble.current.y,
+        playerBubble.current.size
       );
-
-      lastSentTime = currentTime;
+  
       lastPosition = { x: playerBubble.current.x, y: playerBubble.current.y };
     }
-
+  
     checkCollisions();
-
     requestAnimationFrame(animate);
   };
+  
+  
 
   const sendPlayerPosition = (gameId: string, playerId: string, x: number, y: number, ballSize: number) => {
     const playerDto = {
@@ -223,7 +228,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const connection = new HubConnectionBuilder()
-        .withUrl('https://localhost:7073/gameHub') //замени на порт докера
+        .withUrl('http://localhost:5225/gameHub')
         .build();
 
     setConnection(connection);
@@ -231,7 +236,7 @@ const App: React.FC = () => {
     connection.start().catch(err => console.error('Connection failed: ', err));
 
     connection.on('PlayerPositionUpdated', (gameState: PlayerDto) => {
-      console.log(gameState);
+      
       if (!gameState.playerId || gameState.positionY === undefined || gameState.positionX === undefined) {
         console.error("Ошибка: данные игрока некорректны", gameState);
         return;
@@ -246,16 +251,17 @@ const App: React.FC = () => {
           existingPlayer.y = gameState.positionY;
           existingPlayer.size = gameState.ballSize;
           existingPlayer.size = 50;
-          existingPlayer.color = existingPlayer.color || "black";
+          existingPlayer.color = existingPlayer.color || "blue";
         } else {
           updatedPlayers.push({
             id: gameState.playerId,
             x: gameState.positionX,
             y: gameState.positionY,
             size: 50,
-            color: "black"
+            color: "blue"
           });
         }
+        
 
         return updatedPlayers;
       });
@@ -266,6 +272,7 @@ const App: React.FC = () => {
       }
     };
   }, []);
+
 
   return (
     <div>
