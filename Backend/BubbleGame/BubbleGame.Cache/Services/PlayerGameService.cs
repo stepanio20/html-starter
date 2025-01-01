@@ -26,7 +26,7 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
 
     public async Task<Game> GetGameById(Guid id)
     {
-       var game = await cache.GetByKeyAsync<Game>($"game-{gameId}");
+       var game = await cache.GetByKeyAsync<Game>($"game-{id}");
        return game;
     }
 
