@@ -16,7 +16,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService) : Hub
     {   
     try{
        var gm = await GetGameById(playerDto.GameId);
-        if(gm i null)
+        if(gm is null)
         {await playerGameService.CreateGame(new Game
         {
              Id = playerDto.GameId
