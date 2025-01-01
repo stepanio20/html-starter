@@ -15,13 +15,15 @@ internal sealed class GameHub(IPlayerGameService playerGameService) : Hub
     public async Task UpdatePlayerPosition(PlayerDto playerDto)
     {   
     try{
-        await playerGameService.CreateGame(new Game
+       var gm = await GetGameById(playerDto.GameId);
+        if(gm i null)
+        {await playerGameService.CreateGame(new Game
         {
              Id = playerDto.GameId
         
         });
         Console.WriteLine("Game added");
-       
+       }
         var player = await playerGameService.GetById(playerDto.GameId, playerDto.PlayerId);
         if (player is null)
         {
