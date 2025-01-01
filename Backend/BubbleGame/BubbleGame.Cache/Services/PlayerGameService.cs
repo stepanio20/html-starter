@@ -24,6 +24,12 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
         return game?.Players?.FirstOrDefault(p => p.Id == playerId) ?? default;
     }
 
+    public async Task<Game> GetGameById(Guid id)
+    {
+       var game = await cache.GetByKeyAsync<Game>($"game-{gameId}");
+       return game;
+    }
+
     public async Task CreateGame(Game game)
     {
         await cache.SaveAsync($"game-{game.Id}", game);
