@@ -15,6 +15,7 @@
     <ItemGroup>
       <ProjectReference Include="..\Api.Common\Api.Common.csproj" />
       <ProjectReference Include="..\BubbleGame.Cache\BubbleGame.Cache.csproj" />
+      <ProjectReference Include="..\BubbleGame.Persistence\BubbleGame.Persistence.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -23,6 +23,8 @@ public class Player
     [JsonPropertyName("LastUpdated")]
     public DateTime LastUpdated { get; set; }
 
-    [JsonPropertyName("Size")]
-    public float Size { get; set; }
+    [JsonPropertyName("Size")] 
+    public double Size { get; set; } = new Random().Next(20, 50);//todo
+    // [JsonPropertyName("Color")]
+    // public string Color { get; set; }
 }

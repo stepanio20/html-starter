@@ -23,7 +23,6 @@ internal sealed class GameHub(IPlayerGameService playerGameService) : Hub
                 {
                     Id = playerDto.GameId
                 });
-                Console.WriteLine("Game added");
             }
 
             var player = await playerGameService.GetById(playerDto.GameId, playerDto.PlayerId);
@@ -34,10 +33,9 @@ internal sealed class GameHub(IPlayerGameService playerGameService) : Hub
                     Id = playerDto.PlayerId,
                     GameId = playerDto.GameId,
                     UserId = playerDto.PlayerId,
-                    PositionX = playerDto.PositionX,
-                    PositionY = playerDto.PositionY,
+                    PositionX = new Random().Next(1000, 1500),
+                    PositionY = new Random().Next(1000, 1500),
                 });
-                Console.WriteLine("Player added");
                 return;
             }
 
@@ -46,26 +44,37 @@ internal sealed class GameHub(IPlayerGameService playerGameService) : Hub
             player.LastUpdated = DateTime.UtcNow;
 
             playerGameService.UpdatePlayer(player);
-            Console.WriteLine("pl update");
             var players = await playerGameService.GetAsync(player.GameId);
-            foreach (var otherPlayer in players)
+            foreach (var otherPlayer in players.Where(p => p.Id != player.Id))
             {
-                if (otherPlayer.Id == player.Id)
-                    continue;
-
-                var distance = Math.Sqrt(
-                    Math.Pow(otherPlayer.PositionX - player.PositionX, 2) +
-                    Math.Pow(otherPlayer.PositionY - player.PositionY, 2)
+                double distance = Math.Sqrt(
+                    Math.Pow(player.PositionX - otherPlayer.PositionX, 2) +
+                    Math.Pow(player.PositionY - otherPlayer.PositionY, 2)
                 );
 
-                if (!(player.Size > otherPlayer.Size) || !(distance <= player.Size - otherPlayer.Size)) continue;
-                await Clients.All.SendAsync(SocketMessages.PLAYER_EATEN,
-                    new PlayerEatenDto(player.GameId, otherPlayer.Id));
+                if (distance <= player.Size || distance <= otherPlayer.Size)
+                {
+                    if (player.Size > otherPlayer.Size)
+                    {
+                        await Clients.All.SendAsync(SocketMessages.PLAYER_EATEN,
+                            new PlayerEatenDto(player.GameId, otherPlayer.Id));
 
-                await playerGameService.RemovePlayerAsync(otherPlayer);
+                        player.Size += otherPlayer.Size * 0.1;
 
-                player.Size += otherPlayer.Size * 0.1f;
-                playerGameService.UpdatePlayer(player);
+                        players.Remove(otherPlayer);
+                    }
+                    else
+                    {
+                        await Clients.All.SendAsync(SocketMessages.PLAYER_EATEN,
+                            new PlayerEatenDto(otherPlayer.GameId, player.Id));
+
+                        otherPlayer.Size += player.Size * 0.1;
+
+                        players.Remove(player);
+
+                        break; 
+                    }
+                }
             }
 
             await Clients.All.SendAsync(

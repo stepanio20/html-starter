@@ -1,11 +1,12 @@
 using Api.Common.Static.Sockets;
 using Api.Hubs;
 using Api.Routes;
+using BubbleGame.Application.Services.Ton;
 using BubbleGame.Cache;
+using BubbleGame.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add CORS services
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllPolicy", policy =>
@@ -17,11 +18,11 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Add other services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddOpenApi();
 builder.Services.AddCache(builder.Configuration);
+builder.Services.AddPersistence(builder.Configuration);
 
 builder.Services.AddSignalR(options =>
 {
@@ -32,8 +33,7 @@ builder.Logging.AddConsole();
 
 var app = builder.Build();
 
-// Use CORS middleware
-app.UseCors("AllowAllPolicy");  // Use the policy by name
+app.UseCors("AllowAllPolicy"); 
 
 app.UseWebSockets();
 app.UseHttpsRedirection();
@@ -51,4 +51,9 @@ if (app.Environment.IsDevelopment())
 app.AddGameRoute();
 app.MapHub<GameHub>($"/{SocketDefault.HUB}");
 
+app.MapPost("/send", async (ITonService tonService) =>
+{
+    await tonService.SendTransactionAsync("", "", 1);
+    return Results.Ok("Transaction sent successfully");
+});
 app.Run();
