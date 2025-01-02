@@ -79,24 +79,26 @@ internal sealed class GameHub(IPlayerGameService playerGameService) : Hub
                 {
                     if (player.Size > otherPlayer.Size)
                     {
+                        await playerGameService.RemovePlayerAsync(otherPlayer);
+
                         await Clients.All.SendAsync(SocketMessages.PLAYER_EATEN,
                             new PlayerEatenDto(player.GameId, otherPlayer.Id));
 
                         player.Size += otherPlayer.Size * 0.1;
-
-                        players.Remove(otherPlayer);
                     }
                     else
                     {
+                        await playerGameService.RemovePlayerAsync(player);
+
                         await Clients.All.SendAsync(SocketMessages.PLAYER_EATEN,
                             new PlayerEatenDto(otherPlayer.GameId, player.Id));
 
                         otherPlayer.Size += player.Size * 0.1;
 
                         players.Remove(player);
-
-                        break; 
                     }
+
+                    break;
                 }
             }
 
