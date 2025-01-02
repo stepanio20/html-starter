@@ -45,8 +45,10 @@ internal sealed class GameHub(IPlayerGameService playerGameService) : Hub
 
             playerGameService.UpdatePlayer(player);
             var players = await playerGameService.GetAsync(player.GameId);
-            foreach (var otherPlayer in players.Where(p => p.Id != player.Id))
+            foreach (var otherPlayer in players.ToList())
             {
+                if (player.Id == otherPlayer.Id) continue;
+                
                 double distance = Math.Sqrt(
                     Math.Pow(player.PositionX - otherPlayer.PositionX, 2) +
                     Math.Pow(player.PositionY - otherPlayer.PositionY, 2)
