@@ -17,14 +17,13 @@ addr = 'EQA2rz6cpSFm5liSPUQaNINTA8WHZKOHGGX0VwC5zxfm7MYb'
 async def main():
     mnemonics, pub_k, pr, wallet = Wallets.from_mnemonics(version=WalletVersionEnum.v3r2,
                                                         workchain=0, mnemonics=mnemonic)
-
     ton_config = requests.get('https://ton.org/global-config.json').json()
 
     keystore_dir = '/tmp/ton_keystore'
     Path(keystore_dir).mkdir(parents=True, exist_ok=True)
 
     client = TonlibClient(
-        ls_index=0,  # choose LiteServer index to connect
+        ls_index=0,
         config=ton_config,
         keystore=keystore_dir,
         )
@@ -32,9 +31,6 @@ async def main():
     await client.init()
 
     query = wallet.create_init_external_message()
-    deploy_message = query['message'].to_boc(False)
-
-    #seqno = await get_seqno(client, addr)
     transfer_query = wallet.create_transfer_message(
         to_addr='UQA9VCPtX32dKzRAtuG8uMuViDMVVjNxNwomiUTkbWvqPc6d',amount=to_nano(0.01, 'ton'),
         seqno=1, payload='test')

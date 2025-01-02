@@ -15,11 +15,7 @@ public static class Extensions
         services.AddStackExchangeRedisCache(options =>
         {
             options.Configuration = "localhost:6379";
-            options.ConfigurationOptions = new ConfigurationOptions()
-            {
-                ConnectTimeout = 10000
-            };
-            options.InstanceName = "BubbleGame.Cache:";         
+            options.InstanceName = "BubbleGame.Cache:";
         });
         
         services.AddSingleton<ICacheService, CacheService>();

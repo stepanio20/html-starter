@@ -224,9 +224,10 @@ const App: React.FC = () => {
         connection.start().catch(err => console.error('Connection failed: ', err));
 
         connection.on('PlayerEaten', (playerState: PlayerEatenDto) => {
-            console.log(playerState);
+            console.log(playerState)
         });
         connection.on('PlayerPositionUpdated', (gameState: PlayerDto) => {
+            console.log(gameState)
             if (!gameState.playerId || gameState.positionY === undefined || gameState.positionX === undefined) {
                 console.error("Ошибка: данные игрока некорректны", gameState);
                 return;
