@@ -6,7 +6,7 @@ namespace BubbleGame.Core.Players;
 public class Player
 {
     [JsonPropertyName("Id")]
-    public Guid Id { get; set; }
+    public string Id { get; set; }
 
     [JsonPropertyName("GameId")]
     public Guid GameId { get; set; }

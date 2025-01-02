@@ -28,7 +28,7 @@ public class Game
         player.LastUpdated = DateTime.UtcNow;
     }
 
-    public void Remove(Guid playerId)
+    public void Remove(string playerId)
     {
         var player = Players.FirstOrDefault(p => p.Id == playerId);
         if (player is null)

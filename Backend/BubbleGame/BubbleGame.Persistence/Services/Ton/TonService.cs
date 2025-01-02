@@ -12,46 +12,53 @@ namespace BubbleGame.Persistence.Services.Ton;
 
 internal sealed class TonService(string endpoint) : ITonService
 {
+    private static readonly HttpClient client = new HttpClient();
     public async Task<string> SendTransactionAsync(string privateKey, string recipientAddress, decimal amount)
     {
-        return "asd";
-        // TonClient tonclient = new(new TonClientParameters
+        // try
         // {
-        //     Endpoint = "https://toncenter.com/api/v2/jsonRPC",
-        //     ApiKey = "...",
-        // });
-        //
-        // var mnemonic = new Mnemonic();
-        //
-        // WalletV4 walletV4 = new WalletV4(new WalletV4Options() { PublicKey = mnemonic.Keys.PublicKey! });
-        //
-        // ExternalInMessage message = walletV4.CreateTransferMessage(new[]
-        // {
-        //     new WalletTransfer
+        //     recipientAddress = "UQA9VCPtX32dKzRAtuG8uMuViDMVVjNxNwomiUTkbWvqPc6d";
+        //     var dest = new Address(recipientAddress);
+        //     var cl = new TonClient(TonClientType.HTTP_TONCENTERAPIV2, new HttpParameters()
         //     {
-        //         Message = new ExternalInMessage(new()
+        //         Endpoint = "https://toncenter.com/api/v2/jsonRPC",
+        //         ApiKey = "62f13d452c65573a4a0c2eb21c4d6c9243594d20daf2f9fbd318faa3ba31d5c5"
+        //     });
+        //     
+        //     var mnemonic = new Mnemonic([
+        //         "clinic", "juice", "plug", "coyote", "child", "age", "peanut", 
+        //         "popular", "stand", "ozone", "mad", "name", "confirm", 
+        //         "sentence", "manual", "rookie", "guitar", "ensure", 
+        //         "area", "innocent", "magnet", "pass", "round", "hungry"
+        //     ]);
+        //     var walletV4 = new WalletV3(new WalletV3Options() { PublicKey = mnemonic.Keys.PublicKey!, Workchain = 0});
+        //     var message = walletV4.CreateTransferMessage([
+        //         new WalletTransfer
         //         {
-        //             Info = new ExtInMsgInfo(new()
+        //             Message = new ExternalInMessage(new ExternalInMessageOptions
         //             {
-        //                 Dest = new Address(recipientAddress),
-        //                 ImportFee = new Coins("0.013"),
-        //                 Src = walletV4.Address
-        //             }),
-        //             Body = new Message(new Address(recipientAddress), new Coins("0.5")).Payload,
-        //             StateInit = new StateInit(new StateInitOptions()),
-        //         }),
-        //         Mode = 1
-        //     }
-        // }, 0).Sign(mnemonic.Keys.PrivateKey, true);
+        //                 Info = new ExtInMsgInfo(new ExtInMsgInfoOptions
+        //                 {
+        //                     Dest = dest,
+        //                     ImportFee = new Coins("0.01"),
+        //                     Src = walletV4.Address
+        //                 }),
+        //                 Body = new Message(dest, new Coins("0.1")).Payload
+        //             })
+        //         }
+        //     ], 1).Sign(mnemonic.Keys.PrivateKey, true);
         //
-        // await tonclient.SendBoc(message.Cell!);
+        //     await cl.SendBoc(message.Cell!);
         //
-        // var content = new StringContent(JsonConvert.SerializeObject(requestData), Encoding.UTF8, "application/json");
+        //     return "";
+        // }
+        // catch (Exception ex)
+        // {
+        //     Console.WriteLine($"Transaction failed: {ex.Message}");
+        // }
         //
-        // var response = await client.PostAsync(endpoint, content);
-        // response.EnsureSuccessStatusCode();
-        //
-        // var responseString = await response.Content.ReadAsStringAsync();
-        // return responseString;
+        // return "";
+
+        return "";
     }
 }

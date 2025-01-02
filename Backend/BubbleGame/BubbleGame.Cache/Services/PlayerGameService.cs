@@ -18,7 +18,7 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
         return nestedPlayers.Players;
     }
 
-    public async Task<Player> GetById(Guid gameId, Guid playerId)
+    public async Task<Player> GetById(Guid gameId, string playerId)
     {
         var game = await cache.GetByKeyAsync<Game>($"game-{gameId}");
         return game?.Players?.FirstOrDefault(p => p.Id == playerId) ?? default;
@@ -34,7 +34,19 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
     {
         await cache.SaveAsync($"game-{game.Id}", game);
     }
-    
+
+    public async Task DisconnectPlayer(string playerId)
+    {
+        try
+        {
+
+        }
+        catch(Exception ex)
+        {
+            
+        }
+    }
+
     public async Task AddPlayerAsync(Player player)
     {
         try

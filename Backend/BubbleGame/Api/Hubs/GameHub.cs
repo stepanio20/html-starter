@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Api.Common.Dtos.Game;
 using Api.Common.Game;
 using Api.Common.Static;
 using Api.Common.Static.Sockets;
@@ -32,7 +33,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService) : Hub
                 {
                     Id = playerDto.PlayerId,
                     GameId = playerDto.GameId,
-                    UserId = playerDto.PlayerId,
+                    UserId = Guid.NewGuid(),//todo
                     PositionX = new Random().Next(1000, 1500),
                     PositionY = new Random().Next(1000, 1500),
                 });
@@ -88,5 +89,29 @@ internal sealed class GameHub(IPlayerGameService playerGameService) : Hub
         {
             Console.WriteLine(ex);
         }
+    }
+    
+    public override async Task OnDisconnectedAsync(Exception? exception)
+    {
+        // try
+        // {
+        //     var connectionId = Context.ConnectionId;
+        //
+        //     var player = await playerGameService.GetById(connectionId);
+        //     if (player != null)
+        //     {
+        //         await playerGameService.RemovePlayerAsync(player.Id);
+        //
+        //         await Clients.All.SendAsync(SocketMessages.PLAYER_DISCONNECTED,  new { player.GameId, player.Id });
+        //     }
+        // }
+        // catch (Exception ex)
+        // {
+        //     Console.WriteLine($"Error during player disconnection: {ex}");
+        // }
+        // finally
+        // {
+        //     await base.OnDisconnectedAsync(exception);
+        // }
     }
 }
