@@ -13,32 +13,52 @@ namespace Api.Hubs;
 
 internal sealed class GameHub(IPlayerGameService playerGameService) : Hub
 {
+    public override async Task OnConnectedAsync()
+    {
+        
+        var httpContext = Context.GetHttpContext();
+        var userId = httpContext?.Request.Query["userId"];
+
+        if (string.IsNullOrEmpty(userId))
+            return;
+        
+        var gameId = Guid.Parse("f2940113-723e-4339-a32b-49d901b44b6c");
+        var gm = await playerGameService.GetGameById(gameId);
+        if (gm is null)
+        {
+            await playerGameService.CreateGame(new Game
+            {
+                Id = gameId
+            });
+        }
+
+        var player = new Player
+        {
+            Id = Context.ConnectionId,
+            GameId = gm.Id,
+            UserId = Guid.NewGuid(),
+            PositionX = new Random().Next(1000, 1500),
+            PositionY = new Random().Next(1000, 1500),
+        };
+        
+        await playerGameService.AddPlayerAsync(player);
+        
+        await Clients.Client(Context.ConnectionId)
+            .SendAsync(SocketMessages.CONNECTED, 
+                new PlayerDto(
+                    player.GameId, 
+                    player.Id, 
+                    player.PositionX, 
+                    player.PositionY, 
+                    player.Size));
+        await base.OnConnectedAsync();
+    }
+
     public async Task UpdatePlayerPosition(PlayerDto playerDto)
     {
         try
         {
-            var gm = await playerGameService.GetGameById(playerDto.GameId);
-            if (gm is null)
-            {
-                await playerGameService.CreateGame(new Game
-                {
-                    Id = playerDto.GameId
-                });
-            }
-
             var player = await playerGameService.GetById(playerDto.GameId, playerDto.PlayerId);
-            if (player is null)
-            {
-                await playerGameService.AddPlayerAsync(new Player //todo
-                {
-                    Id = playerDto.PlayerId,
-                    GameId = playerDto.GameId,
-                    UserId = Guid.NewGuid(),//todo
-                    PositionX = new Random().Next(1000, 1500),
-                    PositionY = new Random().Next(1000, 1500),
-                });
-                return;
-            }
 
             player.PositionX = playerDto.PositionX;
             player.PositionY = playerDto.PositionY;
