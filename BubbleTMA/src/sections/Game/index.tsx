@@ -1,7 +1,8 @@
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr'
 import React, { useEffect, useRef, useState } from 'react'
-import { Socket } from "socket.io-client"
+import { useDispatch, useSelector } from 'react-redux'
 import Joystick from '../../features/Joystick'
+import { getPlayers, Player, updatePlayer } from '../../slices/GameSlide'
 import styles from './style.module.css'
 
 const App: React.FC = () => {
@@ -11,15 +12,25 @@ const App: React.FC = () => {
   const [gameOver, setGameOver] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const timerRef = useRef<number | null>(null);
-
   const joystickRef = useRef({ deltaX: 0, deltaY: 0 });
-
   const mapWidth = 4000;
   const mapHeight = 4000;
-
+  const dispatch = useDispatch();
   const [connection, setConnection] = useState<HubConnection | null>(null);
-  const socketRef = useRef<Socket | null>(null);
-  
+  const players = useSelector(getPlayers);
+  const playersRef = useRef(players); 
+
+  const handlePlayerUpdate = (gameState: PlayerDto) => {
+    const player: Player = {
+      id: gameState.playerId,
+      x: gameState.positionX,
+      y: gameState.positionY,
+      size: gameState.ballSize,
+      color: "blue",
+    };
+
+    dispatch(updatePlayer(player));
+  };
 
   class PlayerBubble {
     x: number;
@@ -27,7 +38,7 @@ const App: React.FC = () => {
     size: number;
     value: number;
     speed: number;
-    color: string; 
+    color: string;
 
     constructor(x: number, y: number, value: number, color: string) {
       this.x = x;
@@ -90,37 +101,7 @@ const App: React.FC = () => {
   };
 
   const checkCollisions = () => {
-    // for (let i = bubbles.current.length - 1; i >= 0; i--) {
-    //   const bubble = bubbles.current[i];
-    //   const dx = playerBubble.current.x - bubble.x;
-    //   const dy = playerBubble.current.y - bubble.y;
-    //   const distance = Math.sqrt(dx * dx + dy * dy);
-    //
-    //   if (distance < playerBubble.current.size + bubble.size) {
-    //     playerBubble.current.size += bubble.size * 0.1;
-    //     playerBubble.current.value += bubble.value;
-    //     bubbles.current.splice(i, 1);
-    //   }
-    // }
-    //
-    // for (let i = bots.current.length - 1; i >= 0; i--) {
-    //   const bot = bots.current[i];
-    //   const dx = playerBubble.current.x - bot.x;
-    //   const dy = playerBubble.current.y - bot.y;
-    //   const distance = Math.sqrt(dx * dx + dy * dy);
-    //
-    //   if (distance < playerBubble.current.size + bot.size) {
-    //     if (playerBubble.current.size > bot.size) {
-    //       playerBubble.current.size += bot.size * 0.2;
-    //       playerBubble.current.value += bot.value;
-    //       bots.current.splice(i, 1);
-    //     } else {
-    //       setGameOver(true);
-    //       setGameRunning(false)
-    //       return;
-    //     }
-    //   }
-    // }
+    // Реализовать логику столкновений
   };
 
   interface PlayerDto {
@@ -134,8 +115,6 @@ const App: React.FC = () => {
   let lastSentTime = 0;
   const sendInterval = 100;
   let lastPosition = { x: 0, y: 0 };
-
-  const [players, setPlayers] = useState<{ id: string, x: number, y: number, size: number, color: string }[]>([]);
 
   const getRandomColor = (): string => {
     const hue = Math.floor(Math.random() * 360);
@@ -176,9 +155,11 @@ const App: React.FC = () => {
   
     playerBubble.current.draw(ctx, offsetX, offsetY, "red");
   
-    players.forEach((player) => {
-      const otherBubble = new PlayerBubble(player.x, player.y, player.size, player.color);
-      otherBubble.draw(ctx, offsetX, offsetY, player.color);
+    playersRef.current.forEach((player) => {
+      if (player.id !== randomGuid) {
+        const otherBubble = new PlayerBubble(player.x, player.y, 25, player.color);
+        otherBubble.draw(ctx, offsetX, offsetY, player.color);
+      }
     });
   
     if (
@@ -190,7 +171,7 @@ const App: React.FC = () => {
         randomGuid,
         playerBubble.current.x,
         playerBubble.current.y,
-        playerBubble.current.size
+        playerBubble.current.size || 25
       );
   
       lastPosition = { x: playerBubble.current.x, y: playerBubble.current.y };
@@ -199,7 +180,6 @@ const App: React.FC = () => {
     checkCollisions();
     requestAnimationFrame(animate);
   };
-  
   
 
   const sendPlayerPosition = (gameId: string, playerId: string, x: number, y: number, ballSize: number) => {
@@ -221,6 +201,10 @@ const App: React.FC = () => {
     }
   }, [gameRunning]);
 
+  useEffect(() => {
+    playersRef.current = [...players];
+  }, [players]);  
+
   const handleJoystickMove = (deltaX: number, deltaY: number) => {
     joystickRef.current.deltaX = deltaX;
     joystickRef.current.deltaY = deltaY;
@@ -232,69 +216,47 @@ const App: React.FC = () => {
         .build();
 
     setConnection(connection);
-
     connection.start().catch(err => console.error('Connection failed: ', err));
 
     connection.on('PlayerPositionUpdated', (gameState: PlayerDto) => {
-      
       if (!gameState.playerId || gameState.positionY === undefined || gameState.positionX === undefined) {
         console.error("Ошибка: данные игрока некорректны", gameState);
         return;
       }
 
-      setPlayers(prevPlayers => {
-        const updatedPlayers = [...prevPlayers];
-        const existingPlayer = updatedPlayers.find(player => player.id === gameState.playerId);
-
-        if (existingPlayer) {
-          existingPlayer.x = gameState.positionX;
-          existingPlayer.y = gameState.positionY;
-          existingPlayer.size = gameState.ballSize;
-          existingPlayer.size = 50;
-          existingPlayer.color = existingPlayer.color || "blue";
-        } else {
-          updatedPlayers.push({
-            id: gameState.playerId,
-            x: gameState.positionX,
-            y: gameState.positionY,
-            size: 50,
-            color: "blue"
-          });
-        }
-        
-
-        return updatedPlayers;
-      });
+      handlePlayerUpdate(gameState)
     });
+
     return () => {
       if (connection) {
         connection.stop();
       }
     };
-  }, []);
-
+  }, [dispatch]);
+  
 
   return (
     <div>
       {gameRunning ? (
         <div className={styles.canvasContainer}>
-        <canvas
-        ref={canvasRef}
-        width={window.innerWidth}
-        height={window.innerHeight}
-        style={{ backgroundColor: '#f0f0f0',  display: "block" }}/>
-        <Joystick onMove={handleJoystickMove} />
+          <canvas
+            ref={canvasRef}
+            width={window.innerWidth}
+            height={window.innerHeight}
+            style={{ backgroundColor: '#f0f0f0', display: "block" }}
+          />
+          <Joystick onMove={handleJoystickMove} />
         </div>
       ) : (
         <div id="menu" style={{ textAlign: 'center', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)'}}>
-        <h1>Bubble Game</h1>
-        <div>Balance: ${playerBalance.toFixed(2)}</div>
-        {!gameRunning && !gameOver && (
-          <button onClick={initializeGame} className={styles?.buttonStyle}>Play</button>
-        )}
-        {gameOver && (
-          <button onClick={() => initializeGame()} className={styles?.buttonStyle}>Restart Game</button>
-        )}
+          <h1>Bubble Game</h1>
+          <div>Balance: ${playerBalance.toFixed(2)}</div>
+          {!gameRunning && !gameOver && (
+            <button onClick={initializeGame} className={styles?.buttonStyle}>Play</button>
+          )}
+          {gameOver && (
+            <button onClick={() => initializeGame()} className={styles?.buttonStyle}>Restart Game</button>
+          )}
         </div>
       )}
     </div>
