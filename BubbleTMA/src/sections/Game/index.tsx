@@ -189,6 +189,7 @@ const App: React.FC = () => {
             }
         }
 
+
         checkCollisions();
         requestAnimationFrame(animate);
     };
@@ -206,8 +207,6 @@ const App: React.FC = () => {
             .catch(err => console.error(err.toString()));
     };
 
-    console.log(playerBubble.current.size);
-    
 
     useEffect(() => {
         if (gameRunning && userGameId) {
@@ -217,7 +216,13 @@ const App: React.FC = () => {
 
     useEffect(() => {
         playersRef.current = [...players];
-    }, [players]);
+        
+        const currentPlayer = players.find(player => player.id === userGameId);
+        if (currentPlayer && currentPlayer.size !== playerBubble.current.size) {
+            playerBubble.current.size = currentPlayer.size;
+            playerBubble.current.value = currentPlayer.size;
+        }
+    }, [players, userGameId]);
 
     useEffect(() => {
         userGameIdRef.current = userGameId;
