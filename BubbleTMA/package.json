@@ -12,6 +12,7 @@
   "dependencies": {
     "@microsoft/signalr": "^8.0.7",
     "@reduxjs/toolkit": "^2.5.0",
+    "@swc/core": "^1.10.4",
     "@tonconnect/ui-react": "^2.0.9",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
