@@ -13,4 +13,4 @@ RUN npm install -g http-server
 
 EXPOSE 3000
 
-CMD ["http-server", "build", "-p", "3000"]
+CMD ["http-server", "dist", "-p", "3000"]
