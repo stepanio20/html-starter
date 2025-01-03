@@ -1,8 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-interface PlayerEatenDto {
-  gameId: string;
-  playerId: string;
-}
+
 export interface Player {
   id: string;
   x: number;
