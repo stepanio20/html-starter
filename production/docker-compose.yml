@@ -1,0 +1,26 @@
+version: '3.3'
+
+services:
+  react:
+    build:
+      context: ../BubbleTMA
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    networks:
+      - app_network
+    depends_on:
+      - telegram-bot
+
+  backend:
+    build:
+      context: ../Backend/BubbleGame
+      dockerfile: Dockerfile
+    ports:
+      - '8000:8000'
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
