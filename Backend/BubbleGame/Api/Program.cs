@@ -4,6 +4,10 @@ using Api.Routes;
 using BubbleGame.Application.Services.Ton;
 using BubbleGame.Cache;
 using BubbleGame.Persistence;
+using BubbleGame.Persistence.DAL;
+using BubbleGame.Persistence.Identity.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +17,7 @@ builder.Services.AddCors(options =>
     {
         policy.AllowAnyMethod()
             .AllowAnyHeader()
-            .SetIsOriginAllowed(origin => true) // Allow all origins
+            .SetIsOriginAllowed(_ => true) 
             .AllowCredentials();
     });
 });
@@ -30,8 +34,17 @@ builder.Services.AddSignalR(options =>
 });
 
 builder.Logging.AddConsole();
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddIdentity<AppUser, IdentityRole>()
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
 
 var app = builder.Build();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseCors("AllowAllPolicy"); 
 

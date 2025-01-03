@@ -3,7 +3,7 @@ using BubbleGame.Core.Base;
 
 namespace BubbleGame.Core.Players;
 
-public class Player
+public class Player : CacheEntity
 {
     [JsonPropertyName("Id")]
     public string Id { get; set; }
