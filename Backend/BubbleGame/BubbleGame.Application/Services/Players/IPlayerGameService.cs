@@ -6,7 +6,7 @@ namespace BubbleGame.Application.Services.Players;
 public interface IPlayerGameService
 {
     Task<List<Player>> GetAsync(Guid gameId);
-    Task<Player> GetById(Guid gameId, string playerId);
+    Task<Player> GetById(string playerId);
     Task AddPlayerAsync(Player player);
     void UpdatePlayer(Player player);
     Task UpdatePlayerSize(Player player);

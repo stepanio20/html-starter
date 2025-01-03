@@ -5,6 +5,6 @@ namespace BubbleGame.Cache.Services;
 public interface IPlayerUpdateBuffer
 {
     void AddOrUpdatePlayer(Player player);
-    Dictionary<Guid, Player> GetAndClearBuffer();
+    Dictionary<string, Player> GetAndClearBuffer();
     int CurrentBufferSize { get; }
 }

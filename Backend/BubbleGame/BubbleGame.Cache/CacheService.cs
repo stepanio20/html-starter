@@ -43,4 +43,7 @@ internal sealed class CacheService(IDistributedCache cache) : ICacheService
         });
         await cache.SetStringAsync(key, serializedValue);
     }
+    
+    public async Task DeleteAsync(string key)
+        => await cache.RemoveAsync(key);
 }

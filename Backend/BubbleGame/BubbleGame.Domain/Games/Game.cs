@@ -9,28 +9,16 @@ public class Game
     public Guid Id { get; set; }
 
     [JsonPropertyName("Players")]
-    public List<Player> Players { get; set; } = new List<Player>();
+    public List<string> Players { get; set; } = new List<string>();
 
-    public void AppendPlayer(Player player)
+    public void AppendPlayer(string playerId)
     {
-        Players.Add(player);
-    }
-
-    public void UpdatePlayer(Player entity)
-    {
-        var player = Players.FirstOrDefault(p => p.Id == entity.Id);
-        if (player is null)
-            return;
-        
-        player.PositionY = entity.PositionY;
-        player.PositionX = entity.PositionX;
-        player.Size = entity.Size;
-        player.LastUpdated = DateTime.UtcNow;
+        Players.Add(playerId);
     }
 
     public void Remove(string playerId)
     {
-        var player = Players.FirstOrDefault(p => p.Id == playerId);
+        var player = Players.FirstOrDefault(p => p.Equals(playerId));
         if (player is null)
             return;
         

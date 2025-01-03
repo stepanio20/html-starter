@@ -14,25 +14,31 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
 
     public async Task<List<Player>> GetAsync(Guid gameId)
     {
-        var nestedPlayers = await cache.GetByKeyAsync<Game>($"game-{gameId}");
-        return nestedPlayers.Players;
-    }
-
-    public async Task<Player> GetById(Guid gameId, string playerId)
-    {
         var game = await cache.GetByKeyAsync<Game>($"game-{gameId}");
-        return game?.Players?.FirstOrDefault(p => p.Id == playerId) ?? default;
+        
+        var players = new List<Player>();
+        foreach (var playerId in game.Players)
+        {
+            var player = await cache.GetByKeyAsync<Player>($"player-{playerId}");
+            if (player is null)
+                continue;
+            
+            if (player.GameId == gameId)
+                players.Add(player);
+        }
+        return players;
+    }
+    
+    public async Task<Player> GetById(string playerId)
+    {
+        var player = await cache.GetByKeyAsync<Player>($"player-{playerId}");
+        return player;
     }
 
-    public async Task UpdatePlayerSize(Player player)
+    public async Task UpdatePlayerSize(Player entity)
     {
-        var game = await cache.GetByKeyAsync<Game>($"game-{player.GameId}");
-        if (game == null)
-            return;
-        
-        game.UpdatePlayer(player);
-        var gameKey = $"game-{game.Id}";
-        await cache.SaveAsync(gameKey, game);    
+        var key = $"player-{entity.Id}";
+        await cache.SaveAsync(key, entity);    
     }
 
     public async Task<Game> GetGameById(Guid id)
@@ -63,12 +69,13 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
         try
         {
             var game = await cache.GetByKeyAsync<Game>($"game-{player.GameId}");
-
             if (game == null)
                 throw new InvalidOperationException("Game not found.");
-
-            game.AppendPlayer(player);
-
+            
+            game.AppendPlayer(player.Id);
+            
+            var key = $"player-{player.Id}";
+            await cache.SaveAsync(key, player);
             await cache.SaveAsync($"game-{player.GameId}", game);
         }
         catch (Exception ex)
@@ -85,6 +92,8 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
 
         game.Remove(player.Id); 
         await cache.SaveAsync($"game-{player.GameId}", game);
+        var playerKey = $"player-{player.Id}";
+        await cache.DeleteAsync(playerKey);
     }
 
     
@@ -108,28 +117,17 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
     {
         var updates = buffer.GetAndClearBuffer();
 
-        var gamesToUpdate = new Dictionary<Guid, Game>();
+        var playersToUpdate = new Dictionary<string, Player>();
 
-        foreach (var (gameId, player) in updates)
+        foreach (var player in updates)
         {
-            if (!gamesToUpdate.TryGetValue(gameId, out var currentGame))
-            {
-                var gameKey = $"game-{gameId}";
-
-                var game = await cache.GetByKeyAsync<Game>(gameKey);
-                if (game == null)
-                    return;
-                currentGame = game;
-                gamesToUpdate[gameId] = currentGame;
-            }
-
-            currentGame.UpdatePlayer(player);
+            playersToUpdate[player.Key] = player.Value;
         }
 
-        foreach (var game in gamesToUpdate.Values)
+        foreach (var player in playersToUpdate.Values)
         {
-            var gameKey = $"game-{game.Id}";
-            await cache.SaveAsync(gameKey, game);
+            var playerKey = $"player-{player.Id}";
+            await cache.SaveAsync(playerKey, player);
         }
     }
 }

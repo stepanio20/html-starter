@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BubbleGame.Persistence")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+023c16a4cd396bf6e5f9f1651374347ffba22c7d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2ed796839e84ba4e5fb07664dc6ddde61c061e81")]
 [assembly: System.Reflection.AssemblyProductAttribute("BubbleGame.Persistence")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BubbleGame.Persistence")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
