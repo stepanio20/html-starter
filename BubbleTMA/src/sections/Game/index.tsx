@@ -2,14 +2,16 @@ import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr'
 import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Joystick from '../../features/Joystick'
-import { getPlayers, Player, updatePlayer } from '../../slices/GameSlide'
+import { getPlayers, Player, removePlayer, setUserId, updatePlayer } from '../../slices/GameSlide'
+import { RootState } from '../../store'
 import styles from './style.module.css'
 
 const App: React.FC = () => {
-    const [playerBalance, setPlayerBalance] = useState(10);
+    const [playerBalance, setPlayerBalance] = useState(0);
     const [gameTime, setGameTime] = useState(40);
     const [gameRunning, setGameRunning] = useState(false);
     const [gameOver, setGameOver] = useState(false);
+    const [eatenPlayers, setEatenPlayers] = useState<Set<string>>(new Set());
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const timerRef = useRef<number | null>(null);
     const joystickRef = useRef({ deltaX: 0, deltaY: 0 });
@@ -18,7 +20,9 @@ const App: React.FC = () => {
     const dispatch = useDispatch();
     const [connection, setConnection] = useState<HubConnection | null>(null);
     const players = useSelector(getPlayers);
+    const userGameId = useSelector((state: RootState) => state?.players?.userGameId);
     const playersRef = useRef(players);
+    const userGameIdRef = useRef(userGameId);
 
     const handlePlayerUpdate = (gameState: PlayerDto) => {
         const player: Player = {
@@ -44,7 +48,7 @@ const App: React.FC = () => {
             this.x = x;
             this.y = y;
             this.value = value;
-            this.size = Math.sqrt(value) * 15;
+            this.size = value;
             this.speed = 0.2;
             this.color = color;
         }
@@ -66,13 +70,12 @@ const App: React.FC = () => {
     const playerBubble = useRef(new PlayerBubble(mapWidth / 2, mapHeight / 2, playerBalance, 'red'));
 
     const initializeGame = () => {
-        playerBubble.current.size = Math.sqrt(playerBalance) * 15;
+        playerBubble.current.size = Math.sqrt(playerBalance);
         playerBubble.current.value = playerBalance;
-
         setGameTime(40);
         setGameRunning(true);
         setGameOver(false);
-
+        setEatenPlayers(new Set());
         startTimer();
     };
 
@@ -101,7 +104,7 @@ const App: React.FC = () => {
     };
 
     const checkCollisions = () => {
-        // Реализовать логику столкновений
+        // Collision logic
     };
 
     interface PlayerEatenDto {
@@ -160,32 +163,35 @@ const App: React.FC = () => {
 
         playerBubble.current.draw(ctx, offsetX, offsetY, "red");
 
-        playersRef.current.forEach((player) => {
-            if (player.id !== randomGuid) {
-                const otherBubble = new PlayerBubble(player.x, player.y, 25, player.color);
-                otherBubble.draw(ctx, offsetX, offsetY, player.color);
-            }
-        });
+        playersRef.current
+            .filter(player => !eatenPlayers.has(player.id))
+            .forEach((player) => {
+                if (player.id !== userGameId) {
+                    const otherBubble = new PlayerBubble(player.x, player.y, player.size, player.color);
+                    otherBubble.draw(ctx, offsetX, offsetY, player.color);
+                }
+            });
 
         if (
             playerBubble.current.x !== lastPosition.x ||
-            playerBubble.current.y !== lastPosition.y
+            playerBubble.current.y !== lastPosition.y 
         ) {
-            sendPlayerPosition(
-                "f2940113-723e-4339-a32b-49d901b44b6c",
-                randomGuid,
-                playerBubble.current.x,
-                playerBubble.current.y,
-                playerBubble.current.size || 25
-            );
+            if (userGameId) {
+                sendPlayerPosition(
+                    "f2940113-723e-4339-a32b-49d901b44b6c",
+                    userGameId,
+                    playerBubble.current.x,
+                    playerBubble.current.y,
+                    playerBubble.current.size,
+                );
 
-            lastPosition = { x: playerBubble.current.x, y: playerBubble.current.y };
+                lastPosition = { x: playerBubble.current.x, y: playerBubble.current.y };
+            }
         }
 
         checkCollisions();
         requestAnimationFrame(animate);
     };
-
 
     const sendPlayerPosition = (gameId: string, playerId: string, x: number, y: number, ballSize: number) => {
         const playerDto = {
@@ -200,15 +206,22 @@ const App: React.FC = () => {
             .catch(err => console.error(err.toString()));
     };
 
+    console.log(playerBubble.current.size);
+    
+
     useEffect(() => {
-        if (gameRunning) {
+        if (gameRunning && userGameId) {
             animate();
         }
-    }, [gameRunning]);
+    }, [gameRunning, userGameId]);
 
     useEffect(() => {
         playersRef.current = [...players];
     }, [players]);
+
+    useEffect(() => {
+        userGameIdRef.current = userGameId;
+    }, [userGameId]);
 
     const handleJoystickMove = (deltaX: number, deltaY: number) => {
         joystickRef.current.deltaX = deltaX;
@@ -216,33 +229,58 @@ const App: React.FC = () => {
     };
 
     useEffect(() => {
-        const connection = new HubConnectionBuilder()
-            .withUrl('http://localhost:5225/gameHub')
-            .build();
+        if (gameRunning) {
+            const connection = new HubConnectionBuilder()
+                .withUrl(`http://localhost:5225/gameHub?userid=${randomGuid}`)
+                .build();
 
-        setConnection(connection);
-        connection.start().catch(err => console.error('Connection failed: ', err));
+            setConnection(connection);
+            
+            connection.start().catch(err => console.error('Connection failed: ', err));
 
-        connection.on('PlayerEaten', (playerState: PlayerEatenDto) => {
-            console.log(playerState)
-        });
-        connection.on('PlayerPositionUpdated', (gameState: PlayerDto) => {
-            console.log(gameState)
-            if (!gameState.playerId || gameState.positionY === undefined || gameState.positionX === undefined) {
-                console.error("Ошибка: данные игрока некорректны", gameState);
-                return;
-            }
+            connection.on('Connected', (data: PlayerDto) => {
+                if (data) {
+                    playerBubble.current.x = data.positionX;
+                    playerBubble.current.y = data.positionY;
+                    playerBubble.current.size = data.ballSize
+                    playerBubble.current.value = data.ballSize;
+                    playerBubble.current.color = 'red'
+                    dispatch(setUserId(data?.playerId));
+                }
+            });
 
-            handlePlayerUpdate(gameState)
-        });
+            connection.on('PlayerEaten', (playerState: PlayerEatenDto) => {
+                if (playerState.playerId === userGameIdRef.current) {
+                    console.log("You have been eaten!");
+                    setGameRunning(false);
+                    setGameOver(true);
+                } else if (playerState.playerId) {
+                    console.log("Removing player with ID:", playerState.playerId);
+                    setEatenPlayers(prev => new Set(prev.add(playerState.playerId)));
+                    dispatch(removePlayer(playerState.playerId));
+                }
+            });
 
-        return () => {
-            if (connection) {
-                connection.stop();
-            }
-        };
-    }, [dispatch]);
+            connection.on('PlayerPositionUpdated', (gameState: PlayerDto) => {
+                if (!gameState.playerId || gameState.positionY === undefined || gameState.positionX === undefined) {
+                    console.error("Ошибка: данные игрока некорректны", gameState);
+                    return;
+                }
+                if (eatenPlayers.has(gameState.playerId)) {
+                    console.log(`Игрок с ID ${gameState.playerId} уже был съеден, обновление данных не требуется.`);
+                    return;
+                }
 
+                handlePlayerUpdate(gameState);
+            });
+
+            return () => {
+                if (connection) {
+                    connection.stop();
+                }
+            };
+        }
+    }, [dispatch, gameRunning]);
 
     return (
         <div>

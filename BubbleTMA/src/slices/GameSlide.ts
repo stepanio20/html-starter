@@ -1,5 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-
+interface PlayerEatenDto {
+  gameId: string;
+  playerId: string;
+}
 export interface Player {
   id: string;
   x: number;
@@ -10,10 +13,12 @@ export interface Player {
 
 interface PlayerState {
   players: Player[];
+  userGameId: string;
 }
 
 const initialState: PlayerState = {
   players: [],
+  userGameId: ''
 };
 
 const playerSlice = createSlice({
@@ -34,8 +39,17 @@ const playerSlice = createSlice({
         state.players.push(action.payload);
       }
     },
+    removePlayer: (state, action: PayloadAction<string>) => {
+      state.players = state.players.filter(player => player.id !== action.payload.trim());
+    },
+    setUserId: (state, action: PayloadAction<string>) => {
+      if (action.payload.length !== 0) {
+        state.userGameId = action.payload
+      }
+    },
   },
 });
+
 export const getPlayers = (state: { players: PlayerState }) => state.players.players;
-export const { setPlayers, updatePlayer } = playerSlice.actions;
+export const { setPlayers, updatePlayer, removePlayer, setUserId } = playerSlice.actions;
 export default playerSlice.reducer;
