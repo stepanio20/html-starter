@@ -7,8 +7,8 @@ import { RootState } from '../../store'
 import styles from './style.module.css'
 
 const App: React.FC = () => {
-    const [playerBalance, setPlayerBalance] = useState(0);
-    const [gameTime, setGameTime] = useState(40);
+   /*  const [playerBalance, setPlayerBalance] = useState(0); */
+   /*  const [gameTime, setGameTime] = useState(40); */
     const [gameRunning, setGameRunning] = useState(false);
     const [gameOver, setGameOver] = useState(false);
     const [eatenPlayers, setEatenPlayers] = useState<Set<string>>(new Set());
@@ -67,12 +67,12 @@ const App: React.FC = () => {
         }
     }
 
-    const playerBubble = useRef(new PlayerBubble(mapWidth / 2, mapHeight / 2, playerBalance, 'red'));
+    const playerBubble = useRef(new PlayerBubble(mapWidth / 2, mapHeight / 2, /* playerBalance */ 0, 'red'));
 
     const initializeGame = () => {
-        playerBubble.current.size = Math.sqrt(playerBalance);
-        playerBubble.current.value = playerBalance;
-        setGameTime(40);
+        playerBubble.current.size = Math.sqrt(0);
+        playerBubble.current.value = 0;
+        /* setGameTime(40); */
         setGameRunning(true);
         setGameOver(false);
         setEatenPlayers(new Set());
@@ -88,20 +88,20 @@ const App: React.FC = () => {
                 return;
             }
 
-            setGameTime((prevTime) => {
+           /*  setGameTime((prevTime) => {
                 if (prevTime <= 1) {
                     endGame();
                     return 0;
                 }
                 return prevTime - 1;
-            });
+            }); */
         }, 1000);
     };
 
-    const endGame = () => {
+   /*  const endGame = () => {
         setGameRunning(false);
         setGameOver(true);
-    };
+    }; */
 
     const checkCollisions = () => {
         // Collision logic
@@ -120,14 +120,14 @@ const App: React.FC = () => {
         ballSize: number;
     }
 
-    let lastSentTime = 0;
-    const sendInterval = 100;
+   /*  let lastSentTime = 0;
+    const sendInterval = 100; */
     let lastPosition = { x: 0, y: 0 };
 
-    const getRandomColor = (): string => {
+   /*  const getRandomColor = (): string => {
         const hue = Math.floor(Math.random() * 360);
         return `hsl(${hue}, 70%, 50%)`;
-    };
+    }; */
 
     const generateRandomGuid = (): string => {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -303,7 +303,7 @@ const App: React.FC = () => {
             ) : (
                 <div id="menu" style={{ textAlign: 'center', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)'}}>
                     <h1>Bubble Game</h1>
-                    <div>Balance: ${playerBalance.toFixed(2)}</div>
+                    <div>Balance: ${/* {playerBalance.toFixed(2)} */}10</div>
                     {!gameRunning && !gameOver && (
                         <button onClick={initializeGame} className={styles?.buttonStyle}>Play</button>
                     )}
