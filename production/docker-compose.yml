@@ -27,6 +27,20 @@ services:
     networks:
       - app_network
 
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ''
+      POSTGRES_DB: postgres
+    ports:
+      - '5434:5432'
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+
 networks:
   app_network:
     driver: bridge
