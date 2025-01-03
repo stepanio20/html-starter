@@ -6,6 +6,15 @@
 # dotenv files
 .env
 
+/nginx/*
+/nginx.conf
+
+# Игнорировать кэш (например, временные файлы)
+*.cache
+*.tmp
+/cache/
+/tmp/
+
 # User-specific files
 *.rsuser
 *.suo
