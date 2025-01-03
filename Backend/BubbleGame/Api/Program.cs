@@ -64,6 +64,7 @@ if (app.Environment.IsDevelopment())
 
 app.AddGameRoute();
 app.AddPaymentRoute();
+app.AddAuthRoute();
 
 app.MapHub<GameHub>($"/{SocketDefault.HUB}");
 app.Run();
