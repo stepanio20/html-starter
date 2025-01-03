@@ -51,6 +51,18 @@ internal sealed class GameHub(IPlayerGameService playerGameService) : Hub
                     player.PositionX,
                     player.PositionY,
                     player.Size));
+        
+        var players = await playerGameService.GetAsync(player.GameId);
+        foreach (var otherPlayer in players)
+            await Clients.Client(Context.ConnectionId)
+                .SendAsync(SocketMessages.PLAYER_POSITION_UPDATED,
+                    new PlayerDto(
+                        otherPlayer.GameId,
+                        otherPlayer.Id,
+                        otherPlayer.PositionX,
+                        otherPlayer.PositionY,
+                        otherPlayer.Size));
+        
         await base.OnConnectedAsync();
     }
 
