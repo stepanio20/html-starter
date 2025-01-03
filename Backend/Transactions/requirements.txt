@@ -1,0 +1,5 @@
+uvicorn
+FastAPI
+pytonlib
+tonsdk
+requests

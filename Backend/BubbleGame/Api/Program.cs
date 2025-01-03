@@ -45,15 +45,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Bubble Game API v1");
+        c.RoutePrefix = "docs";
     });
 }
 
 app.AddGameRoute();
-app.MapHub<GameHub>($"/{SocketDefault.HUB}");
+app.AddPaymentRoute();
 
-app.MapPost("/send", async (ITonService tonService) =>
-{
-    await tonService.SendTransactionAsync("", "", 1);
-    return Results.Ok("Transaction sent successfully");
-});
+app.MapHub<GameHub>($"/{SocketDefault.HUB}");
 app.Run();
