@@ -1,9 +1,10 @@
 using System.Text.Json.Serialization;
+using BubbleGame.Core.Base;
 using BubbleGame.Core.Players;
 
 namespace BubbleGame.Core.Games;
 
-public class Game
+public class Game : CacheEntity
 {
     [JsonPropertyName("Id")]
     public Guid Id { get; set; }
