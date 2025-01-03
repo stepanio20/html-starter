@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BubbleGame.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0ee2a3db0c8378aba4013ddb0e4a9cc4fbe6993e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+023c16a4cd396bf6e5f9f1651374347ffba22c7d")]
 [assembly: System.Reflection.AssemblyProductAttribute("BubbleGame.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BubbleGame.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

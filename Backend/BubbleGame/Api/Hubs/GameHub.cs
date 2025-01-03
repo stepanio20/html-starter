@@ -88,7 +88,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService) : Hub
                     player.Size += otherPlayer.Size;
                     
                     players.Remove(otherPlayer);
-                    playerGameService.UpdatePlayer(player);
+                    await playerGameService.UpdatePlayerSize(player);
                     await Clients.All.SendAsync(
                         SocketMessages.PLAYER_POSITION_UPDATED,
                         new PlayerDto(player.GameId, player.Id, player.PositionX, player.PositionY, player.Size)
@@ -104,7 +104,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService) : Hub
                     otherPlayer.Size += player.Size;
                     
                     players.Remove(player);
-                    playerGameService.UpdatePlayer(otherPlayer);
+                    await playerGameService.UpdatePlayerSize(otherPlayer);
                     await Clients.All.SendAsync(
                         SocketMessages.PLAYER_POSITION_UPDATED,
                         new PlayerDto(otherPlayer.GameId, otherPlayer.Id, otherPlayer.PositionX, otherPlayer.PositionY, otherPlayer.Size)
