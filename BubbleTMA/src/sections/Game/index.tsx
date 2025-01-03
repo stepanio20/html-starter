@@ -267,6 +267,7 @@ const App: React.FC = () => {
             });
 
             connection.on('PlayerPositionUpdated', (gameState: PlayerDto) => {
+                console.log(gameState)
                 if (!gameState.playerId || gameState.positionY === undefined || gameState.positionX === undefined) {
                     console.error("Ошибка: данные игрока некорректны", gameState);
                     return;

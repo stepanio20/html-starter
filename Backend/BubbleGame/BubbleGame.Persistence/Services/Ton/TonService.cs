@@ -1,18 +1,46 @@
 using System.Text;
+using System.Text.Json;
 using BubbleGame.Application.Services.Ton;
-using Newtonsoft.Json;
-using TonSdk.Client;
-using TonSdk.Connect;
-using TonSdk.Contracts.Wallet;
-using TonSdk.Core;
-using TonSdk.Core.Block;
-using TonSdk.Core.Crypto;
+
 
 namespace BubbleGame.Persistence.Services.Ton;
 
 internal sealed class TonService(string endpoint) : ITonService
 {
     private static readonly HttpClient client = new HttpClient();
+    public async Task TransferTonAsync(decimal amount, string recipientAddress)
+    {
+        var endpoint = "http://127.0.0.1:8000/withdraw?X_TOKEN=9c79ec24-652b-45ab-9567-bd9c63d6694a";
+        var transferData = new
+        {
+            amount = amount, // Убедитесь, что это число (float или decimal)
+            address = recipientAddress // Убедитесь, что это строка
+        };
+
+
+        var jsonContent = JsonSerializer.Serialize(transferData);
+        var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+        
+        try
+        {
+            var response = await client.PostAsync(endpoint, content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Response: {responseContent}");
+            }
+            else
+            {
+                Console.WriteLine($"Error: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Request failed: {ex.Message}");
+        }
+    }
+
     public async Task<string> SendTransactionAsync(string privateKey, string recipientAddress, decimal amount)
     {
         // try
