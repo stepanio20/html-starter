@@ -7,7 +7,7 @@ from tonsdk.utils import to_nano
 
 
 def mnemonic() -> list[str]:
-    return ['moon', 'pipe', 'side', 'tribe', 'brief', 'replace', 'beach', 'cost', 'clog', 'coast', 'few', 'rotate', 'fork', 'that', 'trouble', 'strong', 'nothing', 'garage', 'panther', 'patch', 'scene', 'tray', 'wife', 'shadow']
+    return ['asthma', 'inch', 'crater', 'spice', 'garlic', 'brave', 'hockey', 'keep', 'aspect', 'runway', 'vicious', 'very', 'forward', 'type', 'arrange', 'garlic', 'brave', 'position', 'glue', 'easily', 'ordinary', 'horror', 'embark', 'panda']
 
 
 async def get_seqno(client: TonlibClient, address: str) -> int:
