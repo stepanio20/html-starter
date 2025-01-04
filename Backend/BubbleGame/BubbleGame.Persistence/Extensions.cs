@@ -11,7 +11,7 @@ public static class Extensions
     public static IServiceCollection AddPersistence(this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddHostedService<DbInitialized>();
+        //services.AddHostedService<DbInitialized>();
         services.AddScoped<ITonService>(provider =>
         {
             var apiUrl = "";
