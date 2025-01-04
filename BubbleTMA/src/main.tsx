@@ -1,10 +1,11 @@
 import { THEME, TonConnectUIProvider } from '@tonconnect/ui-react'
-import { StrictMode } from 'react'
+import { StrictMode, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
 import { ErrorProvider, useError } from './app/errorContext.tsx'
 import Router from './app/Router.tsx'
 import './index.css'
+import { useTelegram } from './shared/hooks/useTelegram.tsx'
 import SnackBarError from './shared/ui/Snackbar/SnackBarError.tsx'
 import store from './store/index.ts'
 
@@ -23,7 +24,10 @@ createRoot(document.getElementById('root')!).render(
 )
 function AppContent() {
   const { error, setError } = useError();
-  
+  const {tg} = useTelegram()
+  useEffect(() => {
+    tg?.disableVerticalSwipes()
+  },[])
   return (
     <>
       <Router />
