@@ -13,7 +13,7 @@ internal static class GameRoute
 
     private static async Task<IResult> GetUserGameInfo(GetUserGameInfoRequest getUserGameInfoRequest,  UserManager<AppUser> userManager)
     {
-        var user = await userManager.Users.FirstOrDefaultAsync(x => x.Address.Equals(getUserGameInfoRequest.UserId));
+        var user = await userManager.Users.FirstOrDefaultAsync(x => x.Id.Equals(getUserGameInfoRequest.UserId));
         if (user == null)
             return Results.NotFound();
         
