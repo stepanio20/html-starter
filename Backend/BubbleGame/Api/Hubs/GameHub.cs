@@ -18,7 +18,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
     private static readonly List<string> Colors =
     [
         "Red", "Green", "Blue", "Yellow", "Orange", "Purple", "Pink",
-        "Brown", "Gray", "Black", "White", "Cyan", "Magenta", "Lime"
+        "Brown", "Gray", "Black", "Cyan", "Magenta", "Lime"
     ];
 
     private static string GetRandomColors()
@@ -95,7 +95,9 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
         try
         {
             var player = await playerGameService.GetById(playerDto.PlayerId);
-
+            if(player is null)
+                return;
+            
             player.PositionX = playerDto.PositionX;
             player.PositionY = playerDto.PositionY;
             player.LastUpdated = DateTime.UtcNow;
@@ -111,7 +113,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
                     Math.Pow(player.PositionY - otherPlayer.PositionY, 2)
                 );
 
-                if (!((decimal)distance <= player.Size) && !((decimal)distance <= otherPlayer.Size))
+                if (!((decimal)distance <= player.Size * 1500) && !((decimal)distance <= otherPlayer.Size * 1500))
                     continue;
 
                 if (player.Size > otherPlayer.Size)
