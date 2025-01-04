@@ -12,8 +12,8 @@ services:
 
   backend:
     build:
-      context: ../Backend/BubbleGame/Api
-      dockerfile: Dockerfile
+      context: ../Backend/BubbleGame
+      dockerfile: Api/Dockerfile
     ports:
       - '8080:8080'
     networks:
