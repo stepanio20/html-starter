@@ -36,6 +36,7 @@ internal static class PaymentRoute
             return Results.Unauthorized();
         
         user.Balance -= request.Amount;
+        await userManager.UpdateAsync(user);
         await tonService.TransferTonAsync(request.Amount, user.Address);
         return Results.Ok();
     }
