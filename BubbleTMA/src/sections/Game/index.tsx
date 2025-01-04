@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import Joystick from '../../features/Joystick'
-import { getPlayers, Player, removePlayer, updatePlayer } from '../../slices/GameSlide'
+import { getPlayers, Player, removePlayer, setPlayerId, updatePlayer } from '../../slices/GameSlide'
 import { RootState } from '../../store'
 import styles from './style.module.css'
 
@@ -21,14 +21,11 @@ const App: React.FC = () => {
     const dispatch = useDispatch();
     const [connection, setConnection] = useState<HubConnection | null>(null);
     const players = useSelector(getPlayers);
-    const userGameId = useSelector((state: RootState) => state?.players?.userGameId);
+    const PlayerId = useSelector((state: RootState) => state?.players?.playerId);
+    const userId = useSelector((state: RootState) => state?.players?.userId);
+    const balance = useSelector((state: RootState) => state?.players?.balance);
     const playersRef = useRef(players);
-    const userGameIdRef = useRef(userGameId);
-    const navigate=useNavigate()
-
-    if (!userGameId) {
-        navigate('/')
-    }
+    const userGameIdRef = useRef(PlayerId);
 
     const handlePlayerUpdate = (gameState: PlayerDto) => {
         const player: Player = {
@@ -135,15 +132,6 @@ const App: React.FC = () => {
         return `hsl(${hue}, 70%, 50%)`;
     }; */
 
-    const generateRandomGuid = (): string => {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            const r = Math.random() * 16 | 0;
-            const v = c === 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
-    };
-
-
     const animate = () => {
         if (!gameRunning) return;
 
@@ -171,7 +159,7 @@ const App: React.FC = () => {
         playersRef.current
             .filter(player => !eatenPlayers.has(player.id))
             .forEach((player) => {
-                if (player.id !== userGameId) {
+                if (player.id !== PlayerId) {
                     const otherBubble = new PlayerBubble(player.x, player.y, player.size, player.color);
                     otherBubble.draw(ctx, offsetX, offsetY, player.color);
                 }
@@ -181,10 +169,10 @@ const App: React.FC = () => {
             playerBubble.current.x !== lastPosition.x ||
             playerBubble.current.y !== lastPosition.y 
         ) {
-            if (userGameId) {
+            if (PlayerId) {
                 sendPlayerPosition(
                     "f2940113-723e-4339-a32b-49d901b44b6c",
-                    userGameId,
+                    PlayerId,
                     playerBubble.current.x,
                     playerBubble.current.y,
                     playerBubble.current.size,
@@ -214,34 +202,36 @@ const App: React.FC = () => {
 
 
     useEffect(() => {
-        if (gameRunning && userGameId) {
+        if (gameRunning && PlayerId) {
             animate();
         }
-    }, [gameRunning, userGameId]);
+    }, [gameRunning, PlayerId]);
 
     useEffect(() => {
         playersRef.current = [...players];
         
-        const currentPlayer = players.find(player => player.id === userGameId);
+        const currentPlayer = players.find(player => player.id === PlayerId);
         if (currentPlayer && currentPlayer.size !== playerBubble.current.size) {
             playerBubble.current.size = currentPlayer.size;
             playerBubble.current.value = currentPlayer.size;
         }
-    }, [players, userGameId]);
+    }, [players, PlayerId]);
 
     useEffect(() => {
-        userGameIdRef.current = userGameId;
-    }, [userGameId]);
+        userGameIdRef.current = PlayerId;
+    }, [PlayerId]);
 
     const handleJoystickMove = (deltaX: number, deltaY: number) => {
         joystickRef.current.deltaX = deltaX;
         joystickRef.current.deltaY = deltaY;
     };
 
+    const navigate = useNavigate()
+
     useEffect(() => {
         if (gameRunning) {
             const connection = new HubConnectionBuilder()
-                .withUrl(`http://localhost:5225/gameHub`)
+                .withUrl(`http://localhost:5225/gameHub?userid=${userId}`)
                 .build();
 
             setConnection(connection);
@@ -255,14 +245,14 @@ const App: React.FC = () => {
                     playerBubble.current.size = data.ballSize
                     playerBubble.current.value = data.ballSize;
                     playerBubble.current.color = 'red'
+                    dispatch(setPlayerId(data?.playerId));
                 }
             });
 
             connection.on('PlayerEaten', (playerState: PlayerEatenDto) => {
                 if (playerState.playerId === userGameIdRef.current) {
                     console.log("You have been eaten!");
-                    setGameRunning(false);
-                    setGameOver(true);
+                    navigate('/')
                 } else if (playerState.playerId) {
                     console.log("Removing player with ID:", playerState.playerId);
                     setEatenPlayers(prev => new Set(prev.add(playerState.playerId)));
@@ -307,7 +297,7 @@ const App: React.FC = () => {
             ) : (
                 <div id="menu" style={{ textAlign: 'center', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)'}}>
                     <h1>Bubble Game</h1>
-                    <div>Balance: ${/* {playerBalance.toFixed(2)} */}10</div>
+                    <div>Balance: {balance}$</div>
                     {!gameRunning && !gameOver && (
                         <button onClick={initializeGame} className={styles?.buttonStyle}>Play</button>
                     )}
