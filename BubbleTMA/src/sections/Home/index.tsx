@@ -37,6 +37,12 @@ export function Home() {
       console.error("Error disconnecting wallet:", error);
     }
   };
+  
+  const goToGame = () => {
+    if (balance > 0) {
+      navigate('/game')
+    }
+  }
 
     useEffect(() => {
       if (!userFriendlyAddress) return
@@ -70,7 +76,7 @@ export function Home() {
       <div className={styles?.menu}>
         <p>Balance: {balance}$</p>
         <button 
-        onClick={() => navigate('/game')}
+        onClick={goToGame}
         disabled={!userGameId}
         >
           Go to game
