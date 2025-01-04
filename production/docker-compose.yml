@@ -10,14 +10,14 @@ services:
     networks:
       - app_network
 
-  backend:
-    build:
-      context: ../Backend/BubbleGame/Api
-      dockerfile: Dockerfile
-    ports:
-      - '8080:8080'
-    networks:
-      - app_network
+#  backend:
+#    build:
+#      context: ../Backend/BubbleGame/Api
+#      dockerfile: Dockerfile
+#    ports:
+#      - '8080:8080'
+#    networks:
+#      - app_network
 
   transactions:
     build:
