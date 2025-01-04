@@ -39,7 +39,7 @@ const App: React.FC = () => {
             id: gameState.playerId,
             x: gameState.positionX,
             y: gameState.positionY,
-            size: gameState.ballSize,
+            size: gameState.ballSize * 1500,
             color: gameState.color,
         };
 
@@ -250,7 +250,7 @@ const App: React.FC = () => {
                 if (data) {
                     playerBubble.current.x = data.positionX;
                     playerBubble.current.y = data.positionY;
-                    playerBubble.current.size = data.ballSize
+                    playerBubble.current.size = data.ballSize * 1500
                     playerBubble.current.value = data.ballSize;
                     playerBubble.current.color = data.color
                     dispatch(setPlayerId(data?.playerId));
