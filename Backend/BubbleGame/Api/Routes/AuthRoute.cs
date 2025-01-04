@@ -25,13 +25,13 @@ internal static class AuthRoute
                 {
                     TelegramId = request.TelegramId,
                     Balance = 0,
-                    Address = "",
+                    Address = request.WalletAddress ?? string.Empty,
                     UserName = request.TelegramId.ToString(),
                     Email = request.TelegramId.ToString()
                 };
                 await userManager.CreateAsync(user);
                 
-                return Results.Unauthorized();
+                return !string.IsNullOrEmpty(request.WalletAddress) ? Results.Ok(user.Id) : Results.Unauthorized();
             }
             
             if(string.IsNullOrEmpty(user.Address) && string.IsNullOrEmpty(request.WalletAddress))
