@@ -149,7 +149,7 @@ const App: React.FC = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     
         const isMobile = window.innerWidth < 768;
-        const scale = isMobile ? 0.7 : 1;
+        const scale = isMobile ? 0.8 : 1;
     
         ctx.save();
         ctx.scale(scale, scale);
