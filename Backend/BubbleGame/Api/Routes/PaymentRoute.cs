@@ -28,10 +28,14 @@ internal static class PaymentRoute
         return Results.NoContent();
     }
     
-    private static async Task<IResult> WithdrawAsync([FromBody] PaymentRequest request, ITonService tonService)
+    private static async Task<IResult> WithdrawAsync([FromBody] PaymentRequest request, ITonService tonService, UserManager<AppUser> userManager)
     {
-        var address = "UQA9VCPtX32dKzRAtuG8uMuViDMVVjNxNwomiUTkbWvqPc6d";
-        await tonService.TransferTonAsync(request.Amount, address);
+        var user = await userManager.Users.FirstOrDefaultAsync(x => request.UserId.Equals(x.Id));
+        if (user == null || string.IsNullOrEmpty(user.Address))
+            return Results.Unauthorized();
+        
+        user.Balance -= request.Amount;
+        await tonService.TransferTonAsync(request.Amount, user.Address);
         return Results.Ok();
     }
 
