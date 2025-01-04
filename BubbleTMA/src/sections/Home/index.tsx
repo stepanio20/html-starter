@@ -3,17 +3,23 @@ import { useTonAddress, useTonConnectUI } from '@tonconnect/ui-react'
 import { useEffect } from "react"
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
+import DepositModal from '../../features/DepositModal'
+import WithdrawModal from '../../features/WithdrawModal'
+import useGetAddressApi from '../../shared/api/get-adress'
+import useGetInfoApi from '../../shared/api/get-info'
 import { setUserId } from '../../slices/GameSlide'
 import { RootState } from '../../store'
 import styles from './style.module.css'
-
 export function Home() {
   const navigate = useNavigate()
 	const [tonConnectUI] = useTonConnectUI();
   const userFriendlyAddress = useTonAddress();
   const dispatch = useDispatch()
-  const userGameId = useSelector((state: RootState) => state?.players?.userGameId)
+  const userGameId = useSelector((state: RootState) => state?.players?.userId)
+  const balance = useSelector((state: RootState) => state?.players?.balance)
   const telegram = initDataUser()
+  const {getInfo} = useGetInfoApi()
+  const {getAddress} = useGetAddressApi()
 
  const handleConnectWallet = async () => {
     try {
@@ -52,6 +58,7 @@ export function Home() {
 
                 const data:string = await response.json();
                 dispatch(setUserId(data))
+                Promise.all([getInfo(data), getAddress()])
             } catch (error) {
                 console.error(error);
             }
@@ -61,18 +68,25 @@ export function Home() {
     }, [userFriendlyAddress]);
 
   return (
-    <div className={styles?.menu}>
-      <button 
-      onClick={() => navigate('/game')}
-      disabled={!userGameId}
-      >
-        Go to game
-      </button>
-      <button onClick={() => handleConnectWallet()}>Connect TON wallet</button>
-			{userFriendlyAddress && (
-				<button onClick={handleDisconnectWallet}>Disconnect TON wallet</button>
-			)}
-			{userFriendlyAddress}
+    <div className={styles?.overlay}>
+      <div className={styles?.menu}>
+        <p>Balance: {balance}$</p>
+        <button 
+        onClick={() => navigate('/game')}
+        disabled={!userGameId}
+        >
+          Go to game
+        </button>
+        <button onClick={() => handleConnectWallet()}>Connect TON wallet</button>
+        {userFriendlyAddress && (
+          <button onClick={handleDisconnectWallet}>Disconnect TON wallet</button>
+        )}
+          {userFriendlyAddress}
+        <div>
+          <WithdrawModal/>
+          <DepositModal/>
+        </div>
+      </div>
     </div>
   )
 }
