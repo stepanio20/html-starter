@@ -1,6 +1,7 @@
 import { SendTransactionRequest, useTonConnectUI } from '@tonconnect/ui-react'
 import { useState } from "react"
 import { useSelector } from 'react-redux'
+import useGetInfoApi from '../../shared/api/get-info'
 import { RootState } from '../../store'
 import useWithdrawApi from '../WithdrawModal/api'
 import styles from "./style.module.css"
@@ -12,16 +13,14 @@ const DepositModal = () => {
   const address = useSelector((state: RootState) => state?.players?.depositAddress);
   const userId = useSelector((state: RootState) => state?.players?.userId);
   const {deposit} = useWithdrawApi()
-
+  const {getInfo} = useGetInfoApi()
   const handleDeposit = async() => {
     if (!userId) return
     await deposit(userId, Number(amount))
   }
-  
   const toggleModal = () => {
     setIsOpen(!isOpen);
   };
-
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     if (/^\d*\.?\d*$/.test(value)) {
@@ -30,7 +29,7 @@ const DepositModal = () => {
   };
 
   const sendPaymentRequest = async () => {
-    if (Number(amount) <= 0) return
+    if (Number(amount) <= 0 || !userId) return
     try {
       const transactionParams: SendTransactionRequest = {
         messages: [
@@ -47,6 +46,7 @@ const DepositModal = () => {
         const result = await tonConnectUI.sendTransaction(transactionParams);
         console.log("Transaction successful:", result);
         await handleDeposit()
+        getInfo(userId)
       } else {
         console.error("sendTransaction function not found");
       }
