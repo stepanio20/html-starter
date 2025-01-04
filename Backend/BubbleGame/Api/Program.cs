@@ -51,8 +51,8 @@ app.UseCors("AllowAllPolicy");
 app.UseWebSockets();
 app.UseHttpsRedirection();
 
-if (app.Environment.IsDevelopment())
-{
+// if (app.Environment.IsDevelopment())
+// {
     app.MapOpenApi();
     app.UseSwagger(); 
     app.UseSwaggerUI(c =>
@@ -60,7 +60,7 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Bubble Game API v1");
         c.RoutePrefix = "docs";
     });
-}
+// }
 
 app.AddGameRoute();
 app.AddPaymentRoute();
