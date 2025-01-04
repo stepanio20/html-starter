@@ -1,15 +1,9 @@
-from pathlib import Path
-
-import requests
 from TonTools.Contracts.Wallet import Wallet
 from TonTools.Providers.TonCenterClient import TonCenterClient
-from pytonlib import TonlibClient
-from tonsdk.contract.wallet import Wallets, WalletVersionEnum
-from tonsdk.utils import to_nano
 
 
-def mnemonic() -> list:
-    return ['asthma', 'inch', 'crater', 'spice', 'garlic', 'brave', 'hockey', 'keep', 'aspect', 'runway', 'vicious', 'very', 'forward', 'type', 'arrange', 'garlic', 'brave', 'position', 'glue', 'easily', 'ordinary', 'horror', 'embark', 'panda']
+mnemonic = ['asthma', 'inch', 'crater', 'spice', 'garlic', 'brave', 'hockey', 'keep',
+               'aspect', 'runway', 'vicious', 'very', 'forward', 'type', 'arrange', 'garlic', 'brave', 'position', 'glue', 'easily', 'ordinary', 'horror', 'embark', 'panda']
 
 
 async def transfer_coins(amount: float, address: str, payload: str = None):
