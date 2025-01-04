@@ -14,7 +14,7 @@ internal static class PaymentRoute
     {
         app.MapPost("/api/payments/top-up", TopUpAsync);
         app.MapPost("/api/payments/withdraw", WithdrawAsync);
-        app.MapGet("/api/payments/get-address", () => "UQBIzBZJnHtSs4ZtKgHAjmskGe7w4K_HYypagOw5At8D71cz");
+        app.MapGet("/api/payments/get-address", () => "EQCwEsU0ATLKAFsoyIs4KjHOWZL7Z4px-pnO1PuxAtYerBh4");
     }
 
     private static async Task<IResult> TopUpAsync([FromBody] TopUpRequest request, ITonService tonService, UserManager<AppUser> userManager)
