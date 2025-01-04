@@ -268,6 +268,14 @@ const App: React.FC = () => {
                 }
             });
 
+            connection.on('PlayerDisconnected', (playerState: PlayerEatenDto) => {
+                if (playerState.playerId === userGameIdRef.current) {
+                    navigate('/')
+                } else if (playerState.playerId) {
+                    dispatch(removePlayer(playerState.playerId));
+                }
+            });
+
             connection.on('PlayerPositionUpdated', (gameState: PlayerDto) => {
                 console.log(gameState)
                 if (!gameState.playerId || gameState.positionY === undefined || gameState.positionX === undefined) {
