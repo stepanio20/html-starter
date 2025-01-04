@@ -248,7 +248,7 @@ const App: React.FC = () => {
     useEffect(() => {
         if (gameRunning) {
             const connection = new HubConnectionBuilder()
-                .withUrl(`https://localhost:7073/gameHub?userid=${userId}`)
+                .withUrl(`https://lexcore.devmainops.store/gameHub?userid=${userId}`)
                 .build();
 
             setConnection(connection);
@@ -286,6 +286,7 @@ const App: React.FC = () => {
             });
 
             connection.on('PlayerPositionUpdated', (gameState: PlayerDto) => {
+                console.log(gameState)
                 if (!gameState.playerId || gameState.positionY === undefined || gameState.positionX === undefined) {
                     console.error("Ошибка: данные игрока некорректны", gameState);
                     return;
