@@ -7,20 +7,42 @@ using BubbleGame.Application.Services.Players;
 using BubbleGame.Cache.Services;
 using BubbleGame.Core.Games;
 using BubbleGame.Core.Players;
+using BubbleGame.Persistence.Identity.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Api.Hubs;
 
-internal sealed class GameHub(IPlayerGameService playerGameService) : Hub
+internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<AppUser> userManager) : Hub
 {
+    private static readonly List<string> Colors =
+    [
+        "Red", "Green", "Blue", "Yellow", "Orange", "Purple", "Pink",
+        "Brown", "Gray", "Black", "White", "Cyan", "Magenta", "Lime"
+    ];
+
+    private static string GetRandomColors()
+    {
+        var random = new Random();
+        var index = random.Next(Colors.Count);
+        return Colors[index];
+    }
+    
     public override async Task OnConnectedAsync()
     {
         var httpContext = Context.GetHttpContext();
         var userId = httpContext?.Request.Query["userId"];
 
-        if (string.IsNullOrEmpty(userId))
+        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userId.ToString()))
             return;
-
+        
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user == null)
+            throw new HubException("User not found");
+        
+        if(user.Balance <= 0)
+            throw new HubException("User balance is less than 0");
+        
         var gameId = Guid.Parse("f2940113-723e-4339-a32b-49d901b44b6c");
         var gm = await playerGameService.GetGameById(gameId);
         if (gm is null)
@@ -36,9 +58,11 @@ internal sealed class GameHub(IPlayerGameService playerGameService) : Hub
         {
             Id = Context.ConnectionId,
             GameId = gm.Id,
-            UserId = Guid.NewGuid(),
+            UserId = Guid.Parse(userId.ToString()),
             PositionX = new Random().Next(1000, 1500),
             PositionY = new Random().Next(1000, 1500),
+            Size = user.Balance,
+            Color = GetRandomColors()
         };
 
         await playerGameService.AddPlayerAsync(player);
@@ -87,7 +111,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService) : Hub
                     Math.Pow(player.PositionY - otherPlayer.PositionY, 2)
                 );
 
-                if (!(distance <= player.Size) && !(distance <= otherPlayer.Size))
+                if (!((decimal)distance <= player.Size) && !((decimal)distance <= otherPlayer.Size))
                     continue;
 
                 if (player.Size > otherPlayer.Size)

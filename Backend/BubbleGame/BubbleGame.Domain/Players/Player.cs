@@ -24,7 +24,8 @@ public class Player : CacheEntity
     public DateTime LastUpdated { get; set; }
 
     [JsonPropertyName("Size")] 
-    public double Size { get; set; } = new Random().Next(20, 50);//todo
-    // [JsonPropertyName("Color")]
-    // public string Color { get; set; }
+    public decimal Size { get; set; }
+    
+    [JsonPropertyName("Color")]
+    public string Color { get; set; }
 }
