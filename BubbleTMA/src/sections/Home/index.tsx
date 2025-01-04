@@ -40,8 +40,6 @@ export function Home() {
 
     useEffect(() => {
       if (!userFriendlyAddress) return
-        console.log(telegramId);
-        
 
         const authenticateUser = async () => {
             try {
