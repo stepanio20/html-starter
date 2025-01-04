@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom'
 
 interface TelegramUser {
     id: number
@@ -35,7 +34,6 @@ interface TelegramWebApp {
 const tg: TelegramWebApp = (window as any).Telegram.WebApp
 
 export function useTelegram() {
-    const navigate = useNavigate()
 
     const onClose = () => {
         tg.close()
