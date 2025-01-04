@@ -31,6 +31,7 @@ const WithdrawModal = () => {
   const handleWithdraw = async() => {
     if (!userId) return
     setLoading(true)
+    setIsOpen(false)
     await withdraw(userId, Number(amount))
     setLoading(false)
   }

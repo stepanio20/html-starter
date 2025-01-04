@@ -45,8 +45,9 @@ const DepositModal = () => {
       if (tonConnectUI.sendTransaction) {
         const result = await tonConnectUI.sendTransaction(transactionParams);
         console.log("Transaction successful:", result);
+        setIsOpen(false)
         await handleDeposit()
-        getInfo(userId)
+        await getInfo(userId)
       } else {
         console.error("sendTransaction function not found");
       }
