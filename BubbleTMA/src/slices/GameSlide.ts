@@ -5,6 +5,7 @@ export interface Player {
   x: number;
   y: number;
   size: number;
+  value: number;
   color: string;
 }
 
@@ -37,6 +38,7 @@ const playerSlice = createSlice({
         existingPlayer.x = action.payload.x;
         existingPlayer.y = action.payload.y;
         existingPlayer.size = action.payload.size;
+        existingPlayer.value = action.payload.value;
         existingPlayer.color = action.payload.color || existingPlayer.color;
       } else {
         state.players.push(action.payload);

@@ -40,6 +40,7 @@ const App: React.FC = () => {
             x: gameState.positionX,
             y: gameState.positionY,
             size: gameState.ballSize * 1500,
+            value: gameState.ballSize,
             color: gameState.color,
         };
 
@@ -58,7 +59,7 @@ const App: React.FC = () => {
             this.x = x;
             this.y = y;
             this.value = value;
-            this.size = value;
+            this.size = value * 1500;
             this.speed = 0.2;
             this.color = color;
         }
@@ -142,17 +143,23 @@ const App: React.FC = () => {
 
     const animate = () => {
         if (!gameRunning) return;
-
+    
         const canvas = canvasRef.current!;
         const ctx = canvas.getContext("2d")!;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        const offsetX = playerBubble.current.x - canvas.width / 2;
-        const offsetY = playerBubble.current.y - canvas.height / 2;
-
+    
+        const isMobile = window.innerWidth < 768;
+        const scale = isMobile ? 0.7 : 1;
+    
+        ctx.save();
+        ctx.scale(scale, scale);
+    
+        const offsetX = playerBubble.current.x - (canvas.width / 2) / scale;
+        const offsetY = playerBubble.current.y - (canvas.height / 2) / scale;
+    
         playerBubble.current.x += joystickRef.current.deltaX * playerBubble.current.speed * 5;
         playerBubble.current.y += joystickRef.current.deltaY * playerBubble.current.speed * 5;
-
+    
         playerBubble.current.x = Math.max(
             playerBubble.current.size,
             Math.min(playerBubble.current.x, mapWidth - playerBubble.current.size)
@@ -161,18 +168,20 @@ const App: React.FC = () => {
             playerBubble.current.size,
             Math.min(playerBubble.current.y, mapHeight - playerBubble.current.size)
         );
-
+    
         playerBubble.current.draw(ctx, offsetX, offsetY, playerBubble.current.color);
-
+    
         playersRef.current
             .filter(player => !eatenPlayers.has(player.id))
             .forEach((player) => {
                 if (player.id !== PlayerId) {
-                    const otherBubble = new PlayerBubble(player.x, player.y, player.size, player.color);
+                    const otherBubble = new PlayerBubble(player.x, player.y, player.value, player.color);
                     otherBubble.draw(ctx, offsetX, offsetY, player.color);
                 }
             });
-
+    
+        ctx.restore();
+    
         if (
             playerBubble.current.x !== lastPosition.x ||
             playerBubble.current.y !== lastPosition.y 
@@ -185,15 +194,15 @@ const App: React.FC = () => {
                     playerBubble.current.y,
                     playerBubble.current.size,
                 );
-
+    
                 lastPosition = { x: playerBubble.current.x, y: playerBubble.current.y };
             }
         }
-
-
+    
         checkCollisions();
         requestAnimationFrame(animate);
     };
+    
 
     const sendPlayerPosition = (gameId: string, playerId: string, x: number, y: number, ballSize: number) => {
         const playerDto = {
@@ -221,7 +230,7 @@ const App: React.FC = () => {
         const currentPlayer = players.find(player => player.id === PlayerId);
         if (currentPlayer && currentPlayer.size !== playerBubble.current.size) {
             playerBubble.current.size = currentPlayer.size;
-            playerBubble.current.value = currentPlayer.size;
+            playerBubble.current.value = currentPlayer.value;
         }
     }, [players, PlayerId]);
 
@@ -250,8 +259,8 @@ const App: React.FC = () => {
                 if (data) {
                     playerBubble.current.x = data.positionX;
                     playerBubble.current.y = data.positionY;
-                    playerBubble.current.size = data.ballSize * 1500
-                    playerBubble.current.value = data.ballSize;
+                    playerBubble.current.size = data.ballSize;
+                    playerBubble.current.value = data.ballSize * 1500;
                     playerBubble.current.color = data.color
                     dispatch(setPlayerId(data?.playerId));
                 }

@@ -75,12 +75,14 @@ export function Home() {
     <div className={styles?.overlay}>
       <div className={styles?.menu}>
         <p>Balance: {balance}$</p>
-        <button 
-        onClick={goToGame}
-        disabled={!userGameId}
-        >
-          Go to game
-        </button>
+        {userFriendlyAddress && (
+          <button 
+          onClick={goToGame}
+          disabled={!userGameId}
+          >
+            Go to game
+          </button>
+        )}
         <button onClick={() => handleConnectWallet()}>Connect TON wallet</button>
         {userFriendlyAddress && (
           <button onClick={handleDisconnectWallet}>Disconnect TON wallet</button>
