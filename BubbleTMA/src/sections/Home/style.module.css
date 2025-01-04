@@ -25,3 +25,10 @@
 	border-radius: 5px;
 	cursor: pointer;
 }
+
+.textContainer {
+  width: 200px;
+  white-space: normal;
+  overflow: hidden;
+  word-wrap: break-word;
+}
