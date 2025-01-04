@@ -1,5 +1,5 @@
 uvicorn
 FastAPI
 pytonlib
-tonsdk
 requests
+TonTools
