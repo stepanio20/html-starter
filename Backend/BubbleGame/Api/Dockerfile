@@ -1,7 +1,7 @@
 ﻿FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 USER $APP_UID
 WORKDIR /app
-EXPOSE 8000
+EXPOSE 8080
 EXPOSE 8081
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
@@ -12,6 +12,7 @@ COPY ["Api.Common/Api.Common.csproj", "Api.Common/"]
 COPY ["BubbleGame.Cache/BubbleGame.Cache.csproj", "BubbleGame.Cache/"]
 COPY ["BubbleGame.Application/BubbleGame.Application.csproj", "BubbleGame.Application/"]
 COPY ["BubbleGame.Domain/BubbleGame.Domain.csproj", "BubbleGame.Domain/"]
+COPY ["BubbleGame.Persistence/BubbleGame.Persistence.csproj", "BubbleGame.Persistence/"]
 RUN dotnet restore "Api/Api.csproj"
 COPY . .
 WORKDIR "/src/Api"
