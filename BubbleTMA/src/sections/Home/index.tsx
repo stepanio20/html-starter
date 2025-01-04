@@ -1,4 +1,3 @@
-import { initDataUser } from '@telegram-apps/sdk'
 import { useTonAddress, useTonConnectUI } from '@tonconnect/ui-react'
 import { useEffect } from "react"
 import { useDispatch, useSelector } from 'react-redux'
@@ -7,6 +6,7 @@ import DepositModal from '../../features/DepositModal'
 import WithdrawModal from '../../features/WithdrawModal'
 import useGetAddressApi from '../../shared/api/get-adress'
 import useGetInfoApi from '../../shared/api/get-info'
+import { useTelegram } from '../../shared/hooks/useTelegram'
 import { setUserId } from '../../slices/GameSlide'
 import { RootState } from '../../store'
 import styles from './style.module.css'
@@ -17,10 +17,13 @@ export function Home() {
   const dispatch = useDispatch()
   const userGameId = useSelector((state: RootState) => state?.players?.userId)
   const balance = useSelector((state: RootState) => state?.players?.balance)
-  const telegram = initDataUser()
+  const {telegramId} = useTelegram()
   const {getInfo} = useGetInfoApi()
   const {getAddress} = useGetAddressApi()
-
+  const loginData = {
+    WalletAddress: userFriendlyAddress,
+    TelegramId: telegramId,
+  };
  const handleConnectWallet = async () => {
     try {
       await tonConnectUI.connectWallet();
@@ -41,10 +44,7 @@ export function Home() {
 
     useEffect(() => {
       if (!userFriendlyAddress) return
-        const loginData = {
-            WalletAddress: userFriendlyAddress,
-            TelegramId: telegram?.id || 0,
-        };
+        
 
         const authenticateUser = async () => {
             try {

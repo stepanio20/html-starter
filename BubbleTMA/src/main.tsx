@@ -1,4 +1,3 @@
-import { init } from '@telegram-apps/sdk'
 import { THEME, TonConnectUIProvider } from '@tonconnect/ui-react'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -24,7 +23,7 @@ createRoot(document.getElementById('root')!).render(
 )
 function AppContent() {
   const { error, setError } = useError();
-  init()
+  
   return (
     <>
       <Router />
