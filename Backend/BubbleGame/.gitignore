@@ -3,6 +3,23 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
+.idea/
+*.rider.*
+*.rider.project.*
+*.riderinfo
+
+# .NET-specific
+*.cache
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# General
+bin/
+obj/
+.vscode/
+
 # dotenv files
 .env
 
