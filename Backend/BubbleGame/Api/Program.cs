@@ -37,7 +37,11 @@ builder.Logging.AddConsole();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql("Host=199.247.6.31;Port=5444;Username=user;Password=password;Database=mydatabase;Timeout=30"));
 
-builder.Services.AddIdentity<AppUser, IdentityRole>()
+builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
+    {
+        options.User.RequireUniqueEmail = false; 
+        options.User.AllowedUserNameCharacters = string.Empty; 
+    })
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
