@@ -58,7 +58,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
         {
             Id = Context.ConnectionId,
             GameId = gm.Id,
-            UserId = Guid.Parse(userId.ToString()),
+            UserId = userId.ToString(),
             PositionX = new Random().Next(1000, 1500),
             PositionY = new Random().Next(1000, 1500),
             Size = user.Balance,
@@ -116,15 +116,19 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
 
                 if (player.Size > otherPlayer.Size)
                 {
+                    var user = await userManager.FindByIdAsync(player.UserId); 
+                    if (user is null)
+                        throw new HubException("User not found");
+                    
                     await playerGameService.RemovePlayerAsync(otherPlayer);
 
                     await Clients.All.SendAsync(SocketMessages.PLAYER_EATEN,
                         new PlayerEatenDto(player.GameId, otherPlayer.Id));
 
                     player.Size += otherPlayer.Size;
-
+                    user.Balance += player.Size;
                     players.Remove(otherPlayer);
-                    await playerGameService.UpdatePlayerSize(player);
+                    await playerGameService.TopUpBalance(player);
                     await Clients.All.SendAsync(
                         SocketMessages.PLAYER_POSITION_UPDATED,
                         new PlayerDto(player.GameId, player.Id, player.PositionX, player.PositionY, player.Size)
@@ -132,6 +136,10 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
                 }
                 else
                 {
+                    var user = await userManager.FindByIdAsync(otherPlayer.UserId); 
+                    if (user is null)
+                        throw new HubException("User not found");
+                    
                     await playerGameService.RemovePlayerAsync(player);
 
                     await Clients.All.SendAsync(SocketMessages.PLAYER_EATEN,
@@ -140,7 +148,8 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
                     otherPlayer.Size += player.Size;
 
                     players.Remove(player);
-                    await playerGameService.UpdatePlayerSize(otherPlayer);
+                    await playerGameService.TopUpBalance(otherPlayer);
+                    user.Balance += player.Size;
                     await Clients.All.SendAsync(
                         SocketMessages.PLAYER_POSITION_UPDATED,
                         new PlayerDto(otherPlayer.GameId, otherPlayer.Id, otherPlayer.PositionX, otherPlayer.PositionY,

@@ -12,7 +12,7 @@ public class Player : CacheEntity
     public Guid GameId { get; set; }
 
     [JsonPropertyName("UserId")]
-    public Guid UserId { get; set; }
+    public string UserId { get; set; }
 
     [JsonPropertyName("PositionX")]
     public float PositionX { get; set; }

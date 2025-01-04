@@ -14,7 +14,7 @@ public static class Extensions
     {
         services.AddStackExchangeRedisCache(options =>
         {
-            options.Configuration = "localhost:6379";
+            options.Configuration = "199.247.6.31:6379";
             options.InstanceName = "BubbleGame.Cache:";
         });
         

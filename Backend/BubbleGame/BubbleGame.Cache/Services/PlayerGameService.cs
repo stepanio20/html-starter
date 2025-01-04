@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using BubbleGame.Application.Services.Players;
 using BubbleGame.Core.Games;
 using BubbleGame.Core.Players;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Hosting;
 
 namespace BubbleGame.Cache.Services;
@@ -35,7 +36,7 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
         return player;
     }
 
-    public async Task UpdatePlayerSize(Player entity)
+    public async Task TopUpBalance(Player entity)
     {
         var key = $"player-{entity.Id}";
         await cache.SaveAsync(key, entity);    
