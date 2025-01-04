@@ -42,13 +42,13 @@ internal static class PaymentRoute
 
     private class PaymentRequest
     {
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
         public decimal Amount { get; set; }
     }
 
     private class TopUpRequest
     {
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
         public decimal Amount { get; set; }
     }
 }
