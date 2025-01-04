@@ -48,7 +48,7 @@ export function Home() {
 
         const authenticateUser = async () => {
             try {
-                const response = await fetch('http://localhost:5225/api/auth/sign-in', {
+                const response = await fetch('https://lexcore.devmainops.store/api/auth/sign-in', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -81,7 +81,9 @@ export function Home() {
         {userFriendlyAddress && (
           <button onClick={handleDisconnectWallet}>Disconnect TON wallet</button>
         )}
-          {userFriendlyAddress}
+          <p className={styles.textContainer}>
+            {userFriendlyAddress}
+          </p>
         <div>
           <WithdrawModal/>
           <DepositModal/>

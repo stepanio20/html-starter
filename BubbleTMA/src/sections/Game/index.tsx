@@ -26,6 +26,13 @@ const App: React.FC = () => {
     const balance = useSelector((state: RootState) => state?.players?.balance);
     const playersRef = useRef(players);
     const userGameIdRef = useRef(PlayerId);
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        if (!userId) {
+            navigate('/')
+        }
+    })
 
     const handlePlayerUpdate = (gameState: PlayerDto) => {
         const player: Player = {
@@ -33,7 +40,7 @@ const App: React.FC = () => {
             x: gameState.positionX,
             y: gameState.positionY,
             size: gameState.ballSize,
-            color: "blue",
+            color: gameState.color,
         };
 
         dispatch(updatePlayer(player));
@@ -121,6 +128,7 @@ const App: React.FC = () => {
         positionX: number;
         positionY: number;
         ballSize: number;
+        color: string;
     }
 
    /*  let lastSentTime = 0;
@@ -154,7 +162,7 @@ const App: React.FC = () => {
             Math.min(playerBubble.current.y, mapHeight - playerBubble.current.size)
         );
 
-        playerBubble.current.draw(ctx, offsetX, offsetY, "red");
+        playerBubble.current.draw(ctx, offsetX, offsetY, playerBubble.current.color);
 
         playersRef.current
             .filter(player => !eatenPlayers.has(player.id))
@@ -226,12 +234,12 @@ const App: React.FC = () => {
         joystickRef.current.deltaY = deltaY;
     };
 
-    const navigate = useNavigate()
 
+    
     useEffect(() => {
         if (gameRunning) {
             const connection = new HubConnectionBuilder()
-                .withUrl(`http://localhost:5225/gameHub?userid=${userId}`)
+                .withUrl(`https://lexcore.devmainops.store/gameHub?userid=${userId}`)
                 .build();
 
             setConnection(connection);
@@ -244,7 +252,7 @@ const App: React.FC = () => {
                     playerBubble.current.y = data.positionY;
                     playerBubble.current.size = data.ballSize
                     playerBubble.current.value = data.ballSize;
-                    playerBubble.current.color = 'red'
+                    playerBubble.current.color = data.color
                     dispatch(setPlayerId(data?.playerId));
                 }
             });

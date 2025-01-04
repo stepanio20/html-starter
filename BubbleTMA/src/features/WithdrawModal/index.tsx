@@ -1,12 +1,39 @@
 import { useState } from "react"
+import { useSelector } from 'react-redux'
+import { RootState } from '../../store'
+import useWithdrawApi from './api'
 import styles from "./style.module.css"
 
 const WithdrawModal = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [amount, setAmount] = useState<string | number>("")
+  const balance = useSelector((state: RootState) => state?.players?.balance);
+  const userId = useSelector((state: RootState) => state?.players?.userId);
+  const {withdraw} = useWithdrawApi()
+  const [loading, setLoading] = useState<boolean>(false)
 
   const toggleModal = () => {
     setIsOpen(!isOpen);
   };
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (/^\d*\.?\d*$/.test(value)) {
+      setAmount(value);
+    }
+  };
+
+  const isAmountValid = () => {
+    const numericAmount = parseFloat(amount as string);
+    return !isNaN(numericAmount) && numericAmount > 0 && numericAmount <= balance;
+  };
+
+  const handleWithdraw = async() => {
+    if (!userId) return
+    setLoading(true)
+    await withdraw(userId, Number(amount))
+    setLoading(false)
+  }
 
   return (
     <>
@@ -22,17 +49,22 @@ const WithdrawModal = () => {
             &times;
           </button>
           <h2>Withdraw</h2>
+          <p>balance {balance}</p>
           <div className={styles.fill}>
 						<div>
-							<p style={{textAlign: 'left'}}>UserID</p>
-							<input type="text" />
+							<input 
+              type="number"
+              placeholder='Amount'
+              value={amount}
+              onChange={handleAmountChange} />
 						</div>
-						<div>
-							<p style={{textAlign: 'left'}}>Amount</p>
-							<input type="text" />
-						</div>
-
-            <button>Confirm</button>
+            <button
+              className={styles.confirm}
+              disabled={!isAmountValid() || loading}
+              onClick={() => handleWithdraw()}
+            >
+              Confirm
+            </button>
 					</div>
         </div>
       </div>
