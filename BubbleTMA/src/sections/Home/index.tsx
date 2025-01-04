@@ -20,10 +20,6 @@ export function Home() {
   const {telegramId} = useTelegram()
   const {getInfo} = useGetInfoApi()
   const {getAddress} = useGetAddressApi()
-  const loginData = {
-    WalletAddress: userFriendlyAddress,
-    TelegramId: telegramId,
-  };
  const handleConnectWallet = async () => {
     try {
       await tonConnectUI.connectWallet();
@@ -53,7 +49,10 @@ export function Home() {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(loginData),
+                    body: JSON.stringify({
+                      WalletAddress: userFriendlyAddress,
+                      TelegramId: telegramId,
+                    }),
                 });
 
                 const data:string = await response.json();
