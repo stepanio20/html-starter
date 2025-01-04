@@ -62,7 +62,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
             PositionX = new Random().Next(1000, 1500),
             PositionY = new Random().Next(1000, 1500),
             Size = user.Balance,
-            Color = GetRandomColors()
+            Color = GetRandomColors().ToLower()
         };
 
         await playerGameService.AddPlayerAsync(player);
