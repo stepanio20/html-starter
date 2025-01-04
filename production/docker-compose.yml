@@ -18,6 +18,7 @@ services:
       - '8080:8080'
     networks:
       - app_network
+
   transactions:
     build:
       context: ../Backend/Transactions
@@ -28,7 +29,7 @@ services:
       - app_network
 
   postgres:
-    image: postgres:latest
+    image: postgres:16
     container_name: postgres
     environment:
       POSTGRES_USER: postgres
