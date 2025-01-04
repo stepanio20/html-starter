@@ -1,8 +1,9 @@
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr'
 import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import Joystick from '../../features/Joystick'
-import { getPlayers, Player, removePlayer, setUserId, updatePlayer } from '../../slices/GameSlide'
+import { getPlayers, Player, removePlayer, updatePlayer } from '../../slices/GameSlide'
 import { RootState } from '../../store'
 import styles from './style.module.css'
 
@@ -23,6 +24,11 @@ const App: React.FC = () => {
     const userGameId = useSelector((state: RootState) => state?.players?.userGameId);
     const playersRef = useRef(players);
     const userGameIdRef = useRef(userGameId);
+    const navigate=useNavigate()
+
+    if (!userGameId) {
+        navigate('/')
+    }
 
     const handlePlayerUpdate = (gameState: PlayerDto) => {
         const player: Player = {
@@ -137,7 +143,6 @@ const App: React.FC = () => {
         });
     };
 
-    const randomGuid = generateRandomGuid();
 
     const animate = () => {
         if (!gameRunning) return;
@@ -236,7 +241,7 @@ const App: React.FC = () => {
     useEffect(() => {
         if (gameRunning) {
             const connection = new HubConnectionBuilder()
-                .withUrl(`http://localhost:5225/gameHub?userid=${randomGuid}`)
+                .withUrl(`http://localhost:5225/gameHub`)
                 .build();
 
             setConnection(connection);
@@ -250,7 +255,6 @@ const App: React.FC = () => {
                     playerBubble.current.size = data.ballSize
                     playerBubble.current.value = data.ballSize;
                     playerBubble.current.color = 'red'
-                    dispatch(setUserId(data?.playerId));
                 }
             });
 
