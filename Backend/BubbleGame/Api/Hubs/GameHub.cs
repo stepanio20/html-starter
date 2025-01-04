@@ -185,7 +185,11 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
 
             await playerGameService.RemovePlayerAsync(player);
 
-            await Clients.All.SendAsync(SocketMessages.PLAYER_DISCONNECTED, new { player.GameId, player.Id });
+            await Clients.All.SendAsync(SocketMessages.PLAYER_DISCONNECTED, new
+            {
+                GameId = player.GameId, 
+                PlayerId = player.Id
+            });
         }
         catch (Exception ex)
         {
