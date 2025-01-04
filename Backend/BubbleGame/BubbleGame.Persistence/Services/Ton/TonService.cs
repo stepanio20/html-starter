@@ -10,7 +10,7 @@ internal sealed class TonService(string endpoint) : ITonService
     private static readonly HttpClient client = new();
     public async Task TransferTonAsync(decimal amount, string recipientAddress)
     {
-        var endpoint = "http://127.0.0.1:8000/withdraw?X_TOKEN=9c79ec24-652b-45ab-9567-bd9c63d6694a";
+        var endpoint = "https://bot.camelracing.io/withdraw?X_TOKEN=9c79ec24-652b-45ab-9567-bd9c63d6694a";
         var transferData = new
         {
             amount, 
