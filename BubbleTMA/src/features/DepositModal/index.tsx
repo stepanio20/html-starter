@@ -46,11 +46,6 @@ const DepositModal = () => {
     }
   };
 
-  const isAmountValid = () => {
-    const numericAmount = parseFloat(amount as string);
-    return !isNaN(numericAmount) && numericAmount > 0 && numericAmount <= balance;
-  };
-
   return (
     <>
       <button 
@@ -78,7 +73,6 @@ const DepositModal = () => {
             </div>
             <button
               onClick={() => sendPaymentRequest()}
-              disabled={!isAmountValid()}
               className={styles.confirm}
             >
               Confirm
