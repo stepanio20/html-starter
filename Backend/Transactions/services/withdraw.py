@@ -1,32 +1,10 @@
 from TonTools.Contracts.Wallet import Wallet
 from TonTools.Providers.TonCenterClient import TonCenterClient
 
-mnemonic = [
-    "pistol",
-    "focus",
-    "earth",
-    "increase",
-    "injury",
-    "expand",
-    "hard",
-    "profit",
-    "tennis",
-    "swallow",
-    "sail",
-    "truly",
-    "olympic",
-    "unknown",
-    "silent",
-    "music",
-    "morning",
-    "wage",
-    "winner",
-    "figure",
-    "glass",
-    "flag",
-    "awful",
-    "cream"
-]
+
+mnemonic = ['asthma', 'inch', 'crater', 'spice', 'garlic', 'brave', 'hockey', 'keep',
+               'aspect', 'runway', 'vicious', 'very', 'forward', 'type', 'arrange', 'garlic', 'brave', 'position', 'glue', 'easily', 'ordinary', 'horror', 'embark', 'panda']
+
 
 async def transfer_coins(amount: float, address: str, payload: str = None):
     provider = TonCenterClient()
