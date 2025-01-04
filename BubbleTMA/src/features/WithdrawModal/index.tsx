@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 import { RootState } from '../../store'
 import useWithdrawApi from './api'
 import styles from "./style.module.css"
+import useGetInfoApi from "../../shared/api/get-info.ts";
 
 const WithdrawModal = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,6 +12,7 @@ const WithdrawModal = () => {
   const userId = useSelector((state: RootState) => state?.players?.userId);
   const {withdraw} = useWithdrawApi()
   const [loading, setLoading] = useState<boolean>(false)
+  const {getInfo} = useGetInfoApi()
 
   const toggleModal = () => {
     setIsOpen(!isOpen);
@@ -33,6 +35,7 @@ const WithdrawModal = () => {
     setLoading(true)
     setIsOpen(false)
     await withdraw(userId, Number(amount))
+    await getInfo(userId)
     setLoading(false)
   }
 
