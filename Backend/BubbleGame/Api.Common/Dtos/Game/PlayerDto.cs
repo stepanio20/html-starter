@@ -5,5 +5,6 @@ public record PlayerDto(
     string PlayerId, 
     float PositionX, 
     float PositionY, 
-    decimal BallSize
+    decimal BallSize,
+    string Color
     );

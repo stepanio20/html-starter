@@ -74,7 +74,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
                     player.Id,
                     player.PositionX,
                     player.PositionY,
-                    player.Size));
+                    player.Size, player.Color));
         
         var players = await playerGameService.GetAsync(player.GameId);
         foreach (var otherPlayer in players)
@@ -85,7 +85,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
                         otherPlayer.Id,
                         otherPlayer.PositionX,
                         otherPlayer.PositionY,
-                        otherPlayer.Size));
+                        otherPlayer.Size, player.Color));
         
         await base.OnConnectedAsync();
     }
@@ -131,7 +131,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
                     await playerGameService.TopUpBalance(player);
                     await Clients.All.SendAsync(
                         SocketMessages.PLAYER_POSITION_UPDATED,
-                        new PlayerDto(player.GameId, player.Id, player.PositionX, player.PositionY, player.Size)
+                        new PlayerDto(player.GameId, player.Id, player.PositionX, player.PositionY, player.Size, player.Color)
                     );
                 }
                 else
@@ -153,7 +153,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
                     await Clients.All.SendAsync(
                         SocketMessages.PLAYER_POSITION_UPDATED,
                         new PlayerDto(otherPlayer.GameId, otherPlayer.Id, otherPlayer.PositionX, otherPlayer.PositionY,
-                            otherPlayer.Size)
+                            otherPlayer.Size, player.Color)
                     );
                 }
 
@@ -162,7 +162,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
 
             await Clients.All.SendAsync(
                 SocketMessages.PLAYER_POSITION_UPDATED,
-                new PlayerDto(player.GameId, player.Id, player.PositionX, player.PositionY, player.Size)
+                new PlayerDto(player.GameId, player.Id, player.PositionX, player.PositionY, player.Size, player.Color)
             );
         }
         catch (Exception ex)
