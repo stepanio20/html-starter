@@ -1,3 +1,4 @@
+using BubbleGame.Core.Games;
 using BubbleGame.Core.Players;
 using BubbleGame.Persistence.Identity.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -7,4 +8,5 @@ namespace BubbleGame.Persistence.DAL;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<AppUser>(options)
 {
+    public DbSet<PlayRoom> PlayRooms { get; set; }
 }
