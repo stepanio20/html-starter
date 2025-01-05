@@ -133,7 +133,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
                         new PlayerEatenDto(player.GameId, otherPlayer.Id));
 
                     player.Size += otherPlayer.Size;
-                    user.Balance += player.Size;
+                    user.Balance += otherPlayer.Size;
                     players.Remove(otherPlayer);
                     await playerGameService.TopUpBalance(player);
                     await userManager.UpdateAsync(user);
@@ -157,10 +157,10 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
                         new PlayerEatenDto(otherPlayer.GameId, player.Id));
 
                     otherPlayer.Size += player.Size;
-            
+                    user.Balance += player.Size;
+
                     players.Remove(player);
                     await playerGameService.TopUpBalance(otherPlayer);
-                    user.Balance += player.Size;
 
                     await userManager.UpdateAsync(user);
                     await Clients.All.SendAsync(
