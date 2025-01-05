@@ -74,26 +74,32 @@ export function Home() {
   return (
     <div className={styles?.overlay}>
       <div className={styles?.menu}>
-        <p>Balance: {balance}$</p>
-        {userFriendlyAddress && (
-          <button 
-          onClick={goToGame}
-          disabled={!userGameId}
-          >
-            Go to game
+        
+        {userFriendlyAddress ? (
+          <>
+            <p>Balance: {balance}$</p>
+            <button 
+            onClick={goToGame}
+            disabled={!userGameId}
+            >
+              Go to game
+            </button>
+            <button onClick={handleDisconnectWallet}>
+            Disconnect TON wallet
+            </button>
+            <p className={styles.textContainer}>
+              {userFriendlyAddress}
+            </p>
+            <div>
+              <WithdrawModal/>
+              <DepositModal/>
+            </div>
+          </>
+        ) : (
+          <button onClick={() => handleConnectWallet()}>
+            Connect TON wallet
           </button>
         )}
-        <button onClick={() => handleConnectWallet()}>Connect TON wallet</button>
-        {userFriendlyAddress && (
-          <button onClick={handleDisconnectWallet}>Disconnect TON wallet</button>
-        )}
-          <p className={styles.textContainer}>
-            {userFriendlyAddress}
-          </p>
-        <div>
-          <WithdrawModal/>
-          <DepositModal/>
-        </div>
       </div>
     </div>
   )
