@@ -22,43 +22,43 @@ public class GameBackgroundService : BackgroundService
     
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // while (!stoppingToken.IsCancellationRequested)
-        // {
-        //     try
-        //     {
-        //         var games = await _appDbContext.PlayRooms.ToListAsync(cancellationToken: stoppingToken);
-        //
-        //         foreach (var game in games)
-        //         {
-        //             var cacheGame = await _cacheService.GetByKeyAsync<Game>($"game-{game.GameId}");
-        //             if (cacheGame is null)
-        //                 continue;
-        //             
-        //             var now = DateTime.UtcNow;
-        //             var playersToRemove = new List<string>();
-        //
-        //             foreach (var cachePlayer in cacheGame.Players)
-        //             {
-        //                 var player = await _cacheService.GetByKeyAsync<Player>($"player-{cachePlayer}");
-        //                 if (player is null)
-        //                     continue;
-        //
-        //                 if (player.LastUpdated < now.AddSeconds(-15))
-        //                     playersToRemove.Add(cachePlayer); // Добавляем в список для удаления
-        //             }
-        //             
-        //             foreach (var playerId in playersToRemove)
-        //             {
-        //                 cacheGame.Remove(playerId);
-        //             }
-        //             await _cacheService.SaveAsync($"game-{cacheGame.Id}", cacheGame);
-        //         }
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         Console.WriteLine(ex);//todo log
-        //     }
-        // }
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                var games = await _appDbContext.PlayRooms.ToListAsync(cancellationToken: stoppingToken);
+
+                foreach (var game in games)
+                {
+                    var cacheGame = await _cacheService.GetByKeyAsync<Game>($"game-{game.GameId}");
+                    if (cacheGame is null)
+                        continue;
+                    
+                    var now = DateTime.UtcNow;
+                    var playersToRemove = new List<string>();
+
+                    foreach (var cachePlayer in cacheGame.Players)
+                    {
+                        var player = await _cacheService.GetByKeyAsync<Player>($"player-{cachePlayer}");
+                        if (player is null)
+                            continue;
+
+                        if (player.LastUpdated < now.AddSeconds(-15))
+                            playersToRemove.Add(cachePlayer); // Добавляем в список для удаления
+                    }
+                    
+                    foreach (var playerId in playersToRemove)
+                    {
+                        cacheGame.Remove(playerId);
+                    }
+                    await _cacheService.SaveAsync($"game-{cacheGame.Id}", cacheGame);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);//todo log
+            }
+        }
     
     }
 }
