@@ -53,12 +53,12 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
                 Id = gameId
             };
             await playerGameService.CreateGame(gm);
-            _context.PlayRooms.Add(new PlayRoom()
-            {
-                GameId = gameId
-            });
-            
-            await _context.SaveChangesAsync();
+            // _context.PlayRooms.Add(new PlayRoom()
+            // {
+            //     GameId = gameId
+            // });
+            //
+            // await _context.SaveChangesAsync();
         }
 
         var player = new Player
