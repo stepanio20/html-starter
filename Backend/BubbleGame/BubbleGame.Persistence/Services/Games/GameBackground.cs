@@ -30,7 +30,7 @@ public class GameBackgroundService : BackgroundService
 
                 foreach (var game in games)
                 {
-                    var cacheGame = await _cacheService.GetByKeyAsync<Game>($"game-{game.GameId}");
+                    var cacheGame = await _cacheService.GetByKeyAsync<Game>($"game-{game.Id}");
                     if (cacheGame is null)
                         continue;
                     

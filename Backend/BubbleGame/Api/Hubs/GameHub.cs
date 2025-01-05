@@ -103,15 +103,8 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
         try
         {
             var player = await playerGameService.GetById(playerDto.PlayerId);
-            if (player is null)
-            {
-                await Clients.All.SendAsync(SocketMessages.PLAYER_DISCONNECTED, new
-                {
-                    GameId = player.GameId, 
-                    PlayerId = player.Id
-                });
-                throw new HubException("Player not found");
-            }
+            if(player is null)
+                return;
             
             player.PositionX = playerDto.PositionX;
             player.PositionY = playerDto.PositionY;
