@@ -19,8 +19,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
 {
     private static readonly List<string> Colors =
     [
-        "Red", "Green", "Blue", "Yellow", "Orange", "Purple", "Pink",
-        "Brown", "Gray", "Black", "Cyan", "Magenta", "Lime"
+        "Red", "Green", "Blue", "Yellow", "Orange", "Purple", "Pink", "Lime"
     ];
 
     private static string GetRandomColors()
