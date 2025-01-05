@@ -35,15 +35,21 @@ public class GameBackgroundService : BackgroundService
                         continue;
                     
                     var now = DateTime.UtcNow;
+                    var playersToRemove = new List<string>();
 
                     foreach (var cachePlayer in cacheGame.Players)
                     {
                         var player = await _cacheService.GetByKeyAsync<Player>($"player-{cachePlayer}");
-                        if(player is null)
+                        if (player is null)
                             continue;
-                        
+
                         if (player.LastUpdated < now.AddSeconds(-15))
-                            cacheGame.Remove(player.Id);
+                            playersToRemove.Add(cachePlayer); // Добавляем в список для удаления
+                    }
+                    
+                    foreach (var playerId in playersToRemove)
+                    {
+                        cacheGame.Remove(playerId);
                     }
                     await _cacheService.SaveAsync($"game-{cacheGame.Id}", cacheGame);
                 }
