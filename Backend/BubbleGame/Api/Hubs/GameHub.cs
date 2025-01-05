@@ -10,6 +10,7 @@ using BubbleGame.Core.Players;
 using BubbleGame.Persistence.Identity.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Api.Hubs;
 
@@ -122,6 +123,10 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
                     if (user is null)
                         throw new HubException("User not found");
                     
+                    var other_player = await userManager.Users.FirstOrDefaultAsync(x => x.Id == otherPlayer.UserId);
+                    if (other_player is not null)
+                        other_player.Balance = 0;
+                    
                     await playerGameService.RemovePlayerAsync(otherPlayer);
 
                     await Clients.All.SendAsync(SocketMessages.PLAYER_EATEN,
@@ -142,13 +147,16 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
                     if (user is null)
                         throw new HubException("User not found");
                     
+                    var main_player = await userManager.Users.FirstOrDefaultAsync(x => x.Id == player.UserId);
+                    if (main_player is not null)
+                        main_player.Balance = 0;
                     await playerGameService.RemovePlayerAsync(player);
 
                     await Clients.All.SendAsync(SocketMessages.PLAYER_EATEN,
                         new PlayerEatenDto(otherPlayer.GameId, player.Id));
 
                     otherPlayer.Size += player.Size;
-
+            
                     players.Remove(player);
                     await playerGameService.TopUpBalance(otherPlayer);
                     user.Balance += player.Size;
