@@ -1,31 +1,26 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\User\\Desktop\\html-starter\\Backend\\BubbleGame\\BubbleGame.Domain\\BubbleGame.Domain.csproj": {}
+    "/Users/viacheslavmw/projects/html-starter/Backend/BubbleGame/BubbleGame.Domain/BubbleGame.Domain.csproj": {}
   },
   "projects": {
-    "C:\\Users\\User\\Desktop\\html-starter\\Backend\\BubbleGame\\BubbleGame.Domain\\BubbleGame.Domain.csproj": {
+    "/Users/viacheslavmw/projects/html-starter/Backend/BubbleGame/BubbleGame.Domain/BubbleGame.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\User\\Desktop\\html-starter\\Backend\\BubbleGame\\BubbleGame.Domain\\BubbleGame.Domain.csproj",
+        "projectUniqueName": "/Users/viacheslavmw/projects/html-starter/Backend/BubbleGame/BubbleGame.Domain/BubbleGame.Domain.csproj",
         "projectName": "BubbleGame.Domain",
-        "projectPath": "C:\\Users\\User\\Desktop\\html-starter\\Backend\\BubbleGame\\BubbleGame.Domain\\BubbleGame.Domain.csproj",
-        "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\User\\Desktop\\html-starter\\Backend\\BubbleGame\\BubbleGame.Domain\\obj\\",
+        "projectPath": "/Users/viacheslavmw/projects/html-starter/Backend/BubbleGame/BubbleGame.Domain/BubbleGame.Domain.csproj",
+        "packagesPath": "/Users/viacheslavmw/.nuget/packages/",
+        "outputPath": "/Users/viacheslavmw/projects/html-starter/Backend/BubbleGame/BubbleGame.Domain/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
+        "UsingMicrosoftNETSdk": false,
         "configFilePaths": [
-          "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/Users/viacheslavmw/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -43,8 +38,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.100"
+        }
       },
       "frameworks": {
         "net9.0": {
@@ -65,7 +59,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.101/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.101/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

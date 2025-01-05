@@ -8,11 +8,8 @@ import uvicorn
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.methods import CreateInvoiceLink
 from aiogram.types import (
-    InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo, LabeledPrice,
-    PreCheckoutQuery
+    InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 )
-from pydantic import BaseModel
-from starlette.responses import JSONResponse
 
 API_TOKEN = '8144138853:AAGJRyyNQXpTMrQdtsTAUHyreunLQVES-_Q'
 WEB_APP = 'https://client.camelracing.io/'
