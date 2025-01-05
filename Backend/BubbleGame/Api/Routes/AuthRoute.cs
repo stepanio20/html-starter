@@ -26,10 +26,12 @@ internal static class AuthRoute
                 TelegramId = request.TelegramId,
                 Balance = 0,
                 Address = request.WalletAddress ?? string.Empty,
-                UserName = request.TelegramId.ToString(),
+                UserName = request.WalletAddress ?? string.Empty,
                 Email = request.TelegramId.ToString()
             };
-            await userManager.CreateAsync(user);
+            var res = await userManager.CreateAsync(user);
+            if(res.Errors.Any())
+                throw new Exception(res.Errors.First().Description);
 
             return Results.Ok(user.Id);
         }
