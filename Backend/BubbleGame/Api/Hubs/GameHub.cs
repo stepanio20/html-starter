@@ -7,6 +7,7 @@ using BubbleGame.Application.Services.Players;
 using BubbleGame.Cache.Services;
 using BubbleGame.Core.Games;
 using BubbleGame.Core.Players;
+using BubbleGame.Persistence.DAL;
 using BubbleGame.Persistence.Identity.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
@@ -14,7 +15,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api.Hubs;
 
-internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<AppUser> userManager) : Hub
+internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<AppUser> userManager, AppDbContext _context) : Hub
 {
     private static readonly List<string> Colors =
     [
@@ -53,6 +54,12 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
                 Id = gameId
             };
             await playerGameService.CreateGame(gm);
+            _context.PlayRooms.Add(new PlayRoom()
+            {
+                GameId = gameId
+            });
+            
+            await _context.SaveChangesAsync();
         }
 
         var player = new Player
