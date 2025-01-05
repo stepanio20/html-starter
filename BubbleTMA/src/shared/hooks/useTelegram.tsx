@@ -53,7 +53,7 @@ export function useTelegram() {
         }
     }
 
-    const telegramId = tg.initDataUnsafe?.user?.id || 0
+    const telegramId = tg.initDataUnsafe?.user?.id || null
     const user = tg.initDataUnsafe?.user?.username || null
     const name = tg.initDataUnsafe?.user?.first_name || null
 
