@@ -1,6 +1,5 @@
 using BubbleGame.Application.Services.Ton;
 using BubbleGame.Persistence.DAL;
-using BubbleGame.Persistence.Services.Games;
 using BubbleGame.Persistence.Services.Ton;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +12,6 @@ public static class Extensions
         IConfiguration configuration)
     {
         services.AddHostedService<DbInitialized>();
-        services.AddHostedService<GameBackgroundService>();
         services.AddScoped<ITonService>(provider =>
         {
             var apiUrl = "";

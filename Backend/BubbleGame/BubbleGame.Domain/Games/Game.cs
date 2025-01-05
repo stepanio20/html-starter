@@ -4,11 +4,6 @@ using BubbleGame.Core.Players;
 
 namespace BubbleGame.Core.Games;
 
-public class PlayRoom
-{
-    public Guid Id { get; set; }
-    public Guid GameId { get; set; }
-}
 public class Game : CacheEntity
 {
     [JsonPropertyName("Id")]

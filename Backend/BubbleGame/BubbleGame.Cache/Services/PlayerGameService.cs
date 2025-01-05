@@ -8,7 +8,6 @@ using Microsoft.Extensions.Hosting;
 
 namespace BubbleGame.Cache.Services;
 
-
 public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
     : BackgroundService, IPlayerGameService
 {
