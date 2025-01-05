@@ -70,11 +70,13 @@ const App: React.FC = () => {
             ctx.fillStyle = color;
             ctx.fill();
             ctx.closePath();
-
+        
+            const fontSize = Math.max(14, this.size * 0.3);
             ctx.fillStyle = "#000";
-            ctx.font = `14px Arial`;
+            ctx.font = `${fontSize}px Arial`;
             ctx.textAlign = "center";
-            ctx.fillText(`$${this.value.toFixed(2)}`, this.x - offsetX, this.y - offsetY + 5);
+            ctx.textBaseline = "middle";
+            ctx.fillText(`$${this.value.toFixed(2)}`, this.x - offsetX, this.y - offsetY);
         }
     }
 
@@ -148,8 +150,8 @@ const App: React.FC = () => {
         const ctx = canvas.getContext("2d")!;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-        const isMobile = window.innerWidth < 768;
-        const scale = isMobile ? 0.8 : 1;
+        const baseScale = window.innerWidth < 768 ? 0.8 : 1;
+        const scale = baseScale * (100 / playerBubble.current.size);
     
         ctx.save();
         ctx.scale(scale, scale);
