@@ -9,11 +9,12 @@ mnemonic = ['asthma', 'inch', 'crater', 'spice', 'garlic', 'brave', 'hockey', 'k
 async def transfer_coins(amount: float, address: str, payload: str = None):
     provider = TonCenterClient()
     wallet = Wallet(mnemonics=mnemonic, version='v3r2', provider=provider)
-
+    print(f'Send transaction to {address}')
     await wallet.transfer_ton(
         address, amount=amount,
         message='withdraw' if payload is None else payload
         )
+    print(f'Successfully sent transaction to {address} {amount}')
 
 # async def get_seqno(client: TonlibClient, address: str) -> int:
 #     data = await client.raw_run_method(method='seqno', stack_data=[], address=address)
