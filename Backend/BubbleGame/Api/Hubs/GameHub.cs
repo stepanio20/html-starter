@@ -136,6 +136,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
                     user.Balance += player.Size;
                     players.Remove(otherPlayer);
                     await playerGameService.TopUpBalance(player);
+                    await userManager.UpdateAsync(user);
                     await Clients.All.SendAsync(
                         SocketMessages.PLAYER_POSITION_UPDATED,
                         new PlayerDto(player.GameId, player.Id, player.PositionX, player.PositionY, player.Size, player.Color)
@@ -160,6 +161,8 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
                     players.Remove(player);
                     await playerGameService.TopUpBalance(otherPlayer);
                     user.Balance += player.Size;
+
+                    await userManager.UpdateAsync(user);
                     await Clients.All.SendAsync(
                         SocketMessages.PLAYER_POSITION_UPDATED,
                         new PlayerDto(otherPlayer.GameId, otherPlayer.Id, otherPlayer.PositionX, otherPlayer.PositionY,
