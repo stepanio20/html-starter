@@ -26,8 +26,8 @@ function AppContent() {
   const { error, setError } = useError();
   const {tg} = useTelegram()
   useEffect(() => {
-    tg?.disableVerticalSwipes()
     if (tg && tg.requestFullscreen) {
+      tg?.disableVerticalSwipes()
       tg.requestFullscreen();
     }
   },[])
