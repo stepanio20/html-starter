@@ -27,6 +27,7 @@ function AppContent() {
   const {tg} = useTelegram()
   useEffect(() => {
     tg?.disableVerticalSwipes()
+    tg?.isOrientationLocked(true)
   },[])
   return (
     <>
