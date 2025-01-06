@@ -4,7 +4,7 @@ import { useError } from '../app/errorContext'
 const useApi = () => {
     const { setError } = useError();
 
-    const baseURL = "https://lexcore.devmainops.store/";
+    const baseURL = "https://localhost:7073/";
     console.log(`api url ${baseURL}`);
 
     const api = axios.create({
