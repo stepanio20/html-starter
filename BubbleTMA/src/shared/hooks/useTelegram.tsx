@@ -27,7 +27,6 @@ interface TelegramWebApp {
         offClick: (callback: () => void) => void
     }
     disableVerticalSwipes: () => void
-    isOrientationLocked: () => void
     HapticFeedback: TelegramHapticFeedback
     shareToStory: (mediaUrl: string, params: { type: 'image' | 'video'; caption?: string }) => Promise<void>
 }
