@@ -24,9 +24,9 @@ createRoot(document.getElementById('root')!).render(
 )
 function AppContent() {
   const { error, setError } = useError();
-  const {tg} = useTelegram()
+  const {tg, telegramId} = useTelegram()
   useEffect(() => {
-    if (tg && tg.requestFullscreen) {
+    if (telegramId) {
       tg?.disableVerticalSwipes()
       tg.requestFullscreen();
     }
