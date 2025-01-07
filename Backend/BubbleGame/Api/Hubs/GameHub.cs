@@ -33,15 +33,28 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
     {
         var httpContext = Context.GetHttpContext();
         var userId = httpContext?.Request.Query["userId"];
+        var amountString = httpContext?.Request.Query["amount"];
+        decimal amount = 0;
+
+        if (string.IsNullOrEmpty(amountString))
+        {
+            throw new HubException("Amount parameter is missing");
+        }
+
+        if (!decimal.TryParse(amountString, out amount))
+        {
+            throw new HubException("Invalid amount value");
+        }
 
         if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userId.ToString()))
             return;
+        
         
         var user = await userManager.FindByIdAsync(userId.ToString());
         if (user == null)
             throw new HubException("User not found");
         
-        if(user.Balance <= 0)
+        if(user.Balance <= amount)
             throw new HubException("User balance is less than 0");
         
         var gameId = Guid.Parse("f2940113-723e-4339-a32b-49d901b44b6c");

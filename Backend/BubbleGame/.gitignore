@@ -3,6 +3,29 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
+# Игнорируем папки obj и bin
+**/obj/
+**/bin/
+
+# Rider-specific файлы
+*.nuget.info
+
+# Кэшированные сборки и временные файлы
+*.AssemblyInfo.cs
+*.AssemblyInfoInputs.cache
+
+
+# Игнорируем папки obj и bin
+**/obj/
+**/bin/
+
+# Rider-specific файлы
+*.nuget.info
+
+# Кэшированные сборки и временные файлы
+*.AssemblyInfo.cs
+*.AssemblyInfoInputs.cache
+
 .idea/
 *.rider.*
 *.rider.project.*
