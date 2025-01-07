@@ -18,8 +18,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
 {
     private static readonly List<string> Colors =
     [
-        "Red", "Green", "Blue", "Yellow", "Orange", "Purple", "Pink",
-        "Brown", "Gray", "Black", "Cyan", "Magenta", "Lime"
+        "Red", "Green", "Blue", "Yellow", "Orange", "Purple", "Pink"
     ];
 
     private static string GetRandomColors()
@@ -104,6 +103,10 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
         await base.OnConnectedAsync();
     }
 
+    public async Task EatPlayerAsync(PlayerDto player, PlayerDto eatenPlayer)
+    {
+        
+    }
     public async Task UpdatePlayerPosition(PlayerDto playerDto)
     {
         try
@@ -127,7 +130,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
                     Math.Pow(player.PositionY - otherPlayer.PositionY, 2)
                 );
 
-                if (!((decimal)distance <= player.Size * 1500) && !((decimal)distance <= otherPlayer.Size * 1500))
+                if (!((decimal)distance <= player.Size * 300) && !((decimal)distance <= otherPlayer.Size * 300))
                     continue;
 
                 if (player.Size > otherPlayer.Size)
@@ -139,7 +142,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
                     var other_player = await userManager.Users.FirstOrDefaultAsync(x => x.Id == otherPlayer.UserId);
                     if (other_player is not null)
                     {
-                        user.Balance += other_player.Balance;
+                        user.Balance += otherPlayer.Size;
                         other_player.Balance = 0;
                     }
                       
@@ -167,7 +170,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
                     var main_player = await userManager.Users.FirstOrDefaultAsync(x => x.Id == player.UserId);
                     if (main_player is not null)
                     {
-                        user.Balance += main_player.Balance;
+                        user.Balance += player.Size;
                         main_player.Balance = 0;
                     }
                     await playerGameService.RemovePlayerAsync(player);
