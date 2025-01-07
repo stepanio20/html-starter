@@ -60,8 +60,8 @@ const DepositModal = () => {
     <>
       <button 
         onClick={toggleModal}
-        style={{ width: '120px' }}>
-        Deposit
+        className={styles.depositButton}>
+        DEPOSIT
       </button>
 
       <div className={`${styles.modalOverlay} ${isOpen ? styles.active : ""}`}>
@@ -69,12 +69,12 @@ const DepositModal = () => {
           <button className={styles.modalClose} onClick={toggleModal}>
             &times;
           </button>
-          <h2>Deposit</h2>
+          <p className={styles.title}>DEPOSIT</p>
           <div className={styles.fill}>
             <div>
               <input 
                 type="number" 
-                placeholder='Amount'
+                placeholder='Enter the amount'
                 onChange={handleAmountChange}
                 value={amount}
                 style={{ marginTop: '10px' }} 
@@ -82,9 +82,9 @@ const DepositModal = () => {
             </div>
             <button
               onClick={() => sendPaymentRequest()}
-              className={styles.confirm}
+              className={styles.confirmButton}
             >
-              Confirm
+              CONFIRM
             </button>
           </div>
         </div>
