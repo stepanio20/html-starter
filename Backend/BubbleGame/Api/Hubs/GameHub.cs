@@ -104,9 +104,81 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
     }
 
     public async Task EatPlayerAsync(PlayerDto player, PlayerDto eatenPlayer)
+{
+    try
     {
-        
+        var currentPlayer = await playerGameService.GetById(player.PlayerId);
+        var targetPlayer = await playerGameService.GetById(eatenPlayer.PlayerId);
+
+        if (currentPlayer == null || targetPlayer == null)
+            return;
+
+        var distance = Math.Sqrt(
+            Math.Pow(currentPlayer.PositionX - targetPlayer.PositionX, 2) +
+            Math.Pow(currentPlayer.PositionY - targetPlayer.PositionY, 2)
+        );
+
+        if ((decimal)distance <= currentPlayer.Size * 300 || (decimal)distance <= targetPlayer.Size * 300)
+        {
+            if (currentPlayer.Size > targetPlayer.Size)
+            {
+                var user = await userManager.FindByIdAsync(currentPlayer.UserId);
+                if (user == null)
+                    throw new HubException("User not found");
+
+                var otherPlayer = await userManager.Users.FirstOrDefaultAsync(x => x.Id == targetPlayer.UserId);
+                if (otherPlayer != null)
+                {
+                    user.Balance += targetPlayer.Size;
+                    otherPlayer.Balance = 0;
+                }
+
+                await playerGameService.RemovePlayerAsync(targetPlayer);
+                await Clients.All.SendAsync(SocketMessages.PLAYER_EATEN, new PlayerEatenDto(currentPlayer.GameId, targetPlayer.Id));
+
+                currentPlayer.Size += targetPlayer.Size;
+                await playerGameService.TopUpBalance(currentPlayer);
+                await userManager.UpdateAsync(user);
+
+                await Clients.All.SendAsync(
+                    SocketMessages.PLAYER_POSITION_UPDATED,
+                    new PlayerDto(currentPlayer.GameId, currentPlayer.Id, currentPlayer.PositionX, currentPlayer.PositionY, currentPlayer.Size, currentPlayer.Color)
+                );
+            }
+            else
+            {
+                var user = await userManager.FindByIdAsync(targetPlayer.UserId);
+                if (user == null)
+                    throw new HubException("User not found");
+
+                var mainPlayer = await userManager.Users.FirstOrDefaultAsync(x => x.Id == currentPlayer.UserId);
+                if (mainPlayer != null)
+                {
+                    user.Balance += currentPlayer.Size;
+                    mainPlayer.Balance = 0;
+                }
+
+                await playerGameService.RemovePlayerAsync(currentPlayer);
+                await Clients.All.SendAsync(SocketMessages.PLAYER_EATEN, new PlayerEatenDto(targetPlayer.GameId, currentPlayer.Id));
+
+                targetPlayer.Size += currentPlayer.Size;
+                await playerGameService.TopUpBalance(targetPlayer);
+                await userManager.UpdateAsync(user);
+
+                await Clients.All.SendAsync(
+                    SocketMessages.PLAYER_POSITION_UPDATED,
+                    new PlayerDto(targetPlayer.GameId, targetPlayer.Id, targetPlayer.PositionX, targetPlayer.PositionY, targetPlayer.Size, currentPlayer.Color)
+                );
+            }
+        }
     }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error during player eat: {ex}");
+    }
+}
+
+    
     public async Task UpdatePlayerPosition(PlayerDto playerDto)
     {
         try
@@ -120,80 +192,6 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
             player.LastUpdated = DateTime.UtcNow;
 
             playerGameService.UpdatePlayer(player);
-            var players = await playerGameService.GetAsync(player.GameId);
-            foreach (var otherPlayer in players.ToList())
-            {
-                if (player.Id == otherPlayer.Id) continue;
-
-                var distance = Math.Sqrt(
-                    Math.Pow(player.PositionX - otherPlayer.PositionX, 2) +
-                    Math.Pow(player.PositionY - otherPlayer.PositionY, 2)
-                );
-
-                if (!((decimal)distance <= player.Size * 300) && !((decimal)distance <= otherPlayer.Size * 300))
-                    continue;
-
-                if (player.Size > otherPlayer.Size)
-                {
-                    var user = await userManager.FindByIdAsync(player.UserId); 
-                    if (user is null)
-                        throw new HubException("User not found");
-                    
-                    var other_player = await userManager.Users.FirstOrDefaultAsync(x => x.Id == otherPlayer.UserId);
-                    if (other_player is not null)
-                    {
-                        user.Balance += otherPlayer.Size;
-                        other_player.Balance = 0;
-                    }
-                      
-                    
-                    await playerGameService.RemovePlayerAsync(otherPlayer);
-
-                    await Clients.All.SendAsync(SocketMessages.PLAYER_EATEN,
-                        new PlayerEatenDto(player.GameId, otherPlayer.Id));
-                    
-                    player.Size += otherPlayer.Size;
-                    players.Remove(otherPlayer);
-                    await playerGameService.TopUpBalance(player);
-                    await userManager.UpdateAsync(user);
-                    await Clients.All.SendAsync(
-                        SocketMessages.PLAYER_POSITION_UPDATED,
-                        new PlayerDto(player.GameId, player.Id, player.PositionX, player.PositionY, player.Size, player.Color)
-                    );
-                }
-                else
-                {
-                    var user = await userManager.FindByIdAsync(otherPlayer.UserId); 
-                    if (user is null)
-                        throw new HubException("User not found");
-                    
-                    var main_player = await userManager.Users.FirstOrDefaultAsync(x => x.Id == player.UserId);
-                    if (main_player is not null)
-                    {
-                        user.Balance += player.Size;
-                        main_player.Balance = 0;
-                    }
-                    await playerGameService.RemovePlayerAsync(player);
-
-                    await Clients.All.SendAsync(SocketMessages.PLAYER_EATEN,
-                        new PlayerEatenDto(otherPlayer.GameId, player.Id));
-
-                    otherPlayer.Size += player.Size;
-
-                    players.Remove(player);
-                    await playerGameService.TopUpBalance(otherPlayer);
-
-                    await userManager.UpdateAsync(user);
-                    await Clients.All.SendAsync(
-                        SocketMessages.PLAYER_POSITION_UPDATED,
-                        new PlayerDto(otherPlayer.GameId, otherPlayer.Id, otherPlayer.PositionX, otherPlayer.PositionY,
-                            otherPlayer.Size, player.Color)
-                    );
-                }
-
-                return;
-            }
-
             await Clients.All.SendAsync(
                 SocketMessages.PLAYER_POSITION_UPDATED,
                 new PlayerDto(player.GameId, player.Id, player.PositionX, player.PositionY, player.Size, player.Color)

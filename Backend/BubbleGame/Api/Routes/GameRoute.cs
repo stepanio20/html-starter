@@ -20,6 +20,7 @@ internal static class GameRoute
         return Results.Ok(new GetUserGameInfoResponse
         {
             Balance = user.Balance, 
+            BallSize = 300
         });
     }
     
@@ -31,5 +32,6 @@ internal static class GameRoute
     public class GetUserGameInfoResponse
     {
         public decimal Balance {get; set;}
+        public double BallSize { get; set; }
     }
 }
