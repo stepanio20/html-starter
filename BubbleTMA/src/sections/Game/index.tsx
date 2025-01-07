@@ -1,32 +1,46 @@
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr'
 import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import Joystick from '../../features/Joystick'
+import { drawGrid } from '../../shared/utils/DrawGrid'
+import { drawMapBorders } from '../../shared/utils/DrawMapBorders'
 import { getPlayers, Player, removePlayer, setPlayerId, updatePlayer } from '../../slices/GameSlide'
 import { RootState } from '../../store'
+import GameOver from './components/ui/GameOver'
+import Minimap from './components/ui/MiniMap'
+import MoveTimer from './components/ui/MoveTimer'
 import styles from './style.module.css'
 
 const App: React.FC = () => {
-   /*  const [playerBalance, setPlayerBalance] = useState(0); */
-   /*  const [gameTime, setGameTime] = useState(40); */
     const [gameRunning, setGameRunning] = useState(false);
     const [gameOver, setGameOver] = useState(false);
     const [eatenPlayers, setEatenPlayers] = useState<Set<string>>(new Set());
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const timerRef = useRef<number | null>(null);
     const joystickRef = useRef({ deltaX: 0, deltaY: 0 });
-    const mapWidth = 4000;
-    const mapHeight = 4000;
+    const mapWidth = 12000;
+    const mapHeight = 12000;
     const dispatch = useDispatch();
     const [connection, setConnection] = useState<HubConnection | null>(null);
     const players = useSelector(getPlayers);
-    const PlayerId = useSelector((state: RootState) => state?.players?.playerId);
-    const userId = useSelector((state: RootState) => state?.players?.userId);
-    const balance = useSelector((state: RootState) => state?.players?.balance);
+    const {playerId, userId} = useSelector((state: RootState) => state?.players);
     const playersRef = useRef(players);
-    const userGameIdRef = useRef(PlayerId);
+    const userGameIdRef = useRef(playerId);
     const navigate = useNavigate()
+    const once = useRef(false)
+    const [moveStatus, setMoveStatus] = useState<boolean>(false)
+    const location = useLocation();
+    const { amount } = location.state || {}
+
+    if (!amount) navigate(-1)
+
+    useEffect(() => {
+    if (!once.current) {
+        initializeGame()
+        once.current = true
+    }
+    },[])
 
     useEffect(() => {
         if (!userId) {
@@ -39,7 +53,7 @@ const App: React.FC = () => {
             id: gameState.playerId,
             x: gameState.positionX,
             y: gameState.positionY,
-            size: gameState.ballSize * 1500,
+            size: gameState.ballSize * 300,
             value: gameState.ballSize,
             color: gameState.color,
         };
@@ -59,7 +73,7 @@ const App: React.FC = () => {
             this.x = x;
             this.y = y;
             this.value = value;
-            this.size = value * 1500;
+            this.size = value * 300;
             this.speed = 0.2;
             this.color = color;
         }
@@ -71,6 +85,14 @@ const App: React.FC = () => {
             ctx.fill();
             ctx.closePath();
         
+            const borderThickness = this.size  * 0.06;
+            ctx.beginPath();
+            ctx.arc(this.x - offsetX, this.y - offsetY, this.size - borderThickness, 0, Math.PI * 2);
+            ctx.lineWidth = borderThickness;
+            ctx.strokeStyle = "rgba(0, 0, 0, 0.1)"; 
+            ctx.stroke();
+            ctx.closePath();
+        
             const fontSize = Math.max(14, this.size * 0.3);
             ctx.fillStyle = "#000";
             ctx.font = `${fontSize}px Arial`;
@@ -80,12 +102,11 @@ const App: React.FC = () => {
         }
     }
 
-    const playerBubble = useRef(new PlayerBubble(mapWidth / 2, mapHeight / 2, /* playerBalance */ 0, 'red'));
+    const playerBubble = useRef(new PlayerBubble(mapWidth / 2, mapHeight / 2, 0, 'red'));
 
     const initializeGame = () => {
         playerBubble.current.size = Math.sqrt(0);
         playerBubble.current.value = 0;
-        /* setGameTime(40); */
         setGameRunning(true);
         setGameOver(false);
         setEatenPlayers(new Set());
@@ -111,14 +132,10 @@ const App: React.FC = () => {
         }, 1000);
     };
 
-   /*  const endGame = () => {
+    const endGame = () => {
         setGameRunning(false);
         setGameOver(true);
-    }; */
-
-    const checkCollisions = () => {
-        // Collision logic
-    };
+    }
 
     interface PlayerEatenDto {
         gameId: string;
@@ -134,15 +151,11 @@ const App: React.FC = () => {
         color: string;
     }
 
-   /*  let lastSentTime = 0;
-    const sendInterval = 100; */
     let lastPosition = { x: 0, y: 0 };
 
-   /*  const getRandomColor = (): string => {
-        const hue = Math.floor(Math.random() * 360);
-        return `hsl(${hue}, 70%, 50%)`;
-    }; */
-
+    let lastMoveTime = Date.now();
+    let isInactive = false;
+    
     const animate = () => {
         if (!gameRunning) return;
     
@@ -150,7 +163,7 @@ const App: React.FC = () => {
         const ctx = canvas.getContext("2d")!;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-        const baseScale = window.innerWidth < 768 ? 0.8 : 1;
+        const baseScale = window.innerWidth < 768 || playerBubble.current.value < 1 ? 0.7 : 2;
         const scale = baseScale * (100 / playerBubble.current.size);
     
         ctx.save();
@@ -171,12 +184,24 @@ const App: React.FC = () => {
             Math.min(playerBubble.current.y, mapHeight - playerBubble.current.size)
         );
     
+        drawGrid(ctx, canvas.width / scale, canvas.height / scale, 100, offsetX, offsetY, playerBubble.current.size, scale);
+    
+        drawMapBorders(
+            ctx,
+            mapWidth,
+            mapHeight,
+            offsetX,
+            offsetY,
+            canvas.width / scale,
+            canvas.height / scale
+        );
+    
         playerBubble.current.draw(ctx, offsetX, offsetY, playerBubble.current.color);
     
         playersRef.current
             .filter(player => !eatenPlayers.has(player.id))
             .forEach((player) => {
-                if (player.id !== PlayerId) {
+                if (player.id !== playerId) {
                     const otherBubble = new PlayerBubble(player.x, player.y, player.value, player.color);
                     otherBubble.draw(ctx, offsetX, offsetY, player.color);
                 }
@@ -184,14 +209,22 @@ const App: React.FC = () => {
     
         ctx.restore();
     
+        const currentTime = Date.now();
+    
         if (
             playerBubble.current.x !== lastPosition.x ||
-            playerBubble.current.y !== lastPosition.y 
+            playerBubble.current.y !== lastPosition.y
         ) {
-            if (PlayerId) {
+            lastMoveTime = currentTime;
+            if (isInactive) {
+                setMoveStatus(false);
+                isInactive = false;
+            }
+    
+            if (playerId) {
                 sendPlayerPosition(
                     "f2940113-723e-4339-a32b-49d901b44b6c",
-                    PlayerId,
+                    playerId,
                     playerBubble.current.x,
                     playerBubble.current.y,
                     playerBubble.current.size,
@@ -201,7 +234,11 @@ const App: React.FC = () => {
             }
         }
     
-        checkCollisions();
+        if (currentTime - lastMoveTime > 10000 && !isInactive) {
+            setMoveStatus(true);
+            isInactive = true;
+        }
+    
         requestAnimationFrame(animate);
     };
     
@@ -221,24 +258,24 @@ const App: React.FC = () => {
 
 
     useEffect(() => {
-        if (gameRunning && PlayerId) {
+        if (gameRunning && playerId) {
             animate();
         }
-    }, [gameRunning, PlayerId]);
+    }, [gameRunning, playerId]);
 
     useEffect(() => {
         playersRef.current = [...players];
         
-        const currentPlayer = players.find(player => player.id === PlayerId);
+        const currentPlayer = players.find(player => player.id === playerId);
         if (currentPlayer && currentPlayer.size !== playerBubble.current.size) {
             playerBubble.current.size = currentPlayer.size;
             playerBubble.current.value = currentPlayer.value;
         }
-    }, [players, PlayerId]);
+    }, [players, playerId]);
 
     useEffect(() => {
-        userGameIdRef.current = PlayerId;
-    }, [PlayerId]);
+        userGameIdRef.current = playerId;
+    }, [playerId]);
 
     const handleJoystickMove = (deltaX: number, deltaY: number) => {
         joystickRef.current.deltaX = deltaX;
@@ -250,7 +287,7 @@ const App: React.FC = () => {
     useEffect(() => {
         if (gameRunning) {
             const connection = new HubConnectionBuilder()
-                .withUrl(`https://lexcore.devmainops.store/gameHub?userid=${userId}`)
+                .withUrl(`https://lexcore.devmainops.store/gameHub?userid=${userId}&amount=${amount}`)
                 .build();
 
             setConnection(connection);
@@ -262,7 +299,7 @@ const App: React.FC = () => {
                     playerBubble.current.x = data.positionX;
                     playerBubble.current.y = data.positionY;
                     playerBubble.current.size = data.ballSize;
-                    playerBubble.current.value = data.ballSize * 1500;
+                    playerBubble.current.value = data.ballSize * 300;
                     playerBubble.current.color = data.color
                     dispatch(setPlayerId(data?.playerId));
                 }
@@ -270,8 +307,7 @@ const App: React.FC = () => {
 
             connection.on('PlayerEaten', (playerState: PlayerEatenDto) => {
                 if (playerState.playerId === userGameIdRef.current) {
-                    console.log("You have been eaten!");
-                    navigate('/')
+                    endGame()
                 } else if (playerState.playerId) {
                     console.log("Removing player with ID:", playerState.playerId);
                     setEatenPlayers(prev => new Set(prev.add(playerState.playerId)));
@@ -309,30 +345,33 @@ const App: React.FC = () => {
         }
     }, [dispatch, gameRunning]);
 
+    
+
     return (
         <div>
-            {gameRunning ? (
-                <div className={styles.canvasContainer}>
+                <div>
+                    <p className={styles.playerOnline}>Players: {playersRef.current.length}</p>
                     <canvas
                         ref={canvasRef}
                         width={window.innerWidth}
                         height={window.innerHeight}
                         style={{ backgroundColor: '#f0f0f0', display: "block" }}
                     />
+                     <Minimap
+                        players={playersRef.current}
+                        playerBubble={playerBubble.current}
+                        mapWidth={mapWidth}
+                        mapHeight={mapHeight}
+                        PlayerId={playerId}
+                    />
                     <Joystick onMove={handleJoystickMove} />
                 </div>
-            ) : (
-                <div id="menu" style={{ textAlign: 'center', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)'}}>
-                    <h1>Bubble Game</h1>
-                    <div>Balance: {balance}$</div>
-                    {!gameRunning && !gameOver && (
-                        <button onClick={initializeGame} className={styles?.buttonStyle}>Play</button>
-                    )}
-                    {gameOver && (
-                        <button onClick={() => initializeGame()} className={styles?.buttonStyle}>Restart Game</button>
-                    )}
-                </div>
-            )}
+                {gameOver && (
+                    <GameOver/>
+                )}
+                {moveStatus && !gameOver && (
+                    <MoveTimer setGameOver={setGameOver}/>
+                )}
         </div>
     );
 };

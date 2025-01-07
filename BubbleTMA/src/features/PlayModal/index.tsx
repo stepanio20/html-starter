@@ -1,20 +1,15 @@
 import { useState } from "react"
 import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import usdIcon from '../../assets/valute/usd.svg'
-import useGetInfoApi from "../../shared/api/get-info.ts"
 import { RootState } from '../../store'
-import useWithdrawApi from './api'
-import styles from "./style.module.css"
+import styles from "./style.module.scss"
 
-const WithdrawModal = () => {
+const PlayModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [amount, setAmount] = useState<string | number>("")
   const balance = useSelector((state: RootState) => state?.players?.balance);
-  const userId = useSelector((state: RootState) => state?.players?.userId);
-  const {withdraw} = useWithdrawApi()
-  const [loading, setLoading] = useState<boolean>(false)
-  const {getInfo} = useGetInfoApi()
-
+  const navigate = useNavigate()
   const toggleModal = () => {
     setIsOpen(!isOpen);
   };
@@ -28,24 +23,19 @@ const WithdrawModal = () => {
 
   const isAmountValid = () => {
     const numericAmount = parseFloat(amount as string);
-    return !isNaN(numericAmount) && numericAmount > 0 && numericAmount <= balance;
+    return !isNaN(numericAmount) && numericAmount >= 0.1 && numericAmount <= balance;
   };
 
-  const handleWithdraw = async() => {
-    if (!userId) return
-    setLoading(true)
-    setIsOpen(false)
-    await withdraw(userId, Number(amount))
-    await getInfo(userId)
-    setLoading(false)
+  const startGame = () => {
+    navigate('/game', {state: {amount}})
   }
 
   return (
       <>
         <button
             onClick={toggleModal}
-            className={styles.withdrawButton}>
-          Withdraw
+            className={styles.playButton}>
+          PLAY PVP
         </button>
 
         <div className={`${styles.modalOverlay} ${isOpen ? styles.active : ""}`}>
@@ -53,7 +43,7 @@ const WithdrawModal = () => {
             <button className={styles.modalClose} onClick={toggleModal}>
               &times;
             </button>
-            <p className={styles.title}>WITHDRAW</p>
+            <p className={styles.title}>PLAY</p>
             <div className={styles.balance}>
               <img src={usdIcon} alt="" />
               <p>{balance}</p>
@@ -68,8 +58,8 @@ const WithdrawModal = () => {
               </div>
               <button
                   className={styles.confirmButton}
-                  disabled={!isAmountValid() || loading}
-                  onClick={() => handleWithdraw()}
+                  disabled={!isAmountValid()}
+                  onClick={() => startGame()}
               >
                 CONFIRM
               </button>
@@ -80,4 +70,4 @@ const WithdrawModal = () => {
   );
 };
 
-export default WithdrawModal;
+export default PlayModal;

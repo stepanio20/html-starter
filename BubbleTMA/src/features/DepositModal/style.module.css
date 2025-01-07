@@ -14,6 +14,35 @@
   transition: visibility 0.3s, opacity 0.3s;
 }
 
+.depositButton {
+  max-width: 300px;
+  width: 100%;
+  height: 55px;
+  border-radius: 20px;
+  color: white;
+  background: #00A2EA;
+  box-shadow: 0px 4px 9px 0px #D9BEF940 inset;
+  box-shadow: 0px 4px 88.5px 0px #D9BEF940 inset;
+  box-shadow: 0px 9px 81.7px 0px #D9BEF940;
+  box-shadow: 0px 2px 0px 0px #0098E0;
+}
+
+.confirmButton {
+  margin-top: 30px;
+  max-width: 196px;
+  width: 100%;
+  height: 55px;
+  border-radius: 20px;
+  color: white;
+  background: #00A2EA;
+  box-shadow: 0px 4px 9px 0px #D9BEF940 inset;
+  box-shadow: 0px 4px 88.5px 0px #D9BEF940 inset;
+  box-shadow: 0px 9px 81.7px 0px #D9BEF940;
+  box-shadow: 0px 2px 0px 0px #0098E0;
+}
+
+
+
 .modalOverlay.active {
   visibility: visible;
   opacity: 1;
@@ -24,7 +53,8 @@
   background: #fff;
   border-radius: 8px;
   width: 100%;
-  max-width: 350px;
+  max-width: 402px;
+  padding: 20px 0;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   text-align: center;
 }
@@ -40,47 +70,31 @@
 }
 
 .fill {
-	width: 100%;
-	display: flex;
-	gap: 15px;
-	flex-direction: column;
-	align-items: center;
-  box-sizing: border-box;
+  margin-top: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .fill input {
-  width: 250px;
-  padding: 7px 7px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+  background-color: #EAEAEB;
+  height: 40px;
+  width: 318px;
+  padding: 0 13px;
+  border-radius: 15px;
   outline: none;
-  color: black;
-  background-color: #f9f9f9;
-  transition: all 0.3s ease;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.fill input:focus {
-  border-color: #007BFF;
-  background-color: #fff;
-  box-shadow: 0 0 8px rgba(0, 123, 255, 0.4);
-}
-
-.fill input:hover {
-  border-color: #0056b3;
-}
-
-.fill input:disabled {
-  background-color: #e9ecef;
-  border-color: #ddd;
-  cursor: not-allowed;
+  border: none;
 }
 
 .modalContent p {
   margin: 0;
 }
 
-.confirm:disabled {
-  opacity: 55%;
+.title {
+  font-size: 24px;
+  font-weight: 500;
+  text-align: center;
+  text-underline-position: from-font;
+  text-decoration-skip-ink: none;
+  color: #000000;
 }

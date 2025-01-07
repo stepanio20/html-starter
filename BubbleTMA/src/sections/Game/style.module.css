@@ -8,3 +8,13 @@
   cursor: pointer;
   margin-top: 25px;
 }
+
+.playerOnline {
+  position: absolute;
+  top: 2vh;
+  left: 1vw;
+  color: #BC60FA;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 18.75px;
+}

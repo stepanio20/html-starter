@@ -1,0 +1,30 @@
+
+
+.wrapper {
+	height: 76px;
+	width: 100vw;
+	display: flex;
+	align-items: center;
+	z-index: 2;
+	color: #BC60FA;
+
+	.content {
+		display: flex;
+		justify-content: space-between;
+		width: 100%;
+		padding: 0 6vw;
+		font-size: 24px;
+		font-weight: 500;
+
+		.balance {
+			display: flex;
+			align-items: center;
+			gap: 5px;
+
+			img {
+				width: 40px;
+				height: 40px;
+			}
+		}
+	}
+}
