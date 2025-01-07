@@ -13,17 +13,12 @@ import { setUserId } from '../../slices/GameSlide'
 import { RootState } from '../../store'
 import DropCoin from './Coin'
 import styles from './style.module.scss'
-interface Coin {
-  number: number;
-  color: string;
-}
 
 export function Home() {
   const navigate = useNavigate()
 	const [tonConnectUI] = useTonConnectUI();
   const userFriendlyAddress = useTonAddress();
   const dispatch = useDispatch()
-  const userGameId = useSelector((state: RootState) => state?.players?.userId)
   const balance = useSelector((state: RootState) => state?.players?.balance)
   const {telegramId} = useTelegram()
   const {getInfo} = useGetInfoApi()
@@ -38,14 +33,14 @@ export function Home() {
     }
   };
 
-  const handleDisconnectWallet = async () => {
+  /* const handleDisconnectWallet = async () => {
     try {
       await tonConnectUI.disconnect();
       console.log("Wallet disconnected successfully");
     } catch (error) {
       console.error("Error disconnecting wallet:", error);
     }
-  };
+  }; */
   
   const goToGame = () => {
     if (balance > 0) {
@@ -94,7 +89,7 @@ export function Home() {
             <DepositModal/>
             <button 
               onClick={goToGame}
-              disabled={/* !userGameId  */ true}
+              disabled={true}
               className={styles.settingButton}
             >
               SETTINGS
