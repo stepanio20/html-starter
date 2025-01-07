@@ -13,7 +13,7 @@
 
 :root {
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
+  color: black;
   background-color: #F5F3F9;
 
   font-synthesis: none;
@@ -31,7 +31,6 @@ button {
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
     background-color: #F5F3F9;
   }
 }
