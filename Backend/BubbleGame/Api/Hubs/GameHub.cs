@@ -75,7 +75,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
             UserId = userId.ToString(),
             PositionX = new Random().Next(0, 12000),
             PositionY = new Random().Next(0, 12000),
-            Size = user.Balance,
+            Size = amount,
             Color = GetRandomColors().ToLower()
         };
 
