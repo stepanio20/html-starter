@@ -1,5 +1,5 @@
 import { useTonAddress, useTonConnectUI } from '@tonconnect/ui-react'
-import { useEffect } from "react"
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import DepositModal from '../../features/DepositModal'
@@ -13,112 +13,99 @@ import { setUserId } from '../../slices/GameSlide'
 import { RootState } from '../../store'
 import DropCoin from './Coin'
 import styles from './style.module.scss'
-export function Home() {
-  const navigate = useNavigate()
-	const [tonConnectUI] = useTonConnectUI();
-  const userFriendlyAddress = useTonAddress();
-  const dispatch = useDispatch()
-  const balance = useSelector((state: RootState) => state?.players?.balance)
-  const {telegramId} = useTelegram()
-  const {getInfo} = useGetInfoApi()
-  const {getAddress} = useGetAddressApi()
 
- const handleConnectWallet = async () => {
+export function Home() {
+  const navigate = useNavigate();
+  const [tonConnectUI] = useTonConnectUI();
+  const userFriendlyAddress = useTonAddress();
+  const dispatch = useDispatch();
+  const balance = useSelector((state: RootState) => state?.players?.balance);
+  const { telegramId } = useTelegram();
+  const { getInfo } = useGetInfoApi();
+  const { getAddress } = useGetAddressApi();
+
+  // Состояние для отслеживания ориентации
+  const [isLandscape, setIsLandscape] = useState<boolean>(window.innerWidth > window.innerHeight);
+
+  // Функция для отслеживания ориентации
+  const checkOrientation = () => {
+    setIsLandscape(window.innerWidth > window.innerHeight);
+  };
+
+  useEffect(() => {
+    // Отслеживаем изменение ориентации
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+
+    // Очистка слушателей при размонтировании компонента
+    return () => {
+      window.removeEventListener('resize', checkOrientation);
+      window.removeEventListener('orientationchange', checkOrientation);
+    };
+  }, []);
+
+  const handleConnectWallet = async () => {
     try {
       await tonConnectUI.connectWallet();
-      console.log("Wallet connected successfully");
+      console.log('Wallet connected successfully');
     } catch (error) {
-      console.error("Error connecting wallet:", error);
+      console.error('Error connecting wallet:', error);
     }
   };
 
-  /* const handleDisconnectWallet = async () => {
-    try {
-      await tonConnectUI.disconnect();
-      console.log("Wallet disconnected successfully");
-    } catch (error) {
-      console.error("Error disconnecting wallet:", error);
-    }
-  }; */
-  
   const goToGame = () => {
     if (balance > 0) {
-      navigate('/game')
+      navigate('/game');
     }
-  }
+  };
 
-    useEffect(() => {
-      if (!userFriendlyAddress) return
+  useEffect(() => {
+    if (!userFriendlyAddress) return;
 
-        const authenticateUser = async () => {
-            try {
-                const response = await fetch('https://lexcore.devmainops.store/api/auth/sign-in', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                      WalletAddress: userFriendlyAddress,
-                      TelegramId: telegramId,
-                    }),
-                });
+    const authenticateUser = async () => {
+      try {
+        const response = await fetch('https://lexcore.devmainops.store/api/auth/sign-in', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            WalletAddress: userFriendlyAddress,
+            TelegramId: telegramId,
+          }),
+        });
 
-                const data:string = await response.json();
-                dispatch(setUserId(data))
-                Promise.all([getInfo(data), getAddress()])
-            } catch (error) {
-                console.error(error);
-            }
-        };
+        const data: string = await response.json();
+        dispatch(setUserId(data));
+        Promise.all([getInfo(data), getAddress()]);
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
-        authenticateUser();
-    }, [userFriendlyAddress]);
+    authenticateUser();
+  }, [userFriendlyAddress]);
 
   return (
     <div>
-        <MenuHeader/>
-        <div className={`${styles.menuOverlay} ${window.innerWidth > window.innerHeight && styles.rorated}`}>
+      <MenuHeader />
+      <div className={`${styles.menuOverlay} ${isLandscape ? styles.rotated : ''}`}>
         {!userFriendlyAddress ? (
           <button onClick={() => handleConnectWallet()}>
-          Connect TON wallet
+            Connect TON wallet
           </button>
         ) : (
           <>
-            <PlayModal/>
-            <DepositModal/>
-            <button 
-              onClick={goToGame}
-              disabled={true}
-              className={styles.settingButton}
-            >
+            <PlayModal />
+            <DepositModal />
+            <button onClick={goToGame} disabled={true} className={styles.settingButton}>
               SETTINGS
             </button>
-            <WithdrawModal/>
+            <WithdrawModal />
           </>
         )}
-        </div>
-        <DropCoin/>
+      </div>
+      <DropCoin />
     </div>
-  )
+  );
 }
-
-
-/*  (
-  <>
-    <p>Balance: {balance}$</p>
-    
-    <button onClick={handleDisconnectWallet}>
-    Disconnect TON wallet
-    </button>
-    <p className={styles.textContainer}>
-      {userFriendlyAddress}
-    </p>
-    <div>
-      <WithdrawModal/>
-    </div>
-  </>
-) : (
-  <button onClick={() => handleConnectWallet()}>
-    Connect TON wallet
-  </button>
-)} */
