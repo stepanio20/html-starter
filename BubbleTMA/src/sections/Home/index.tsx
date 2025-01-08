@@ -95,7 +95,7 @@ export function Home() {
   return (
     <div>
         <MenuHeader/>
-        <div className={`${styles.menuOverlay} ${isLandscape && styles.rotated}`}>
+        <div className={`${styles.menuOverlay} ${!isLandscape && styles.rotated}`}>
         {!userFriendlyAddress ? (
           <button onClick={() => handleConnectWallet()}>
           Connect TON wallet
