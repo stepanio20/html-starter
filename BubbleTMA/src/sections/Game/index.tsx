@@ -206,7 +206,8 @@ const App: React.FC = () => {
                     otherBubble.draw(ctx, offsetX, offsetY, player.color);
                 }
             });
-    
+
+        handlePlayerCollision(playerBubble.current, playersRef.current);
         ctx.restore();
     
         const currentTime = Date.now();
@@ -256,7 +257,6 @@ const App: React.FC = () => {
             .catch(err => console.error(err.toString()));
     };
 
-
     useEffect(() => {
         if (gameRunning && playerId) {
             animate();
@@ -282,12 +282,61 @@ const App: React.FC = () => {
         joystickRef.current.deltaY = deltaY;
     };
 
-
+    const checkCollision = (player1: PlayerBubble, player2: PlayerBubble): boolean => {
+        const dx = player1.x - player2.x;
+        const dy = player1.y - player2.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
     
+        return distance < player1.size && player1.size > player2.size;
+    };
+
+    const handlePlayerCollision = (currentPlayer: PlayerBubble, players: Player[]) => {
+        players.forEach(player => {
+            if (player.id !== playerId && !eatenPlayers.has(player.id)) {
+                const otherBubble = new PlayerBubble(player.x, player.y, player.value, player.color);
+    
+                if (checkCollision(currentPlayer, otherBubble)) {
+                    if (currentPlayer.size > otherBubble.size) {
+                        console.log(`Player ${playerId} ate player ${player.id}`);
+    
+                        setEatenPlayers(prev => new Set(prev.add(player.id)));
+                        dispatch(removePlayer(player.id));
+    
+                        connection?.invoke("EatPlayerAsync", {
+                            player: {
+                                playerId: playerId,
+                                positionX: currentPlayer.x,
+                                positionY: currentPlayer.y,
+                                ballSize: currentPlayer.size,
+                                color: currentPlayer.color
+                            },
+                            eatenPlayer: player.id
+                        }).catch(err => console.error("Error sending EatPlayerAsync: ", err));
+                    } else {
+                        console.log(`Player ${player.id} ate player ${playerId}`);
+    
+                        connection?.invoke("EatPlayerAsync", {
+                            player: {
+                                playerId: player.id,
+                                positionX: otherBubble.x,
+                                positionY: otherBubble.y,
+                                ballSize: otherBubble.size,
+                                color: otherBubble.color
+                            },
+                            eatenPlayer: playerId
+                        }).catch(err => console.error("Error sending EatPlayerAsync: ", err));
+    
+                        endGame();
+                    }
+                }
+            }
+        });
+    };
+
     useEffect(() => {
         if (gameRunning) {
             const connection = new HubConnectionBuilder()
-                .withUrl(`https://lexcore.devmainops.store/gameHub?userid=${userId}&amount=${amount}`)
+                .withUrl(`http://localhost:5225/gameHub?userid=${userId}&amount=${amount}`)
                 .build();
 
             setConnection(connection);
@@ -305,7 +354,7 @@ const App: React.FC = () => {
                 }
             });
 
-            connection.on('PlayerEaten', (playerState: PlayerEatenDto) => {
+           /*  connection.on('PlayerEaten', (playerState: PlayerEatenDto) => {
                 if (playerState.playerId === userGameIdRef.current) {
                     endGame()
                 } else if (playerState.playerId) {
@@ -313,7 +362,7 @@ const App: React.FC = () => {
                     setEatenPlayers(prev => new Set(prev.add(playerState.playerId)));
                     dispatch(removePlayer(playerState.playerId));
                 }
-            });
+            }); */
 
             connection.on('PlayerDisconnected', (playerState: PlayerEatenDto) => {
                 if (playerState.playerId === userGameIdRef.current) {
@@ -344,7 +393,6 @@ const App: React.FC = () => {
             };
         }
     }, [dispatch, gameRunning]);
-
     
 
     return (
