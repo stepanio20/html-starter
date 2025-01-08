@@ -68,31 +68,39 @@ const App: React.FC = () => {
         value: number;
         speed: number;
         color: string;
-
+    
         constructor(x: number, y: number, value: number, color: string) {
             this.x = x;
             this.y = y;
             this.value = value;
             this.size = value * 300;
-            this.speed = 0.2;
             this.color = color;
+            this.speed = 0.2;
+        }
+    
+        calculateSpeed() {
+            const baseSpeed = 0.4;
+            const sizeFactor = 0.01; 
+            this.speed = baseSpeed / (1 + sizeFactor * this.size);
         }
 
+
+    
         draw(ctx: CanvasRenderingContext2D, offsetX: number, offsetY: number, color: string) {
             ctx.beginPath();
             ctx.arc(this.x - offsetX, this.y - offsetY, this.size, 0, Math.PI * 2);
             ctx.fillStyle = color;
             ctx.fill();
             ctx.closePath();
-        
-            const borderThickness = this.size  * 0.06;
+    
+            const borderThickness = this.size * 0.06;
             ctx.beginPath();
             ctx.arc(this.x - offsetX, this.y - offsetY, this.size - borderThickness, 0, Math.PI * 2);
             ctx.lineWidth = borderThickness;
-            ctx.strokeStyle = "rgba(0, 0, 0, 0.1)"; 
+            ctx.strokeStyle = "rgba(0, 0, 0, 0.1)";
             ctx.stroke();
             ctx.closePath();
-        
+    
             const fontSize = Math.max(14, this.size * 0.3);
             ctx.fillStyle = "#000";
             ctx.font = `${fontSize}px Arial`;
@@ -101,6 +109,7 @@ const App: React.FC = () => {
             ctx.fillText(`$${this.value.toFixed(2)}`, this.x - offsetX, this.y - offsetY);
         }
     }
+    
 
     const playerBubble = useRef(new PlayerBubble(mapWidth / 2, mapHeight / 2, 0, 'red'));
 
@@ -163,16 +172,19 @@ const App: React.FC = () => {
         const ctx = canvas.getContext("2d")!;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     
+        // Пересчитываем скорость в зависимости от размера шарика
+        playerBubble.current.calculateSpeed();
+    
         const baseScale = window.innerWidth <= 375
-        ? (playerBubble.current.value < 1 ? 0.4 : 0.8) 
-        : window.innerWidth <= 390
-            ? (playerBubble.current.value < 1 ? 0.45 : 0.9) 
-            : window.innerWidth <= 430
-                ? (playerBubble.current.value < 1 ? 0.5 : 1) 
-                : window.innerWidth <= 768
-                    ? (playerBubble.current.value < 1 ? 0.6 : 1.3) 
-                    : (playerBubble.current.value < 0.5 ? 0.8 : 1.8);
-
+            ? (playerBubble.current.value < 1 ? 0.4 : 0.8)
+            : window.innerWidth <= 390
+                ? (playerBubble.current.value < 1 ? 0.45 : 0.9)
+                : window.innerWidth <= 430
+                    ? (playerBubble.current.value < 1 ? 0.5 : 1)
+                    : window.innerWidth <= 768
+                        ? (playerBubble.current.value < 1 ? 0.6 : 1.3)
+                        : (playerBubble.current.value < 0.5 ? 0.8 : 1.8);
+    
         const scale = baseScale * (100 / playerBubble.current.size);
     
         ctx.save();
@@ -181,6 +193,7 @@ const App: React.FC = () => {
         const offsetX = playerBubble.current.x - (canvas.width / 2) / scale;
         const offsetY = playerBubble.current.y - (canvas.height / 2) / scale;
     
+        // Используем новую скорость для движения
         playerBubble.current.x += joystickRef.current.deltaX * playerBubble.current.speed * 5;
         playerBubble.current.y += joystickRef.current.deltaY * playerBubble.current.speed * 5;
     
@@ -250,6 +263,7 @@ const App: React.FC = () => {
     
         requestAnimationFrame(animate);
     };
+    
     
 
     const sendPlayerPosition = (gameId: string, playerId: string, x: number, y: number, ballSize: number) => {
