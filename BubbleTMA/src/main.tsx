@@ -9,7 +9,7 @@ import './index.css'
 import { useTelegram } from './shared/hooks/useTelegram.tsx'
 import SnackBarError from './shared/ui/Snackbar/SnackBarError.tsx'
 import store from './store/index.ts'
-
+import styles from './style.module.scss'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <TonConnectUIProvider
@@ -27,6 +27,11 @@ function AppContent() {
   const { error, setError } = useError();
   const {tg, telegramId} = useTelegram()
   const [isLandscape, setIsLandscape] = useState<boolean>(window.innerWidth > window.innerHeight);
+  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
+  const [viewportWidth, setViewportWidth] = useState(window.innerWidth);
+  const haveHeader = true;
+  const activeTab = null;
+
 
   const checkOrientation = () => {
     setIsLandscape(window.innerWidth > window.innerHeight);
@@ -46,15 +51,30 @@ function AppContent() {
   },[])
   return (
     <>
-      {!isLandscape && (
-        <RotatePhone/>
-      )}
-      <Router />
-      <SnackBarError
-        open={error !== ""}
-        message={error}
-        onClose={() => setError("")}
-      />
+     <div className={styles.overlay}>
+        <div
+          className={styles.container}
+          style={{
+            maxHeight: viewportHeight - (haveHeader ? 0 : 100),
+            minHeight: viewportHeight - (haveHeader ? 0 : 100),
+            height: `calc(100% - ${haveHeader ? 0 : 100}px)`,
+            overflowY:
+              activeTab === 'TAP' || activeTab === 'PROFILE'
+                ? 'hidden'
+                : 'auto',
+          }}
+        >
+          {!isLandscape && (
+            <RotatePhone/>
+          )}
+          <Router />
+          <SnackBarError
+            open={error !== ""}
+            message={error}
+            onClose={() => setError("")}
+          />
+      </div>
+    </div>
     </>
   );
 }

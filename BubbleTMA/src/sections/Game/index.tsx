@@ -396,7 +396,7 @@ const App: React.FC = () => {
                         ref={canvasRef}
                         width={window.innerWidth}
                         height={window.innerHeight}
-                        style={{ backgroundColor: '#f0f0f0', display: "block" }}
+                        style={{ backgroundColor: '#f0f0f0', display: "block", overflowY: 'hidden' }}
                     />
                      <Minimap
                         players={playersRef.current}
