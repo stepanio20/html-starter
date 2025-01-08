@@ -42,7 +42,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
 
         if (!decimal.TryParse(amountString, out amount))
         {
-            throw new HubException("Invalid amount value");
+            throw new HubException($"Invalid amount value {amountString}");
         }
 
         if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userId.ToString()))
