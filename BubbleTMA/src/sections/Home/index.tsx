@@ -9,7 +9,7 @@ import useGetAddressApi from '../../shared/api/get-adress'
 import useGetInfoApi from '../../shared/api/get-info'
 import { useTelegram } from '../../shared/hooks/useTelegram'
 import MenuHeader from '../../shared/ui/MenuHeader'
-import { setUserId } from '../../slices/GameSlide'
+import { setPlayers, setUserId } from '../../slices/GameSlide'
 import { RootState } from '../../store'
 import DropCoin from './Coin'
 import styles from './style.module.scss'
@@ -23,13 +23,14 @@ export function Home() {
   const {telegramId} = useTelegram()
   const {getInfo} = useGetInfoApi()
   const {getAddress} = useGetAddressApi()
-
-  
   const [isLandscape, setIsLandscape] = useState<boolean>(window.innerWidth > window.innerHeight);
 
   const checkOrientation = () => {
     setIsLandscape(window.innerWidth > window.innerHeight);
   };
+  useEffect(() => {
+    dispatch(setPlayers([]))
+  },[])
 
   useEffect(() => {
     window.addEventListener('resize', checkOrientation);
@@ -119,7 +120,6 @@ export function Home() {
     </div>
   )
 }
-
 
 /*  (
   <>
