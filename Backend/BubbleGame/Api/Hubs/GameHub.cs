@@ -83,12 +83,12 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
 
         await Clients.Client(Context.ConnectionId)
             .SendAsync(SocketMessages.CONNECTED,
-                new PlayerDto(
+                new FirstConnectionDto(
                     player.GameId,
                     player.Id,
                     player.PositionX,
                     player.PositionY,
-                    player.Size, player.Color));
+                    player.Size, player.Color, gm.EndTime));
 
         var players = await playerGameService.GetAsync(player.GameId);
         foreach (var otherPlayer in players)
