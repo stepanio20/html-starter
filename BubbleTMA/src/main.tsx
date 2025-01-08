@@ -26,7 +26,7 @@ createRoot(document.getElementById('root')!).render(
 function AppContent() {
   const { error, setError } = useError();
   const {tg, telegramId} = useTelegram()
-  const [isLandscape, setIsLandscape] = useState<boolean>(window.innerWidth > window.innerHeight);
+  const [isLandscape, setIsLandscape] = useState<boolean>(true);
   let viewportHeight = window.innerHeight
   const haveHeader = true;
   const activeTab = null;
@@ -40,13 +40,13 @@ function AppContent() {
       tg?.disableVerticalSwipes()
       tg.requestFullscreen();
     }
-    window.addEventListener('resize', checkOrientation);
+  /*   window.addEventListener('resize', checkOrientation);
     window.addEventListener('orientationchange', checkOrientation);
 
     return () => {
       window.removeEventListener('resize', checkOrientation);
       window.removeEventListener('orientationchange', checkOrientation);
-    };
+    }; */
   },[])
   return (
     <>

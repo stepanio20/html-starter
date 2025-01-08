@@ -1,5 +1,5 @@
 import { useTonAddress, useTonConnectUI } from '@tonconnect/ui-react'
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import DepositModal from '../../features/DepositModal'
@@ -23,6 +23,26 @@ export function Home() {
   const {telegramId} = useTelegram()
   const {getInfo} = useGetInfoApi()
   const {getAddress} = useGetAddressApi()
+
+  
+  const [isLandscape, setIsLandscape] = useState<boolean>(window.innerWidth > window.innerHeight);
+
+  // Функция для отслеживания ориентации
+  const checkOrientation = () => {
+    setIsLandscape(window.innerWidth > window.innerHeight);
+  };
+
+  useEffect(() => {
+    // Отслеживаем изменение ориентации
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+
+    // Очистка слушателей при размонтировании компонента
+    return () => {
+      window.removeEventListener('resize', checkOrientation);
+      window.removeEventListener('orientationchange', checkOrientation);
+    };
+  }, []);
 
  const handleConnectWallet = async () => {
     try {
@@ -78,7 +98,7 @@ export function Home() {
   return (
     <div>
         <MenuHeader/>
-        <div className={styles.menuOverlay}>
+        <div className={`${styles.menuOverlay} ${isLandscape && styles.rotated}`}>
         {!userFriendlyAddress ? (
           <button onClick={() => handleConnectWallet()}>
           Connect TON wallet
