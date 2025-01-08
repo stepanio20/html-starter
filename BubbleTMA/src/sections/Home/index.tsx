@@ -27,17 +27,14 @@ export function Home() {
   
   const [isLandscape, setIsLandscape] = useState<boolean>(window.innerWidth > window.innerHeight);
 
-  // Функция для отслеживания ориентации
   const checkOrientation = () => {
     setIsLandscape(window.innerWidth > window.innerHeight);
   };
 
   useEffect(() => {
-    // Отслеживаем изменение ориентации
     window.addEventListener('resize', checkOrientation);
     window.addEventListener('orientationchange', checkOrientation);
 
-    // Очистка слушателей при размонтировании компонента
     return () => {
       window.removeEventListener('resize', checkOrientation);
       window.removeEventListener('orientationchange', checkOrientation);
