@@ -79,6 +79,7 @@
 .fill input {
   background-color: #EAEAEB;
   height: 40px;
+  color: black;
   width: 318px;
   padding: 0 13px;
   border-radius: 15px;
