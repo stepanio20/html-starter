@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Globalization;
 using Api.Common.Dtos.Game;
 using Api.Common.Game;
 using Api.Common.Static;
@@ -40,7 +41,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
             throw new HubException("Amount parameter is missing");
         }
 
-        if (!decimal.TryParse(amountString, out amount))
+        if (!decimal.TryParse(amountString, NumberStyles.Number, CultureInfo.InvariantCulture, out amount))
         {
             throw new HubException($"Invalid amount value {amountString}");
         }
