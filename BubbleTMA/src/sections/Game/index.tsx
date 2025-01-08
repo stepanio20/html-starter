@@ -79,9 +79,9 @@ const App: React.FC = () => {
         }
     
         calculateSpeed() {
-            const baseSpeed = 1;
+            const baseSpeed = 0.4;
             const sizeFactor = 0.01; 
-            this.speed = baseSpeed / (1 + sizeFactor * this.size);
+            this.speed = baseSpeed / (1 + sizeFactor * this.value);
         }
 
 
@@ -192,7 +192,6 @@ const App: React.FC = () => {
         const offsetX = playerBubble.current.x - (canvas.width / 2) / scale;
         const offsetY = playerBubble.current.y - (canvas.height / 2) / scale;
     
-        // Используем новую скорость для движения
         playerBubble.current.x += joystickRef.current.deltaX * playerBubble.current.speed * 5;
         playerBubble.current.y += joystickRef.current.deltaY * playerBubble.current.speed * 5;
     
@@ -330,7 +329,7 @@ const App: React.FC = () => {
     useEffect(() => {
         if (gameRunning) {
             const connection = new HubConnectionBuilder()
-                .withUrl(`http://localhost:5225/gameHub?userid=${userId}&amount=${amount}`)
+                .withUrl(`https://lexcore.devmainops.store/gameHub?userid=${userId}&amount=${amount}`)
                 .build();
 
             setConnection(connection);
