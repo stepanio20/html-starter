@@ -9,7 +9,6 @@ import './index.css'
 import { useTelegram } from './shared/hooks/useTelegram.tsx'
 import SnackBarError from './shared/ui/Snackbar/SnackBarError.tsx'
 import store from './store/index.ts'
-
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <TonConnectUIProvider
