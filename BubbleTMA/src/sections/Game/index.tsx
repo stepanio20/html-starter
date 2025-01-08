@@ -79,7 +79,7 @@ const App: React.FC = () => {
         }
     
         calculateSpeed() {
-            const baseSpeed = 0.4;
+            const baseSpeed = 1;
             const sizeFactor = 0.01; 
             this.speed = baseSpeed / (1 + sizeFactor * this.size);
         }
@@ -172,15 +172,14 @@ const App: React.FC = () => {
         const ctx = canvas.getContext("2d")!;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-        // Пересчитываем скорость в зависимости от размера шарика
         playerBubble.current.calculateSpeed();
     
         const baseScale = window.innerWidth <= 375
-            ? (playerBubble.current.value < 1 ? 0.4 : 0.8)
+            ? (playerBubble.current.value < 1 ? 0.45 : 0.4)
             : window.innerWidth <= 390
-                ? (playerBubble.current.value < 1 ? 0.45 : 0.9)
+                ? (playerBubble.current.value < 1 ? 0.45 : 0.5)
                 : window.innerWidth <= 430
-                    ? (playerBubble.current.value < 1 ? 0.5 : 1)
+                    ? (playerBubble.current.value < 1 ? 0.4 : 0.5)
                     : window.innerWidth <= 768
                         ? (playerBubble.current.value < 1 ? 0.6 : 1.3)
                         : (playerBubble.current.value < 0.5 ? 0.8 : 1.8);
