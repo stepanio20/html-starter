@@ -13,7 +13,6 @@ import { setUserId } from '../../slices/GameSlide'
 import { RootState } from '../../store'
 import DropCoin from './Coin'
 import styles from './style.module.scss'
-
 export function Home() {
   const navigate = useNavigate()
 	const [tonConnectUI] = useTonConnectUI();

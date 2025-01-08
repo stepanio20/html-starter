@@ -163,7 +163,16 @@ const App: React.FC = () => {
         const ctx = canvas.getContext("2d")!;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-        const baseScale = window.innerWidth < 768 || playerBubble.current.value < 1 ? 0.7 : 2;
+        const baseScale = window.innerWidth <= 375
+        ? (playerBubble.current.value < 1 ? 0.4 : 0.8) 
+        : window.innerWidth <= 390
+            ? (playerBubble.current.value < 1 ? 0.45 : 0.9) 
+            : window.innerWidth <= 430
+                ? (playerBubble.current.value < 1 ? 0.5 : 1) 
+                : window.innerWidth <= 768
+                    ? (playerBubble.current.value < 1 ? 0.6 : 1.3) 
+                    : (playerBubble.current.value < 0.5 ? 0.8 : 1.8);
+
         const scale = baseScale * (100 / playerBubble.current.size);
     
         ctx.save();
@@ -184,7 +193,7 @@ const App: React.FC = () => {
             Math.min(playerBubble.current.y, mapHeight - playerBubble.current.size)
         );
     
-        drawGrid(ctx, canvas.width / scale, canvas.height / scale, 100, offsetX, offsetY, playerBubble.current.size, scale);
+        drawGrid(ctx, canvas.width / scale, canvas.height / scale, 100, offsetX, offsetY, playerBubble.current.value, scale);
     
         drawMapBorders(
             ctx,

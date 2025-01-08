@@ -11,8 +11,8 @@ export const drawGrid = (
   ctx.save();
 
   ctx.strokeStyle = "rgba(192, 192, 192, 0.5)";
-  ctx.lineWidth = 2;
-
+  ctx.lineWidth = playerSize < 1 ? 1 : 4;
+  
   const gridScaleFactor = Math.max(1, playerSize / 200);
   const adjustedCellSize = Math.max(baseCellSize / (scale * gridScaleFactor), 10);
 

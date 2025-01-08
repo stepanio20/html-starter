@@ -1,11 +1,11 @@
 import { SendTransactionRequest, useTonConnectUI } from '@tonconnect/ui-react'
 import { useState } from "react"
 import { useSelector } from 'react-redux'
+import close from '../../assets/close.svg'
 import useGetInfoApi from '../../shared/api/get-info'
 import { RootState } from '../../store'
 import useWithdrawApi from '../WithdrawModal/api'
 import styles from "./style.module.css"
-
 const DepositModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [amount, setAmount] = useState<string | number>('');
@@ -67,7 +67,7 @@ const DepositModal = () => {
       <div className={`${styles.modalOverlay} ${isOpen ? styles.active : ""}`}>
         <div className={styles.modalContent}>
           <button className={styles.modalClose} onClick={toggleModal}>
-            &times;
+            <img src={close} alt="" style={{width: '50px', height: '50px'}} />
           </button>
           <p className={styles.title}>DEPOSIT</p>
           <div className={styles.fill}>
