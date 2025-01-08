@@ -1,9 +1,10 @@
 import { THEME, TonConnectUIProvider } from '@tonconnect/ui-react'
-import { StrictMode, useEffect } from 'react'
+import { StrictMode, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
 import { ErrorProvider, useError } from './app/errorContext.tsx'
 import Router from './app/Router.tsx'
+import RotatePhone from './features/RotatePhone/index.tsx'
 import './index.css'
 import { useTelegram } from './shared/hooks/useTelegram.tsx'
 import SnackBarError from './shared/ui/Snackbar/SnackBarError.tsx'
@@ -25,14 +26,29 @@ createRoot(document.getElementById('root')!).render(
 function AppContent() {
   const { error, setError } = useError();
   const {tg, telegramId} = useTelegram()
+  const [isLandscape, setIsLandscape] = useState<boolean>(window.innerWidth > window.innerHeight);
+
+  const checkOrientation = () => {
+    setIsLandscape(window.innerWidth > window.innerHeight);
+  };
   useEffect(() => {
     if (telegramId) {
       tg?.disableVerticalSwipes()
       tg.requestFullscreen();
     }
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+
+    return () => {
+      window.removeEventListener('resize', checkOrientation);
+      window.removeEventListener('orientationchange', checkOrientation);
+    };
   },[])
   return (
     <>
+      {!isLandscape && (
+        <RotatePhone/>
+      )}
       <Router />
       <SnackBarError
         open={error !== ""}
