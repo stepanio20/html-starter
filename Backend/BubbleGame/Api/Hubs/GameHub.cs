@@ -53,7 +53,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
         if (user == null)
             throw new HubException("User not found");
 
-        if (user.Balance <= amount)
+        if (user.Balance < amount)
             throw new HubException("User balance is less than 0");
 
         var gameId = Guid.Parse("f2940113-723e-4339-a32b-49d901b44b6c");
