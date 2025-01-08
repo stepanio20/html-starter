@@ -287,7 +287,7 @@ const App: React.FC = () => {
         const dy = player1.y - player2.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
     
-        return distance < player1.size && player1.size > player2.size;
+        return distance < (player1.size + player2.size);
     };
 
     const handlePlayerCollision = (currentPlayer: PlayerBubble, players: Player[]) => {
@@ -298,10 +298,6 @@ const App: React.FC = () => {
                 if (checkCollision(currentPlayer, otherBubble)) {
                     if (currentPlayer.size > otherBubble.size) {
                         console.log(`Player ${playerId} ate player ${player.id}`);
-    
-                        setEatenPlayers(prev => new Set(prev.add(player.id)));
-                        dispatch(removePlayer(player.id));
-    
                         connection?.invoke("EatPlayerAsync", {
                             player: {
                                 playerId: playerId,
@@ -325,8 +321,6 @@ const App: React.FC = () => {
                             },
                             eatenPlayer: playerId
                         }).catch(err => console.error("Error sending EatPlayerAsync: ", err));
-    
-                        endGame();
                     }
                 }
             }
@@ -354,7 +348,7 @@ const App: React.FC = () => {
                 }
             });
 
-           /*  connection.on('PlayerEaten', (playerState: PlayerEatenDto) => {
+            connection.on('PlayerEaten', (playerState: PlayerEatenDto) => {
                 if (playerState.playerId === userGameIdRef.current) {
                     endGame()
                 } else if (playerState.playerId) {
@@ -362,7 +356,7 @@ const App: React.FC = () => {
                     setEatenPlayers(prev => new Set(prev.add(playerState.playerId)));
                     dispatch(removePlayer(playerState.playerId));
                 }
-            }); */
+            });
 
             connection.on('PlayerDisconnected', (playerState: PlayerEatenDto) => {
                 if (playerState.playerId === userGameIdRef.current) {
