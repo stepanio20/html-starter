@@ -8,3 +8,12 @@ public record PlayerDto(
     decimal BallSize,
     string Color
     );
+public record FirstConnectionDto(
+    Guid GameId,
+    string PlayerId, 
+    float PositionX, 
+    float PositionY, 
+    decimal BallSize,
+    string Color,
+    DateTime EndAt
+);

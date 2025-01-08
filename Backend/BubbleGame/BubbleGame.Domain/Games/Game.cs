@@ -11,7 +11,8 @@ public class Game : CacheEntity
 
     [JsonPropertyName("Players")]
     public List<string> Players { get; set; } = new List<string>();
-
+    
+    public DateTime EndTime { get; set; }
     public void AppendPlayer(string playerId)
     {
         Players.Add(playerId);

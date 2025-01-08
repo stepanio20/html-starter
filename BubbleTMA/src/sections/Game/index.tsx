@@ -228,7 +228,8 @@ const App: React.FC = () => {
                     otherBubble.draw(ctx, offsetX, offsetY, player.color);
                 }
             });
-    
+
+        handlePlayerCollision(playerBubble.current, playersRef.current);
         ctx.restore();
     
         const currentTime = Date.now();
@@ -279,7 +280,6 @@ const App: React.FC = () => {
             .catch(err => console.error(err.toString()));
     };
 
-
     useEffect(() => {
         if (gameRunning && playerId) {
             animate();
@@ -305,12 +305,33 @@ const App: React.FC = () => {
         joystickRef.current.deltaY = deltaY;
     };
 
-
+    const checkCollision = (player1: PlayerBubble, player2: PlayerBubble): boolean => {
+        const dx = player1.x - player2.x;
+        const dy = player1.y - player2.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
     
+        return distance < (player1.size + player2.size);
+    };
+
+    const handlePlayerCollision = (currentPlayer: PlayerBubble, players: Player[]) => {
+        players.forEach(player => {
+            if (player.id !== playerId && !eatenPlayers.has(player.id)) {
+                const otherBubble = new PlayerBubble(player.x, player.y, player.value, player.color);
+    
+                if (checkCollision(currentPlayer, otherBubble)) {
+                    if (currentPlayer.size > otherBubble.size) {
+                        console.log(`Player ${playerId} ate player ${player.id}`);
+                        connection?.invoke("EatPlayerAsync", playerId, player.id).catch(err => console.error("Error sending EatPlayerAsync: ", err));
+                    }
+                }
+            }
+        });
+    };
+
     useEffect(() => {
         if (gameRunning) {
             const connection = new HubConnectionBuilder()
-                .withUrl(`https://lexcore.devmainops.store/gameHub?userid=${userId}&amount=${amount}`)
+                .withUrl(`http://localhost:5225/gameHub?userid=${userId}&amount=${amount}`)
                 .build();
 
             setConnection(connection);
@@ -367,7 +388,6 @@ const App: React.FC = () => {
             };
         }
     }, [dispatch, gameRunning]);
-
     
 
     return (
