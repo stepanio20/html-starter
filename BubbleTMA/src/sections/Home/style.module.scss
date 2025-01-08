@@ -10,6 +10,7 @@
   position: relative;
   z-index: 1;
 
+
   .settingButton {
     max-width: 300px;
     width: 100%;
@@ -25,4 +26,8 @@
     }
   }
 
+}
+
+.rotated {
+    margin-top: 0;
 }

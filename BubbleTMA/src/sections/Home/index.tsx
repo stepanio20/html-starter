@@ -77,7 +77,7 @@ export function Home() {
   return (
     <div>
         <MenuHeader/>
-        <div className={styles.menuOverlay}>
+        <div className={`${styles.menuOverlay} ${window.innerWidth > window.innerHeight && styles.rorated}`}>
         {!userFriendlyAddress ? (
           <button onClick={() => handleConnectWallet()}>
           Connect TON wallet
