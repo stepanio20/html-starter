@@ -41,6 +41,9 @@ namespace BubbleGame.Persistence.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("text");
 
+                    b.Property<decimal>("DemoCoin")
+                        .HasColumnType("numeric");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
