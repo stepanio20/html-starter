@@ -27,8 +27,7 @@ function AppContent() {
   const { error, setError } = useError();
   const {tg, telegramId} = useTelegram()
   const [isLandscape, setIsLandscape] = useState<boolean>(window.innerWidth > window.innerHeight);
-  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
-  const [viewportWidth, setViewportWidth] = useState(window.innerWidth);
+  let viewportHeight = window.innerHeight
   const haveHeader = true;
   const activeTab = null;
 
