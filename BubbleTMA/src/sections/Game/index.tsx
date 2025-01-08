@@ -298,16 +298,7 @@ const App: React.FC = () => {
                 if (checkCollision(currentPlayer, otherBubble)) {
                     if (currentPlayer.size > otherBubble.size) {
                         console.log(`Player ${playerId} ate player ${player.id}`);
-                        connection?.invoke("EatPlayerAsync", {
-                            player: playerId,
-                            eatenPlayer: player.id
-                        }).catch(err => console.error("Error sending EatPlayerAsync: ", err));
-                    } else {
-                        console.log(`Player ${player.id} ate player ${playerId}`);
-                        connection?.invoke("EatPlayerAsync", {
-                            player: playerId,
-                            eatenPlayer: player.id
-                        }).catch(err => console.error("Error sending EatPlayerAsync: ", err));
+                        connection?.invoke("EatPlayerAsync", playerId, player.id).catch(err => console.error("Error sending EatPlayerAsync: ", err));
                     }
                 }
             }
