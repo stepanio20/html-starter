@@ -34,6 +34,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\BubbleGame.Application\BubbleGame.Application.csproj" />
+      <ProjectReference Include="..\BubbleGame.Cache\BubbleGame.Cache.csproj" />
     </ItemGroup>
 
 </Project>

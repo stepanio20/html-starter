@@ -9,27 +9,21 @@ internal static class GameRoute
     public static void AddGameRoute(this IEndpointRouteBuilder app)
     {
         app.MapPost("/api/games/get-info", GetUserGameInfo).AllowAnonymous();
-        app.MapGet("/api/games/get-demo-coin", async (Guid userId, UserManager<AppUser> userManager) =>
+        app.MapGet("/api/games/get-demo-coin", async (string userId, UserManager<AppUser> userManager) =>
         {
             var user = await userManager.Users.FirstOrDefaultAsync(x => x.Id.Equals(userId));
-            if (user == null)
-                return Results.Unauthorized();  // Возвращаем ошибку, если пользователь не найден
-
-            return Results.Ok(user.DemoCoin);  // Возвращаем количество монет в ответе
+            return user == null ? Results.Unauthorized() : Results.Ok(user.DemoCoin);
         }).AllowAnonymous();
 
-        app.MapPatch("/api/games/update-coin", async (Guid userId, decimal amount, UserManager<AppUser> userManager) =>
+        app.MapPatch("/api/games/update-coin", async (string userId, decimal amount, UserManager<AppUser> userManager) =>
         {
             var user = await userManager.Users.FirstOrDefaultAsync(x => x.Id.Equals(userId));
             if (user == null)
-                return Results.Unauthorized();  // Возвращаем ошибку, если пользователь не найден
+                return Results.Unauthorized();
 
-            user.DemoCoin += amount;  // Обновляем количество монет
+            user.DemoCoin += amount;
             var updateResult = await userManager.UpdateAsync(user);
-            if (!updateResult.Succeeded)
-                return Results.BadRequest("Failed to update user data.");  // Возвращаем ошибку, если обновление не удалось
-
-            return Results.Ok(user.DemoCoin);  // Возвращаем обновленное количество монет
+            return !updateResult.Succeeded ? Results.BadRequest("Failed to update user data.") : Results.Ok(user.DemoCoin);
         }).AllowAnonymous();
 
     }

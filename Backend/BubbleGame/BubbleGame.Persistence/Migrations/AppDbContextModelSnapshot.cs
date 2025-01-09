@@ -44,6 +44,9 @@ namespace BubbleGame.Persistence.Migrations
                     b.Property<decimal>("DemoCoin")
                         .HasColumnType("numeric");
 
+                    b.Property<decimal>("Dollar")
+                        .HasColumnType("numeric");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
