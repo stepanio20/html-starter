@@ -4,7 +4,12 @@ using BubbleGame.Core.Players;
 
 namespace BubbleGame.Core.Games;
 
-public class Game : CacheEntity
+public class Game : BaseEntity
+{
+    public DateTime StartTime { get; set; }
+    public DateTime EndTime { get; set; }
+}
+public class GameCache : CacheEntity
 {
     [JsonPropertyName("Id")]
     public Guid Id { get; set; }

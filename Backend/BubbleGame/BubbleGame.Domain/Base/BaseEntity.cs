@@ -6,6 +6,5 @@ public class BaseEntity
 {
     private Guid _id;
     
-    [JsonPropertyName("Id")]
-    public Guid Id { get; set; }//todo make private
+    public Guid Id { get; set; }
 }

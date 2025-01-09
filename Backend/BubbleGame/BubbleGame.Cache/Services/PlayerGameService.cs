@@ -15,7 +15,7 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
 
     public async Task<List<Player>> GetAsync(Guid gameId)
     {
-        var game = await cache.GetByKeyAsync<Game>($"game-{gameId}");
+        var game = await cache.GetByKeyAsync<GameCache>($"game-{gameId}");
         
         var players = new List<Player>();
         foreach (var playerId in game.Players)
@@ -42,15 +42,15 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
         await cache.SaveAsync(key, entity);    
     }
 
-    public async Task<Game> GetGameById(Guid id)
+    public async Task<GameCache> GetGameById(Guid id)
     {
-       var game = await cache.GetByKeyAsync<Game>($"game-{id}");
+       var game = await cache.GetByKeyAsync<GameCache>($"game-{id}");
        return game;
     }
 
-    public async Task CreateGame(Game game)
+    public async Task CreateGame(GameCache gameCache)
     {
-        await cache.SaveAsync($"game-{game.Id}", game);
+        await cache.SaveAsync($"game-{gameCache.Id}", gameCache);
     }
 
     public async Task DisconnectPlayer(string playerId)
@@ -69,7 +69,7 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
     {
         try
         {
-            var game = await cache.GetByKeyAsync<Game>($"game-{player.GameId}");
+            var game = await cache.GetByKeyAsync<GameCache>($"game-{player.GameId}");
             if (game == null)
                 throw new InvalidOperationException("Game not found.");
             
@@ -87,7 +87,7 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
 
     public async Task RemovePlayerAsync(Player player)
     {
-        var game = await cache.GetByKeyAsync<Game>($"game-{player.GameId}");
+        var game = await cache.GetByKeyAsync<GameCache>($"game-{player.GameId}");
         if (game == null)
             throw new InvalidOperationException("Game not found.");
 

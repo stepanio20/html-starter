@@ -8,6 +8,7 @@ using BubbleGame.Application.Services.Players;
 using BubbleGame.Cache.Services;
 using BubbleGame.Core.Games;
 using BubbleGame.Core.Players;
+using BubbleGame.Persistence.DAL;
 using BubbleGame.Persistence.Identity.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
@@ -15,7 +16,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api.Hubs;
 
-internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<AppUser> userManager) : Hub
+public class GameHub(
+    IPlayerGameService playerGameService, 
+    UserManager<AppUser> userManager,
+    AppDbContext context) : Hub
 {
     private static readonly List<string> Colors =
     [
@@ -57,21 +61,28 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
         if (user.Balance < amount)
             throw new HubException("User balance is less than 0");
 
-        var gameId = Guid.Parse("f2940113-723e-4339-a32b-49d901b44b6c");
-        var gm = await playerGameService.GetGameById(gameId);
-        if (gm is null)
+        var timeNow = DateTime.UtcNow;
+        var game = await context.Games.FirstOrDefaultAsync(x => x.EndTime >  timeNow);
+        if (game == null)
         {
-            gm = new Game
+            game = new Game
             {
-                Id = gameId
+                EndTime = timeNow.AddMinutes(5),
+                StartTime = timeNow,
             };
-            await playerGameService.CreateGame(gm);
+
+            await context.Games.AddAsync(game);
+            var cacheGame =  new GameCache
+            {
+                Id = game.Id
+            };
+            await playerGameService.CreateGame(cacheGame);
         }
 
         var player = new Player
         {
             Id = Context.ConnectionId,
-            GameId = gm.Id,
+            GameId = game.Id,
             UserId = userId.ToString(),
             PositionX = new Random().Next(0, 12000),
             PositionY = new Random().Next(0, 12000),
@@ -88,7 +99,7 @@ internal sealed class GameHub(IPlayerGameService playerGameService, UserManager<
                     player.Id,
                     player.PositionX,
                     player.PositionY,
-                    player.Size, player.Color, gm.EndTime));
+                    player.Size, player.Color, game.EndTime));
 
         var players = await playerGameService.GetAsync(player.GameId);
         foreach (var otherPlayer in players)

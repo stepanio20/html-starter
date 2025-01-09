@@ -1,3 +1,4 @@
+using Api.Backgrounds;
 using Api.Common.Static.Sockets;
 using Api.Hubs;
 using Api.Routes;
@@ -27,6 +28,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddOpenApi();
 builder.Services.AddCache(builder.Configuration);
 builder.Services.AddPersistence(builder.Configuration);
+//todobuilder.Services.AddHostedService<PlayerLastUpdateBackgroundService>();
 
 builder.Services.AddSignalR(options =>
 {
