@@ -12,17 +12,11 @@ export interface Player {
 interface PlayerState {
   players: Player[];
   playerId: string;
-  userId: string;
-  balance: number;
-  depositAddress: string;
 }
 
 const initialState: PlayerState = {
   players: [],
-  userId: '',
-  playerId: '',
-  balance: 0,
-  depositAddress: ''
+  playerId: ''
 };
 
 const playerSlice = createSlice({
@@ -52,20 +46,9 @@ const playerSlice = createSlice({
         state.playerId = action.payload
       }
     },
-    setUserId: (state, action: PayloadAction<string>) => {
-      if (action.payload.length !== 0) {
-        state.userId = action.payload
-      }
-    },
-    setBalance: (state, action: PayloadAction<number>) => {
-        state.balance = action.payload
-    },
-    setDepositAddress: (state, action: PayloadAction<string>) => {
-      state.depositAddress = action.payload
-  },
   },
 });
 
 export const getPlayers = (state: { players: PlayerState }) => state.players.players;
-export const { setPlayers, updatePlayer, removePlayer, setPlayerId, setUserId, setBalance, setDepositAddress} = playerSlice.actions;
+export const { setPlayers, updatePlayer, removePlayer, setPlayerId} = playerSlice.actions;
 export default playerSlice.reducer;

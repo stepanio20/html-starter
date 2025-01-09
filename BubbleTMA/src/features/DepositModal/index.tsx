@@ -10,8 +10,8 @@ const DepositModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [amount, setAmount] = useState<string | number>('');
   const [tonConnectUI] = useTonConnectUI();
-  const address = useSelector((state: RootState) => state?.players?.depositAddress);
-  const userId = useSelector((state: RootState) => state?.players?.userId);
+  const address = useSelector((state: RootState) => state?.user?.depositAddress);
+  const userId = useSelector((state: RootState) => state?.user?.userId);
   const {deposit} = useWithdrawApi()
   const {getInfo} = useGetInfoApi()
   const handleDeposit = async() => {

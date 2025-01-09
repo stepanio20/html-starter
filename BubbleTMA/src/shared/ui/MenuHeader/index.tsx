@@ -3,7 +3,7 @@ import UsdIcon from '../../../assets/valute/usd.svg'
 import { RootState } from '../../../store'
 import styles from './style.module.scss'
 export default function MenuHeader() {
-	const balance = useSelector((state: RootState) => state?.players?.balance)
+	const balance = useSelector((state: RootState) => state?.user?.balance)
 	return (
 		<div className={styles.wrapper}>
 			<div className={styles.content}>

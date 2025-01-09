@@ -24,7 +24,8 @@ const App: React.FC = () => {
     const dispatch = useDispatch();
     const [connection, setConnection] = useState<HubConnection | null>(null);
     const players = useSelector(getPlayers);
-    const {playerId, userId} = useSelector((state: RootState) => state?.players);
+    const {playerId} = useSelector((state: RootState) => state?.players);
+    const {userId} = useSelector((state: RootState) => state?.user);
     const playersRef = useRef(players);
     const userGameIdRef = useRef(playerId);
     const navigate = useNavigate()

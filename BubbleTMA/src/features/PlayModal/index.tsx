@@ -8,7 +8,7 @@ import styles from "./style.module.scss"
 const PlayModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [amount, setAmount] = useState<string | number>("")
-  const balance = useSelector((state: RootState) => state?.players?.balance);
+  const balance = useSelector((state: RootState) => state?.user?.balance);
   const navigate = useNavigate()
   const toggleModal = () => {
     setIsOpen(!isOpen);
@@ -36,6 +36,11 @@ const PlayModal = () => {
             onClick={toggleModal}
             className={styles.playButton}>
           PLAY PVP
+        </button>
+        <button
+            onClick={() => navigate('/fun')}
+            className={styles.playButton}>
+          PLAY FOR FUN
         </button>
 
         <div className={`${styles.modalOverlay} ${isOpen ? styles.active : ""}`}>

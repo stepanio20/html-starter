@@ -6,7 +6,7 @@ import { RootState } from '../../../../../store'
 import styles from './styles.module.scss'
 
 const GameOver = () => {
-	const {balance, userId} = useSelector((root: RootState) => root.players)
+	const {balance, userId} = useSelector((root: RootState) => root.user)
 	const navigate = useNavigate()
 	const {getInfo} = useGetInfoApi()
 	useEffect(() => {

@@ -1,6 +1,6 @@
 import { useDispatch } from 'react-redux'
 import useApi from '../../api/apiHandler'
-import { setBalance } from '../../slices/GameSlide'
+import { setBalance } from '../../slices/UserSlide'
 interface GetInfoInt {
   balance: number
 }

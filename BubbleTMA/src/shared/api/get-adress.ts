@@ -1,6 +1,6 @@
 import { useDispatch } from 'react-redux'
 import useApi from '../../api/apiHandler'
-import { setDepositAddress } from '../../slices/GameSlide'
+import { setDepositAddress } from '../../slices/UserSlide'
 
 export default function useGetAddressApi() {
   const dispatch = useDispatch()

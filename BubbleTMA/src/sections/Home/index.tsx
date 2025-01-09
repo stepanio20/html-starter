@@ -6,10 +6,12 @@ import DepositModal from '../../features/DepositModal'
 import PlayModal from '../../features/PlayModal'
 import WithdrawModal from '../../features/WithdrawModal'
 import useGetAddressApi from '../../shared/api/get-adress'
+import useGetDemoCoinApi from '../../shared/api/get-demoCoin'
 import useGetInfoApi from '../../shared/api/get-info'
 import { useTelegram } from '../../shared/hooks/useTelegram'
 import MenuHeader from '../../shared/ui/MenuHeader'
-import { setPlayers, setUserId } from '../../slices/GameSlide'
+import { setPlayers } from '../../slices/GameSlide'
+import { setUserId } from '../../slices/UserSlide'
 import { RootState } from '../../store'
 import DropCoin from './Coin'
 import styles from './style.module.scss'
@@ -19,10 +21,11 @@ export function Home() {
 	const [tonConnectUI] = useTonConnectUI();
   const userFriendlyAddress = useTonAddress();
   const dispatch = useDispatch()
-  const balance = useSelector((state: RootState) => state?.players?.balance)
+  const balance = useSelector((state: RootState) => state?.user?.balance)
   const {telegramId} = useTelegram()
   const {getInfo} = useGetInfoApi()
   const {getAddress} = useGetAddressApi()
+  const {getDemoCoin} = useGetDemoCoinApi()
   const [isLandscape, setIsLandscape] = useState<boolean>(window.innerWidth > window.innerHeight);
 
   const checkOrientation = () => {
@@ -84,7 +87,7 @@ export function Home() {
 
                 const data:string = await response.json();
                 dispatch(setUserId(data))
-                Promise.all([getInfo(data), getAddress()])
+                Promise.all([getInfo(data), getAddress(), getDemoCoin(data)])
             } catch (error) {
                 console.error(error);
             }
