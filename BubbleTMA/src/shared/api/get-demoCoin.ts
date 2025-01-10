@@ -14,5 +14,38 @@ export default function useGetDemoCoinApi() {
 		if (res.data)
 		dispatch(setDemoBalance(res.data))
 	}
-	return {getDemoCoin}
+	const getDemoWithoutAuth = async(uuId: string) => {
+		const res = await api<number>({
+			url: `/api/games/get-demo-coin-without-auth?sessionId=${uuId}`,
+			method: 'POST'
+		})
+		if (res.data)
+		dispatch(setDemoBalance(res.data))
+	}
+	const updateDemoCoinWithoutAuth = async(uuId: string, amount: string | number) => {
+		await api<number>({
+			url: `/api/games/update-demo-coin-without-auth?sessionId=${uuId}&amount=${amount}`,
+			method: 'PATCH'
+		})
+	}
+	const updateDemoCoin = async(userId: string, amount: string | number) => {
+		await api<number>({
+			url: `/api/games/update-coin?userId=${userId}&amount=${amount}`,
+			method: 'PATCH'
+		})
+	}
+	const removeDemoCoinWithoutAuth = async(uuId: string, amount: string | number) => {
+		await api<number>({
+			url: `/api/games/remove-demo-coin-without-auth?sessionId=${uuId}&amount=${amount}`,
+			method: 'PATCH'
+		})
+	}
+
+	const removeDemoCoin = async(userId: string, amount: string | number) => {
+		await api<number>({
+			url: `/api/games/remove-demo-coin?userId=${userId}&amount=${amount}`,
+			method: 'PATCH'
+		})
+	}
+	return {getDemoCoin, getDemoWithoutAuth, updateDemoCoinWithoutAuth, updateDemoCoin, removeDemoCoinWithoutAuth, removeDemoCoin}
 }

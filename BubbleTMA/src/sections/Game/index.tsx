@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import Joystick from '../../features/Joystick'
 import { drawGrid } from '../../shared/utils/DrawGrid'
 import { drawMapBorders } from '../../shared/utils/DrawMapBorders'
+import { formatTime } from '../../shared/utils/FormatTime'
 import { getPlayers, Player, removePlayer, setPlayerId, updatePlayer } from '../../slices/GameSlide'
 import { RootState } from '../../store'
 import GameOver from './components/ui/GameOver'
@@ -17,7 +18,7 @@ const App: React.FC = () => {
     const [gameOver, setGameOver] = useState(false);
     const [eatenPlayers, setEatenPlayers] = useState<Set<string>>(new Set());
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const timerRef = useRef<number | null>(null);
+    const [timeLeft, setTimeLeft] = useState<number | null>(null);
     const joystickRef = useRef({ deltaX: 0, deltaY: 0 });
     const mapWidth = 12000;
     const mapHeight = 12000;
@@ -54,7 +55,7 @@ const App: React.FC = () => {
             id: gameState.playerId,
             x: gameState.positionX,
             y: gameState.positionY,
-            size: gameState.ballSize * 300,
+            size: Math.sqrt(gameState.ballSize) * 15,
             value: gameState.ballSize,
             color: gameState.color,
         };
@@ -74,13 +75,13 @@ const App: React.FC = () => {
             this.x = x;
             this.y = y;
             this.value = value;
-            this.size = value * 300;
+            this.size = Math.sqrt(value) * 15;
             this.color = color;
             this.speed = 0.2;
         }
     
         calculateSpeed() {
-            const baseSpeed = 0.4;
+            const baseSpeed = 0.2;
             const sizeFactor = 0.01; 
             this.speed = baseSpeed / (1 + sizeFactor * this.value);
         }
@@ -101,8 +102,9 @@ const App: React.FC = () => {
             ctx.strokeStyle = "rgba(0, 0, 0, 0.1)";
             ctx.stroke();
             ctx.closePath();
-    
-            const fontSize = Math.max(14, this.size * 0.3);
+            console.log("this.size:", this.size);
+
+            const fontSize = this.size * 0.45;
             ctx.fillStyle = "#000";
             ctx.font = `${fontSize}px Arial`;
             ctx.textAlign = "center";
@@ -110,6 +112,7 @@ const App: React.FC = () => {
             ctx.fillText(`$${this.value.toFixed(2)}`, this.x - offsetX, this.y - offsetY);
         }
     }
+    
     
 
     const playerBubble = useRef(new PlayerBubble(mapWidth / 2, mapHeight / 2, 0, 'red'));
@@ -120,26 +123,6 @@ const App: React.FC = () => {
         setGameRunning(true);
         setGameOver(false);
         setEatenPlayers(new Set());
-        startTimer();
-    };
-
-    const startTimer = () => {
-        if (timerRef.current) clearInterval(timerRef.current);
-
-        timerRef.current = setInterval(() => {
-            if (gameOver || !gameRunning) {
-                clearInterval(timerRef.current!);
-                return;
-            }
-
-           /*  setGameTime((prevTime) => {
-                if (prevTime <= 1) {
-                    endGame();
-                    return 0;
-                }
-                return prevTime - 1;
-            }); */
-        }, 1000);
     };
 
     const endGame = () => {
@@ -159,6 +142,7 @@ const App: React.FC = () => {
         positionY: number;
         ballSize: number;
         color: string;
+        endAt: string
     }
 
     let lastPosition = { x: 0, y: 0 };
@@ -175,23 +159,6 @@ const App: React.FC = () => {
     
         playerBubble.current.calculateSpeed();
     
-        const baseScale = window.innerWidth <= 375
-            ? (playerBubble.current.value < 1 ? 0.45 : 0.4)
-            : window.innerWidth <= 390
-                ? (playerBubble.current.value < 1 ? 0.45 : 0.5)
-                : window.innerWidth <= 430
-                    ? (playerBubble.current.value < 1 ? 0.4 : 0.5)
-                    : window.innerWidth <= 768
-                        ? (playerBubble.current.value < 1 ? 0.6 : 1.3)
-                        : (playerBubble.current.value < 0.5 ? 0.8 : 1.8);
-    
-        const scale = baseScale * (100 / playerBubble.current.size);
-    
-        ctx.save();
-        ctx.scale(scale, scale);
-    
-        const offsetX = playerBubble.current.x - (canvas.width / 2) / scale;
-        const offsetY = playerBubble.current.y - (canvas.height / 2) / scale;
     
         playerBubble.current.x += joystickRef.current.deltaX * playerBubble.current.speed * 5;
         playerBubble.current.y += joystickRef.current.deltaY * playerBubble.current.speed * 5;
@@ -204,8 +171,13 @@ const App: React.FC = () => {
             playerBubble.current.size,
             Math.min(playerBubble.current.y, mapHeight - playerBubble.current.size)
         );
+
+        const scale = 1.9
     
-        drawGrid(ctx, canvas.width / scale, canvas.height / scale, 100, offsetX, offsetY, playerBubble.current.value, scale);
+        const offsetX = playerBubble.current.x - canvas.width / 2;
+        const offsetY = playerBubble.current.y - canvas.height / 2;
+        
+        drawGrid(ctx, canvas.width, canvas.height, 100 / scale, offsetX, offsetY, scale);
     
         drawMapBorders(
             ctx,
@@ -213,8 +185,8 @@ const App: React.FC = () => {
             mapHeight,
             offsetX,
             offsetY,
-            canvas.width / scale,
-            canvas.height / scale
+            canvas.width,
+            canvas.height 
         );
     
         playerBubble.current.draw(ctx, offsetX, offsetY, playerBubble.current.color);
@@ -263,7 +235,23 @@ const App: React.FC = () => {
     
         requestAnimationFrame(animate);
     };
+
+    useEffect(() => {
+        if (timeLeft === null) return;
     
+        const interval = setInterval(() => {
+            setTimeLeft((prev) => {
+                if (prev === null || prev <= 1) {
+                    clearInterval(interval);
+                    endGame();
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+    
+        return () => clearInterval(interval);
+    }, [timeLeft]);
     
 
     const sendPlayerPosition = (gameId: string, playerId: string, x: number, y: number, ballSize: number) => {
@@ -342,9 +330,13 @@ const App: React.FC = () => {
                     playerBubble.current.x = data.positionX;
                     playerBubble.current.y = data.positionY;
                     playerBubble.current.size = data.ballSize;
-                    playerBubble.current.value = data.ballSize * 300;
+                    playerBubble.current.value = Math.sqrt(data.ballSize) * 15;
                     playerBubble.current.color = data.color
                     dispatch(setPlayerId(data?.playerId));
+                    const endTime = new Date(data.endAt).getTime();
+                    const now = Date.now();
+                    const remainingTime = Math.max(0, endTime - now);
+                    setTimeLeft(Math.ceil(remainingTime / 1000));
                 }
             });
 
@@ -393,6 +385,9 @@ const App: React.FC = () => {
         <div>
                 <div>
                     <p className={styles.playerOnline}>Players: {playersRef.current.length}</p>
+                    <p className={styles.timer}>
+                        Game Over: {timeLeft !== null ? formatTime(timeLeft) : 'Loading...'}
+                    </p>
                     <canvas
                         ref={canvasRef}
                         width={window.innerWidth}

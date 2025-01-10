@@ -5,10 +5,10 @@ import usdIcon from '../../assets/valute/usd.svg'
 import { RootState } from '../../store'
 import styles from "./style.module.scss"
 
-const PlayModal = () => {
+const PlayFunModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [amount, setAmount] = useState<string | number>("");
-  const balance = useSelector((state: RootState) => state?.user?.balance);
+  const { demoBalance } = useSelector((state: RootState) => state?.user);
   const navigate = useNavigate();
 
   const toggleModal = () => {
@@ -24,15 +24,15 @@ const PlayModal = () => {
 
   const isAmountValid = () => {
     const numericAmount = parseFloat(amount as string);
-    return !isNaN(numericAmount) && numericAmount >= 1 && numericAmount <= 10 && numericAmount <= balance;
+    return !isNaN(numericAmount) && numericAmount >= 1 && numericAmount <= 10 && numericAmount <= demoBalance;
   };
 
   const startGame = () => {
-    navigate('/game', { state: { amount } });
+    navigate('/fun', { state: { amount } });
   };
 
   const setAmountByPercentage = (percentage: number) => {
-    const calculatedAmount = (balance * percentage) / 100;
+    const calculatedAmount = (demoBalance * percentage) / 100;
     setAmount(calculatedAmount.toFixed(2));
   };
 
@@ -41,7 +41,7 @@ const PlayModal = () => {
       <button
         onClick={toggleModal}
         className={styles.playButton}>
-        PLAY PVP
+        PLAY FOR FUN
       </button>
 
       <div className={`${styles.modalOverlay} ${isOpen ? styles.active : ""}`}>
@@ -49,10 +49,10 @@ const PlayModal = () => {
           <button className={styles.modalClose} onClick={toggleModal}>
             &times;
           </button>
-          <p className={styles.title}>PLAY</p>
+          <p className={styles.title}>PLAY FOR FUN</p>
           <div className={styles.balance}>
             <img src={usdIcon} alt="" />
-            <p>{balance}</p>
+            <p>{demoBalance.toFixed(2)}</p>
           </div>
           <div className={styles.fill}>
             <div>
@@ -82,4 +82,4 @@ const PlayModal = () => {
   );
 };
 
-export default PlayModal;
+export default PlayFunModal;
