@@ -8,5 +8,5 @@ public class AppUser : IdentityUser
     public decimal Balance { get; set; }
     public int? TelegramId { get; set; }
     public decimal DemoCoin { get; set; }
-    public decimal Dollar { get; set; }
+    public decimal BlockedFiats { get; set; }
 }
