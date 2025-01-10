@@ -67,7 +67,7 @@ public class GameHub(
         {
             game = new Game
             {
-                EndTime = timeNow.AddMinutes(5),
+                EndTime = timeNow.AddSeconds(40),
                 StartTime = timeNow,
             };
 
@@ -79,6 +79,44 @@ public class GameHub(
             await playerGameService.CreateGame(cacheGame);
             
             await context.SaveChangesAsync();
+        }
+
+        if (game is not null)
+        {
+            var cacheGame = await playerGameService.GetGameById(game.Id);
+            if (cacheGame is null)
+                throw new HubException("Game not found");
+
+            decimal count = 0;
+            foreach (var playerId in cacheGame.Players)
+            {
+                var cachePlayer = await playerGameService.GetById($"player-{playerId}");
+                if (cachePlayer is null)
+                    continue;
+                
+                if(cachePlayer.GameId != game.Id)
+                    continue;
+
+                count += cachePlayer.Size;
+            }
+
+            if (count > 50)
+            {
+                game = new Game
+                {
+                    EndTime = timeNow.AddSeconds(40),
+                    StartTime = timeNow,
+                };
+
+                await context.Games.AddAsync(game);
+                var newCacheGame =  new GameCache
+                {
+                    Id = game.Id
+                };
+                await playerGameService.CreateGame(newCacheGame);
+            
+                await context.SaveChangesAsync();
+            }
         }
 
         var player = new Player
