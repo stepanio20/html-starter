@@ -9,6 +9,11 @@
   margin-top: 14vh;
   position: relative;
   z-index: 1;
+  padding-bottom: 50px;
+
+  @media (max-width: 768px) {
+		margin-top: 2.5vh;
+	}
 
 
   .settingButton {
@@ -23,6 +28,10 @@
     &:hover {
       opacity: 0.9;
       background: #D46B00;
+    }
+
+    @media (max-width: 768px) {
+      height: 40px;
     }
   }
 }

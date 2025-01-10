@@ -76,6 +76,10 @@
     box-shadow: 0px 9px 81.7px 0px #D9BEF940;
     box-shadow: 0px 2px 0px 0px #302525;
   }
+
+  @media (max-width: 768px) {
+		height: 40px;
+	}
 }
 
 .modalOverlay.active {
