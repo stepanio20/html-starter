@@ -18,3 +18,15 @@
   font-weight: 500;
   line-height: 18.75px;
 }
+
+.timer {
+  position: absolute;
+  top: 230px;
+  right: 10px;
+}
+
+@media (max-width: 431px) {
+  .timer {
+    top: 160px;
+  }
+}

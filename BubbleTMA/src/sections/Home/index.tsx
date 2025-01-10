@@ -1,36 +1,29 @@
-import { useTonAddress, useTonConnectUI } from '@tonconnect/ui-react'
 import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import DepositModal from '../../features/DepositModal'
+import PlayFunModal from '../../features/PlayFunModal'
 import PlayModal from '../../features/PlayModal'
 import WithdrawModal from '../../features/WithdrawModal'
-import useGetAddressApi from '../../shared/api/get-adress'
-import useGetDemoCoinApi from '../../shared/api/get-demoCoin'
-import useGetInfoApi from '../../shared/api/get-info'
-import { useTelegram } from '../../shared/hooks/useTelegram'
 import MenuHeader from '../../shared/ui/MenuHeader'
 import { setPlayers } from '../../slices/GameSlide'
-import { setUserId } from '../../slices/UserSlide'
 import { RootState } from '../../store'
 import DropCoin from './Coin'
 import styles from './style.module.scss'
 
+
+
+
 export function Home() {
   const navigate = useNavigate()
-	const [tonConnectUI] = useTonConnectUI();
-  const userFriendlyAddress = useTonAddress();
   const dispatch = useDispatch()
-  const balance = useSelector((state: RootState) => state?.user?.balance)
-  const {telegramId} = useTelegram()
-  const {getInfo} = useGetInfoApi()
-  const {getAddress} = useGetAddressApi()
-  const {getDemoCoin} = useGetDemoCoinApi()
+  const {balance, userId} = useSelector((state: RootState) => state?.user)
   const [isLandscape, setIsLandscape] = useState<boolean>(window.innerWidth > window.innerHeight);
 
   const checkOrientation = () => {
     setIsLandscape(window.innerWidth > window.innerHeight);
   };
+
   useEffect(() => {
     dispatch(setPlayers([]))
   },[])
@@ -45,68 +38,25 @@ export function Home() {
     };
   }, []);
 
- const handleConnectWallet = async () => {
-    try {
-      await tonConnectUI.connectWallet();
-      console.log("Wallet connected successfully");
-    } catch (error) {
-      console.error("Error connecting wallet:", error);
-    }
-  };
-
-  /* const handleDisconnectWallet = async () => {
-    try {
-      await tonConnectUI.disconnect();
-      console.log("Wallet disconnected successfully");
-    } catch (error) {
-      console.error("Error disconnecting wallet:", error);
-    }
-  }; */
-  
   const goToGame = () => {
     if (balance > 0) {
       navigate('/game')
     }
   }
 
-    useEffect(() => {
-      if (!userFriendlyAddress) return
-
-        const authenticateUser = async () => {
-            try {
-                const response = await fetch('https://lexcore.devmainops.store/api/auth/sign-in', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                      WalletAddress: userFriendlyAddress,
-                      TelegramId: telegramId,
-                    }),
-                });
-
-                const data:string = await response.json();
-                dispatch(setUserId(data))
-                Promise.all([getInfo(data), getAddress(), getDemoCoin(data)])
-            } catch (error) {
-                console.error(error);
-            }
-        };
-
-        authenticateUser();
-    }, [userFriendlyAddress]);
-
   return (
     <div>
-        <MenuHeader/>
-        <div className={`${styles.menuOverlay} ${!isLandscape && styles.rotated}`}>
-        {!userFriendlyAddress ? (
-          <button onClick={() => handleConnectWallet()}>
-          Connect TON wallet
-          </button>
+      <MenuHeader/>
+      <div className={`${styles.menuOverlay} ${!isLandscape && styles.rotated}`}>
+        {!userId ? (
+          <>
+            <DepositModal/>
+            <PlayFunModal/>
+          </>
         ) : (
           <>
             <PlayModal/>
+            <PlayFunModal/>
             <DepositModal/>
             <button 
               onClick={goToGame}
@@ -118,28 +68,8 @@ export function Home() {
             <WithdrawModal/>
           </>
         )}
-        </div>
-        <DropCoin/>
+      </div>
+      <DropCoin/>
     </div>
   )
 }
-
-/*  (
-  <>
-    <p>Balance: {balance}$</p>
-    
-    <button onClick={handleDisconnectWallet}>
-    Disconnect TON wallet
-    </button>
-    <p className={styles.textContainer}>
-      {userFriendlyAddress}
-    </p>
-    <div>
-      <WithdrawModal/>
-    </div>
-  </>
-) : (
-  <button onClick={() => handleConnectWallet()}>
-    Connect TON wallet
-  </button>
-)} */

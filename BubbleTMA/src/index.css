@@ -43,6 +43,10 @@ body {
 	box-sizing: border-box;
 }
 
+input, textarea, select {
+  color: black;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     background-color: #F5F3F9;
