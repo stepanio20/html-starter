@@ -58,14 +58,16 @@ export function Home() {
             <PlayModal/>
             <PlayFunModal/>
             <DepositModal/>
-            <button 
-              onClick={goToGame}
-              disabled={true}
-              className={styles.settingButton}
-            >
-              SETTINGS
-            </button>
-            <WithdrawModal/>
+            <div className={styles.isMobile}>
+                <button 
+                onClick={goToGame}
+                disabled={true}
+                className={styles.settingButton}
+              >
+                SETTINGS
+              </button>
+              <WithdrawModal/>
+            </div>
           </>
         )}
       </div>

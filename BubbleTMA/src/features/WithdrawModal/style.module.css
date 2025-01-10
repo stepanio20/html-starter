@@ -69,7 +69,10 @@
   box-shadow: 0px 9px 81.7px 0px #D9BEF940;
   box-shadow: 0px 2px 0px 0px #0098E0;
   @media (max-height: 431px) {
+    max-width: 300px;
 		height: 40px;
+    margin-top: 0;
+    width: 48%;
 	}
 }
 

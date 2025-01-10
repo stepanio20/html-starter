@@ -11,16 +11,14 @@ export default function useGetDemoCoinApi() {
 			url: `/api/games/get-demo-coin?userId=${userId}`,
 			method: 'GET'
 		})
-		if (res.data)
-		dispatch(setDemoBalance(res.data))
+		dispatch(setDemoBalance(res.data as number))
 	}
 	const getDemoWithoutAuth = async(uuId: string) => {
 		const res = await api<number>({
 			url: `/api/games/get-demo-coin-without-auth?sessionId=${uuId}`,
 			method: 'POST'
 		})
-		if (res.data)
-		dispatch(setDemoBalance(res.data))
+		dispatch(setDemoBalance(res.data as number))
 	}
 	const updateDemoCoinWithoutAuth = async(uuId: string, amount: string | number) => {
 		await api<number>({
