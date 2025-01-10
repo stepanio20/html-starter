@@ -9,4 +9,5 @@ namespace BubbleGame.Persistence.DAL;
 public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<AppUser>(options)
 {
     public DbSet<Game> Games { get; set; }
+    public DbSet<TemporaryPlayer> TemporaryPlayers { get; set; }
 }

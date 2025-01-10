@@ -125,14 +125,6 @@ public class GameHub(
             if (currentPlayer == null || targetPlayer == null)
                 return;
 
-            var distance = Math.Sqrt(
-                Math.Pow(currentPlayer.PositionX - targetPlayer.PositionX, 2) +
-                Math.Pow(currentPlayer.PositionY - targetPlayer.PositionY, 2)
-            );
-
-            var currentRadius = (double)(currentPlayer.Size * 300 / 2);
-            var targetRadius = (double)(targetPlayer.Size * 300 / 2);
-
             if (currentPlayer.Size > targetPlayer.Size)
             {
                 var user = await userManager.FindByIdAsync(currentPlayer.UserId);

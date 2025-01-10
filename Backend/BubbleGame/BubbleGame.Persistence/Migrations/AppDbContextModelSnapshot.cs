@@ -39,6 +39,24 @@ namespace BubbleGame.Persistence.Migrations
                     b.ToTable("Games");
                 });
 
+            modelBuilder.Entity("BubbleGame.Core.Players.TemporaryPlayer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("SessionId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TemporaryPlayers");
+                });
+
             modelBuilder.Entity("BubbleGame.Persistence.Identity.Models.AppUser", b =>
                 {
                     b.Property<string>("Id")

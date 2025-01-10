@@ -28,7 +28,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddOpenApi();
 builder.Services.AddCache(builder.Configuration);
 builder.Services.AddPersistence(builder.Configuration);
-//todobuilder.Services.AddHostedService<PlayerLastUpdateBackgroundService>();
+builder.Services.AddHostedService<PlayerLastUpdateBackgroundService>();
 
 builder.Services.AddSignalR(options =>
 {
@@ -68,6 +68,7 @@ app.UseHttpsRedirection();
     });
 // }
 
+app.MapGet("/health-check", IResult () => Results.Ok());
 app.AddGameRoute();
 app.AddPaymentRoute();
 app.AddAuthRoute();
