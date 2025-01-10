@@ -77,6 +77,8 @@ public class GameHub(
                 Id = game.Id
             };
             await playerGameService.CreateGame(cacheGame);
+            
+            await context.SaveChangesAsync();
         }
 
         var player = new Player
