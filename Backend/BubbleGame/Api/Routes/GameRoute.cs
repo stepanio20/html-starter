@@ -1,3 +1,4 @@
+using BubbleGame.Application.Services.Players;
 using BubbleGame.Core.Players;
 using BubbleGame.Persistence.DAL;
 using BubbleGame.Persistence.Identity.Models;
@@ -10,6 +11,18 @@ internal static class GameRoute
 {
     public static void AddGameRoute(this IEndpointRouteBuilder app)
     {
+        app.MapGet("/api/get-players", async (AppDbContext context, IPlayerGameService playerGameService) =>
+        {
+            var games = await context.Games.Where(x => x.EndTime > DateTime.UtcNow).ToListAsync();
+            var count = 0;
+            foreach (var game in games)
+            {
+                var players = await playerGameService.GetAsync(game.Id);
+                count += players.Count;
+            }
+            
+            return Results.Ok(count);
+        }).AllowAnonymous();
         app.MapPost("/api/games/get-info", GetUserGameInfo).AllowAnonymous();
         app.MapPost("/api/games/get-demo-coin-without-auth", async (string sessionId, AppDbContext _context) =>
         {
@@ -73,7 +86,7 @@ internal static class GameRoute
                 return Results.Unauthorized();
                 
             user.DemoCoin -= amount;
-            if(user.DemoCoin <= 0)
+            if(user.DemoCoin < 0)
                 return Results.BadRequest("Failed to remove user demo coin.");
             
             await _context.SaveChangesAsync();

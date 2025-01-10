@@ -67,7 +67,7 @@ public class GameHub(
         {
             game = new Game
             {
-                EndTime = timeNow.AddSeconds(40),
+                EndTime = timeNow.AddMinutes(5),
                 StartTime = timeNow,
             };
 

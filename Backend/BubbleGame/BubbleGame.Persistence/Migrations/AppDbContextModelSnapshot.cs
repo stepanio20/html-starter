@@ -86,14 +86,14 @@ namespace BubbleGame.Persistence.Migrations
                     b.Property<decimal>("Balance")
                         .HasColumnType("numeric");
 
+                    b.Property<decimal>("BlockedFiats")
+                        .HasColumnType("numeric");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("text");
 
                     b.Property<decimal>("DemoCoin")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("Dollar")
                         .HasColumnType("numeric");
 
                     b.Property<string>("Email")
