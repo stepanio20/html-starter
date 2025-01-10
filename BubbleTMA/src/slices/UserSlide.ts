@@ -6,7 +6,8 @@ interface PlayerState {
   balance: number,
   demoBalance: number,
   depositAddress: string,
-  usdtRate: number
+  usdtRate: number,
+  PlayersOnline: number
 }
 
 const initialState: PlayerState = {
@@ -16,6 +17,7 @@ const initialState: PlayerState = {
   demoBalance: 0,
   depositAddress: '',
   usdtRate: 0,
+  PlayersOnline: 0
 };
 
 const userSlice = createSlice({
@@ -44,8 +46,11 @@ const userSlice = createSlice({
     setUsdtRate: (state, action: PayloadAction<number>) => {
       state.usdtRate = action.payload
     },
+    setPlayersOnline: (state, action: PayloadAction<number>) => {
+      state.PlayersOnline = action.payload
+    },
   },
 });
 
-export const { setPlayerId, setUserId, setBalance, setDepositAddress, setDemoBalance, setUsdtRate} = userSlice.actions;
+export const { setPlayerId, setUserId, setBalance, setDepositAddress, setDemoBalance, setUsdtRate, setPlayersOnline} = userSlice.actions;
 export default userSlice.reducer;
