@@ -27,7 +27,8 @@ internal static class AuthRoute
                 Balance = 0,
                 Address = request.WalletAddress ?? string.Empty,
                 UserName = request.WalletAddress ?? string.Empty,
-                Email = request.TelegramId.ToString()
+                Email = request.TelegramId.ToString(),
+                DemoCoin = 1000
             };
             var res = await userManager.CreateAsync(user);
             if(res.Errors.Any())
