@@ -9,8 +9,7 @@ import styles from "./style.module.css"
 const WithdrawModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [amount, setAmount] = useState<string | number>("");
-  const balance = useSelector((state: RootState) => state?.players?.balance);
-  const userId = useSelector((state: RootState) => state?.players?.userId);
+  const {balance, userId} = useSelector((state: RootState) => state?.user);
   const { withdraw } = useWithdrawApi();
   const [loading, setLoading] = useState<boolean>(false);
   const { getInfo } = useGetInfoApi();
