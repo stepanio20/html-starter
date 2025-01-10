@@ -37,6 +37,17 @@ internal static class GameRoute
             await _context.SaveChangesAsync();
             return Results.Ok();
         }).AllowAnonymous();
+        
+        app.MapPatch("/api/games/remove-demo-coin-without-auth", async (string sessionId, decimal amount, AppDbContext _context) =>
+        {
+            var user = await _context.TemporaryPlayers.FirstOrDefaultAsync(u => u.SessionId.Equals(sessionId));
+            if (user == null)
+                return Results.Unauthorized();
+                
+            user.Amount -= amount;
+            await _context.SaveChangesAsync();
+            return Results.Ok();
+        }).AllowAnonymous();
         app.MapGet("/api/games/get-demo-coin", async (string userId, UserManager<AppUser> userManager) =>
         {
             var user = await userManager.Users.FirstOrDefaultAsync(x => x.Id.Equals(userId));
