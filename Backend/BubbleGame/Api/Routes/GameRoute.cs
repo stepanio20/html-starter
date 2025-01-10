@@ -9,6 +9,7 @@ internal static class GameRoute
     public static void AddGameRoute(this IEndpointRouteBuilder app)
     {
         app.MapPost("/api/games/get-info", GetUserGameInfo).AllowAnonymous();
+        app.MapPost("/api/games/get-demo-coin-without-auth", () => 1000).AllowAnonymous();
         app.MapGet("/api/games/get-demo-coin", async (string userId, UserManager<AppUser> userManager) =>
         {
             var user = await userManager.Users.FirstOrDefaultAsync(x => x.Id.Equals(userId));
