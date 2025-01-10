@@ -51,7 +51,7 @@ public class PlayerLastUpdateBackgroundService : BackgroundService
                         if (player is null)
                             continue;
 
-                        if (player.GameId == game.Id && player.LastUpdated.AddSeconds(-15) < timeNow)
+                        if (player.GameId == game.Id && player.LastUpdated < timeNow.AddSeconds(-15))
                             players.Add(player);
                     }
 

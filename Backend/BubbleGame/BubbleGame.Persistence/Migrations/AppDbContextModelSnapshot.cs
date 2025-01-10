@@ -22,6 +22,20 @@ namespace BubbleGame.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("BubbleGame.Core.Fiats.Fiat", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("UsdtTon")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Fiats");
+                });
+
             modelBuilder.Entity("BubbleGame.Core.Games.Game", b =>
                 {
                     b.Property<Guid>("Id")
