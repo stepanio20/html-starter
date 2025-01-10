@@ -48,6 +48,7 @@ internal static class GameRoute
             await _context.SaveChangesAsync();
             return Results.Ok();
         }).AllowAnonymous();
+        
         app.MapGet("/api/games/get-demo-coin", async (string userId, UserManager<AppUser> userManager) =>
         {
             var user = await userManager.Users.FirstOrDefaultAsync(x => x.Id.Equals(userId));
@@ -64,7 +65,18 @@ internal static class GameRoute
             var updateResult = await userManager.UpdateAsync(user);
             return !updateResult.Succeeded ? Results.BadRequest("Failed to update user data.") : Results.Ok(user.DemoCoin);
         }).AllowAnonymous();
-
+        
+        app.MapPatch("/api/games/remove-demo-coin", async (string userId, decimal amount, AppDbContext _context) =>
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id.Equals(userId));
+            if (user == null)
+                return Results.Unauthorized();
+                
+            user.DemoCoin -= amount;
+            await _context.SaveChangesAsync();
+            return Results.Ok();
+        }).AllowAnonymous();
+        
     }
 
     private static async Task<IResult> GetUserGameInfo(GetUserGameInfoRequest getUserGameInfoRequest,  UserManager<AppUser> userManager)
