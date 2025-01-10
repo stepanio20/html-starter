@@ -73,6 +73,9 @@ internal static class GameRoute
                 return Results.Unauthorized();
                 
             user.DemoCoin -= amount;
+            if(user.DemoCoin <= 0)
+                return Results.BadRequest("Failed to remove user demo coin.");
+            
             await _context.SaveChangesAsync();
             return Results.Ok();
         }).AllowAnonymous();

@@ -5,6 +5,7 @@ using Api.Routes;
 using BubbleGame.Application.Services.Ton;
 using BubbleGame.Cache;
 using BubbleGame.Persistence;
+using BubbleGame.Persistence.Backgrounds;
 using BubbleGame.Persistence.DAL;
 using BubbleGame.Persistence.Identity.Models;
 using Microsoft.AspNetCore.Identity;
@@ -29,6 +30,9 @@ builder.Services.AddOpenApi();
 builder.Services.AddCache(builder.Configuration);
 builder.Services.AddPersistence(builder.Configuration);
 builder.Services.AddHostedService<PlayerLastUpdateBackgroundService>();
+
+builder.Services.AddHttpClient<GetTonPriceBackground>();
+builder.Services.AddHostedService<GetTonPriceBackground>();
 
 builder.Services.AddSignalR(options =>
 {

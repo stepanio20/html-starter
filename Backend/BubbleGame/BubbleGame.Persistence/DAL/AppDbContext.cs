@@ -1,3 +1,4 @@
+using BubbleGame.Core.Fiats;
 using BubbleGame.Core.Games;
 using BubbleGame.Core.Players;
 using BubbleGame.Persistence.Identity.Models;
@@ -10,4 +11,5 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
 {
     public DbSet<Game> Games { get; set; }
     public DbSet<TemporaryPlayer> TemporaryPlayers { get; set; }
+    public DbSet<Fiat> Fiats { get; set; }
 }
