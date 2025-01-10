@@ -68,7 +68,7 @@
   box-shadow: 0px 4px 88.5px 0px #D9BEF940 inset;
   box-shadow: 0px 9px 81.7px 0px #D9BEF940;
   box-shadow: 0px 2px 0px 0px #0098E0;
-  @media (max-width: 768px) {
+  @media (max-width: 900px) {
 		height: 40px;
 	}
 }
