@@ -1,5 +1,5 @@
 import { useTonAddress } from '@tonconnect/ui-react'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useLocation, useNavigate } from 'react-router-dom'
 import Joystick from '../../features/Joystick'
@@ -21,12 +21,12 @@ const FunGame: React.FC = () => {
   const mapWidth = 4000;
   const mapHeight = 4000;
   const location = useLocation();
-  const navigate=useNavigate()
+  const navigate = useNavigate()
   const { amount } = location.state || {}
-  const {telegramId} = useTelegram()
-  const {userId} = useSelector((state: RootState) => state.user)
+  const { telegramId } = useTelegram()
+  const { userId } = useSelector((state: RootState) => state.user)
   const userFriendlyAddress = useTonAddress()
-  const {updateDemoCoin, updateDemoCoinWithoutAuth, removeDemoCoinWithoutAuth, removeDemoCoin} = useGetDemoCoinApi()
+  const { updateDemoCoin, updateDemoCoinWithoutAuth, removeDemoCoinWithoutAuth, removeDemoCoin } = useGetDemoCoinApi()
 
   const updateUserCoin = (amount: number | string) => {
     let uuId = localStorage.getItem('userId')
@@ -40,12 +40,12 @@ const FunGame: React.FC = () => {
   const removeUserCoin = () => {
     let uuId = localStorage.getItem('userId')
     if (telegramId || userFriendlyAddress) {
-      removeDemoCoin(userId, playerBubble.current.value)
+      removeDemoCoin(userId, playerBubble.current?.value)
     } else if (uuId) {
-      removeDemoCoinWithoutAuth(uuId, playerBubble.current.value)
+      removeDemoCoinWithoutAuth(uuId, playerBubble.current?.value)
     }
   }
-  
+
   if (!amount) {
     navigate('/')
   }
@@ -84,8 +84,7 @@ const FunGame: React.FC = () => {
       ctx.strokeStyle = "rgba(0, 0, 0, 0.1)";
       ctx.stroke();
       ctx.closePath();
-      
-      ctx.closePath();
+
       ctx.fillStyle = '#000';
       ctx.font = `${Math.max(14, this.size * 0.3)}px Arial`;
       ctx.textAlign = 'center';
@@ -130,7 +129,6 @@ const FunGame: React.FC = () => {
         this.dy *= -1;
       }
     }
-    
 
     draw(ctx: CanvasRenderingContext2D, offsetX: number, offsetY: number) {
       ctx.beginPath();
@@ -146,7 +144,6 @@ const FunGame: React.FC = () => {
       ctx.stroke();
       ctx.closePath();
 
-      ctx.closePath();
       ctx.fillStyle = '#000';
       ctx.font = `${Math.max(14, this.size * 0.3)}px Arial`;
       ctx.textAlign = 'center';
@@ -157,7 +154,7 @@ const FunGame: React.FC = () => {
   const playerBubble = useRef(new PlayerBubble(mapWidth / 2, mapHeight / 2, Number(amount)));
   const bots = useRef<Bubble[]>([]);
 
-  const initializeGame = useCallback(() => {
+  const initializeGame = () => {
     setGameRunning(true);
     setGameOver(false);
     bots.current = Array.from({ length: 20 }, () => {
@@ -165,37 +162,36 @@ const FunGame: React.FC = () => {
       return new Bubble(Math.random() * mapWidth, Math.random() * mapHeight, value);
     });
     startTimer();
-  }, []);
+  };
 
-  const startTimer = useCallback(() => {
+  const startTimer = () => {
     if (timerRef.current) clearInterval(timerRef.current);
 
     timerRef.current = setInterval(() => {
       setGameTime((prev) => {
-        if (prev <= 1) {
+        if (prev === 0) {
           clearInterval(timerRef.current!);
           setGameOver(true);
           setGameRunning(false);
-          return 0;
         }
         return prev - 1;
       });
     }, 1000);
-  }, []);
+  };
 
-  const checkCollisions = useCallback(() => {
+  const checkCollisions = () => {
     for (let i = bots.current.length - 1; i >= 0; i--) {
       const bot = bots.current[i];
-      const dx = playerBubble.current.x - bot.x;
-      const dy = playerBubble.current.y - bot.y;
+      const dx = playerBubble.current?.x - bot.x;
+      const dy = playerBubble.current?.y - bot.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      if (distance < playerBubble.current.size + bot.size) {
-        if (playerBubble.current.size > bot.size) {
+      if (distance < (playerBubble.current?.size ?? 0) + bot.size) {
+        if (playerBubble.current?.size! > bot.size) {
           playerBubble.current.size += bot.size * 0.2;
           playerBubble.current.value += bot.value;
           bots.current.splice(i, 1);
-          updateUserCoin(bot.value)
+          updateUserCoin(bot.value);
         } else {
           setGameOver(true);
           setGameRunning(false);
@@ -205,13 +201,19 @@ const FunGame: React.FC = () => {
     }
 
     for (let i = bots.current.length - 1; i >= 0; i--) {
+      const bot1 = bots.current[i];
+    
+      if (!bot1) continue;
+    
       for (let j = i - 1; j >= 0; j--) {
-        const bot1 = bots.current[i];
         const bot2 = bots.current[j];
+    
+        if (!bot2) continue;
+    
         const dx = bot1.x - bot2.x;
         const dy = bot1.y - bot2.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-
+    
         if (distance < bot1.size + bot2.size) {
           if (bot1.size > bot2.size) {
             bot1.size += bot2.size * 0.2;
@@ -225,39 +227,38 @@ const FunGame: React.FC = () => {
         }
       }
     }
-  }, []);
+  };
 
   useEffect(() => {
     if (gameOver) {
       removeUserCoin();
     }
-  },[gameOver])
-  
+  }, [gameOver])
+
   let lastMoveTime = Date.now();
   let isInactive = false;
 
-  const animate = useCallback(() => {
+  const animate = () => {
     if (!gameRunning) return;
 
     const canvas = canvasRef.current!;
     const ctx = canvas.getContext('2d')!;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const offsetX = playerBubble.current.x - canvas.width / 2;
-    const offsetY = playerBubble.current.y - canvas.height / 2;
+    const offsetX = playerBubble.current?.x - canvas.width / 2 || 0;
+    const offsetY = playerBubble.current?.y - canvas.height / 2 || 0;
 
     const scale = (() => {
-      if (window.innerWidth <= 375) return playerBubble.current.value < 1 ? 0.45 : 0.4;
-      if (window.innerWidth <= 390) return playerBubble.current.value < 1 ? 0.45 : 0.5;
-      if (window.innerWidth <= 430) return playerBubble.current.value < 1 ? 0.4 : 0.5;
-      if (window.innerWidth <= 768) return playerBubble.current.value < 1 ? 0.6 : 1.3;
-      return playerBubble.current.value < 0.5 ? 0.8 : 1.8;
+      if (window.innerWidth <= 375) return playerBubble.current?.value < 1 ? 0.45 : 0.4;
+      if (window.innerWidth <= 390) return playerBubble.current?.value < 1 ? 0.45 : 0.5;
+      if (window.innerWidth <= 430) return playerBubble.current?.value < 1 ? 0.4 : 0.5;
+      if (window.innerWidth <= 768) return playerBubble.current?.value < 1 ? 0.6 : 1.3;
+      return playerBubble.current?.value < 0.5 ? 0.8 : 1.8;
     })();
 
     drawGrid(ctx, canvas.width, canvas.height, 100 / scale, offsetX, offsetY, scale);
     drawMapBorders(ctx, mapWidth, mapHeight, offsetX, offsetY, canvas.width, canvas.height);
 
- 
     const currentTime = Date.now();
     if (joystickRef.current.deltaX !== 0 || joystickRef.current.deltaY !== 0) {
       lastMoveTime = currentTime;
@@ -270,16 +271,17 @@ const FunGame: React.FC = () => {
       isInactive = true;
     }
 
-    playerBubble.current.x += joystickRef.current.deltaX * playerBubble.current.speed * 5;
-    playerBubble.current.y += joystickRef.current.deltaY * playerBubble.current.speed * 5;
+    if (playerBubble.current) {
+      playerBubble.current.x += joystickRef.current.deltaX * playerBubble.current.speed * 5;
+      playerBubble.current.y += joystickRef.current.deltaY * playerBubble.current.speed * 5;
 
-    playerBubble.current.x = Math.max(playerBubble.current.size, Math.min(playerBubble.current.x, mapWidth - playerBubble.current.size));
-    playerBubble.current.y = Math.max(playerBubble.current.size, Math.min(playerBubble.current.y, mapHeight - playerBubble.current.size));
+      playerBubble.current.x = Math.max(playerBubble.current.size, Math.min(playerBubble.current.x, mapWidth - playerBubble.current.size));
+      playerBubble.current.y = Math.max(playerBubble.current.size, Math.min(playerBubble.current.y, mapHeight - playerBubble.current.size));
 
-    // Обновляем позицию игрока
-    playerPosition.current = { x: playerBubble.current.x, y: playerBubble.current.y };
+      playerPosition.current = { x: playerBubble.current.x, y: playerBubble.current.y };
 
-    playerBubble.current.draw(ctx, offsetX, offsetY);
+      playerBubble.current.draw(ctx, offsetX, offsetY);
+    }
 
     bots.current.forEach((bot) => {
       bot.moveRandom();
@@ -289,7 +291,7 @@ const FunGame: React.FC = () => {
     checkCollisions();
 
     requestAnimationFrame(animate);
-  }, [gameRunning, checkCollisions]);
+  };
 
   useEffect(() => {
     if (!once.current && amount) {
@@ -302,12 +304,13 @@ const FunGame: React.FC = () => {
     if (gameRunning) {
       animate();
     }
-  }, [gameRunning, animate]);
+  }, [gameRunning]);
 
   const handleJoystickMove = (deltaX: number, deltaY: number) => {
     joystickRef.current.deltaX = deltaX;
     joystickRef.current.deltaY = deltaY;
   };
+
 
   return (
     <div>
@@ -324,9 +327,9 @@ const FunGame: React.FC = () => {
           playerBubble={{
             x: playerPosition.current.x,
             y: playerPosition.current.y,
-            size: playerBubble.current.size,
+            size: playerBubble.current?.size ?? 0,
             color: 'blue',
-            value: playerBubble.current.value
+            value: playerBubble.current?.value ?? 0
           }}
           bots={bots.current}
           mapWidth={mapWidth}

@@ -12,11 +12,13 @@ export interface Player {
 interface PlayerState {
   players: Player[];
   playerId: string;
+  ping: number
 }
 
 const initialState: PlayerState = {
   players: [],
-  playerId: ''
+  playerId: '',
+  ping: 0
 };
 
 const playerSlice = createSlice({
@@ -46,9 +48,14 @@ const playerSlice = createSlice({
         state.playerId = action.payload
       }
     },
+    setPing: (state, action: PayloadAction<number>) => {
+      if (action.payload as number) {
+        state.ping = action.payload
+      }
+    },
   },
 });
 
 export const getPlayers = (state: { players: PlayerState }) => state.players.players;
-export const { setPlayers, updatePlayer, removePlayer, setPlayerId} = playerSlice.actions;
+export const { setPlayers, updatePlayer, removePlayer, setPlayerId, setPing} = playerSlice.actions;
 export default playerSlice.reducer;
