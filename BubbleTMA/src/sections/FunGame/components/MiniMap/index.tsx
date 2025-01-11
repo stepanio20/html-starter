@@ -25,10 +25,8 @@ const Minimap: React.FC<MinimapProps> = ({
 
     const minimapScale = minimapCanvas.width / mapWidth;
 
-    // Очищаем холст
     ctx.clearRect(0, 0, minimapCanvas.width, minimapCanvas.height);
 
-    // Рисуем текущего игрока
     ctx.beginPath();
     ctx.arc(
       playerBubble.x * minimapScale,
@@ -41,7 +39,6 @@ const Minimap: React.FC<MinimapProps> = ({
     ctx.fill();
     ctx.closePath();
 
-    // Рисуем ботов
     bots.forEach((bot) => {
       ctx.beginPath();
       ctx.arc(
@@ -60,12 +57,11 @@ const Minimap: React.FC<MinimapProps> = ({
   useEffect(() => {
     const updateMinimap = () => {
       drawMinimap();
-      requestAnimationFrame(updateMinimap); // Обеспечиваем плавное обновление
+      requestAnimationFrame(updateMinimap); 
     };
 
     updateMinimap();
 
-    // Убираем animation frame при размонтировании
     return () => {
       cancelAnimationFrame(updateMinimap as unknown as number);
     };

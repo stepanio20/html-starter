@@ -98,15 +98,19 @@ function AppContent() {
 
   return (
     <>
-      {!isLandscape && (
-        <RotatePhone/>
-      )}
-      <Router />
-      <SnackBarError
-        open={error !== ""}
-        message={error}
-        onClose={() => setError("")}
-      />
+    <div style={{display: 'flex', flexDirection: 'column', maxHeight: '100vh'}}>
+    <div style={{flex: 1}}>
+        {!isLandscape && (
+          <RotatePhone />
+        )}
+        <Router />
+        <SnackBarError
+          open={error !== ""}
+          message={error}
+          onClose={() => setError("")}
+        />
+      </div>
+    </div>
     </>
   );
 }

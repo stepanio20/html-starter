@@ -2,7 +2,6 @@ import { useState } from "react"
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import close from '../../assets/close.svg'
-import usdIcon from '../../assets/valute/usd.svg'
 import { RootState } from '../../store'
 import styles from "./style.module.scss"
 
@@ -25,7 +24,7 @@ const PlayFunModal = () => {
 
   const isAmountValid = () => {
     const numericAmount = parseFloat(amount as string);
-    return !isNaN(numericAmount) && numericAmount >= 1 && numericAmount <= 10 && numericAmount <= demoBalance;
+    return !isNaN(numericAmount) && numericAmount >= 1 && numericAmount <= demoBalance;
   };
 
   const startGame = () => {
@@ -52,8 +51,8 @@ const PlayFunModal = () => {
           </button>
           <p className={styles.title}>PLAY FOR FUN</p>
           <div className={styles.balance}>
-            <img src={usdIcon} alt="" />
             <p>{demoBalance.toFixed(2)}</p>
+             Points
           </div>
           <div className={styles.fill}>
             <div>
