@@ -10,6 +10,7 @@ using BubbleGame.Persistence.DAL;
 using BubbleGame.Persistence.Identity.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,7 +42,10 @@ builder.Services.AddSignalR(options =>
 
 builder.Logging.AddConsole();
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql("Host=199.247.6.31;Port=5444;Username=user;Password=password;Database=mydatabase;Timeout=30"));
+{
+    options.UseNpgsql("Host=199.247.6.31;Port=5444;Username=user;Password=password;Database=mydatabase;Timeout=30")
+        .ConfigureWarnings(warnings => warnings.Ignore(CoreEventId.DetachedLazyLoadingWarning));
+});
 
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
     {
@@ -50,6 +54,12 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
     })
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
+builder.Logging.AddFilter("System", LogLevel.Warning); 
+builder.Logging.AddFilter("Microsoft", LogLevel.Warning);
 
 var app = builder.Build();
 
