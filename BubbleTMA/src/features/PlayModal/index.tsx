@@ -1,10 +1,10 @@
 import { useState } from "react"
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
+import close from '../../assets/close.svg'
 import usdIcon from '../../assets/valute/usd.svg'
 import { RootState } from '../../store'
 import styles from "./style.module.scss"
-
 const PlayModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [amount, setAmount] = useState<string | number>("");
@@ -47,7 +47,7 @@ const PlayModal = () => {
       <div className={`${styles.modalOverlay} ${isOpen ? styles.active : ""}`}>
         <div className={styles.modalContent}>
           <button className={styles.modalClose} onClick={toggleModal}>
-            &times;
+            <img src={close} alt="" style={{width: '50px', height: '50px'}} />
           </button>
           <p className={styles.title}>PLAY</p>
           <div className={styles.balance}>

@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
+import close from '../../assets/close.svg'
 import usdIcon from '../../assets/valute/usd.svg'
 import { RootState } from '../../store'
 import styles from "./style.module.scss"
@@ -47,7 +48,7 @@ const PlayFunModal = () => {
       <div className={`${styles.modalOverlay} ${isOpen ? styles.active : ""}`}>
         <div className={styles.modalContent}>
           <button className={styles.modalClose} onClick={toggleModal}>
-            &times;
+          <img src={close} alt="" style={{width: '50px', height: '50px'}} />
           </button>
           <p className={styles.title}>PLAY FOR FUN</p>
           <div className={styles.balance}>

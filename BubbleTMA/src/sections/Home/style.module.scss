@@ -9,10 +9,28 @@
   margin-top: 14vh;
   position: relative;
   z-index: 1;
+  padding-bottom: 50px;
 
+  @media (max-height: 431px) {
+		margin-top: 2.5vh;
+    gap: 10px;
+	}
+
+  .isMobile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 300px;
+    width: 100%;
+    gap: 10px;
+
+    @media (max-height: 431px) {
+      flex-direction: row;
+      justify-content: space-between;
+    }
+  }
 
   .settingButton {
-    max-width: 300px;
     width: 100%;
     height: 55px;
     border-radius: 20px;
@@ -23,6 +41,11 @@
     &:hover {
       opacity: 0.9;
       background: #D46B00;
+    }
+
+    @media (max-height: 431px) {
+      height: 40px;
+      width: 48%;
     }
   }
 }

@@ -8,6 +8,10 @@
 	z-index: 2;
 	color: #BC60FA;
 
+	@media (max-height: 431px) {
+		margin-top: 55px;
+	}
+
 	.content {
 		display: flex;
 		justify-content: space-between;
