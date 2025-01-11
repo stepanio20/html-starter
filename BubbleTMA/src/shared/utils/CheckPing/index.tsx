@@ -8,7 +8,7 @@ const PingCheck: React.FC = () => {
   return (
     <div style={{position: 'absolute', right: '10px', top: '250px'}}>
       {ping !== null && (
-        <p>Пинг: {ping} мс</p>
+        <p>Ping: {ping} ms</p>
       )}
     </div>
   );

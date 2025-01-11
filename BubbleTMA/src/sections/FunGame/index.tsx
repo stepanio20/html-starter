@@ -27,6 +27,7 @@ const FunGame: React.FC = () => {
   const { userId } = useSelector((state: RootState) => state.user)
   const userFriendlyAddress = useTonAddress()
   const { updateDemoCoin, updateDemoCoinWithoutAuth, removeDemoCoinWithoutAuth, removeDemoCoin } = useGetDemoCoinApi()
+  const [eaten, setEaten] = useState<boolean>(false)
 
   const updateUserCoin = (amount: number | string) => {
     let uuId = localStorage.getItem('userId')
@@ -75,7 +76,7 @@ const FunGame: React.FC = () => {
       ctx.arc(this.x - offsetX, this.y - offsetY, this.size, 0, Math.PI * 2);
       ctx.fillStyle = 'blue';
       ctx.fill();
-  
+    
       const borderThickness = this.size * 0.06;
       ctx.beginPath();
       ctx.arc(this.x - offsetX, this.y - offsetY, this.size - borderThickness, 0, Math.PI * 2);
@@ -83,12 +84,14 @@ const FunGame: React.FC = () => {
       ctx.strokeStyle = "rgba(0, 0, 0, 0.1)";
       ctx.stroke();
       ctx.closePath();
-  
+    
       ctx.fillStyle = '#000';
       ctx.font = `${Math.max(14, this.size * 0.3)}px Arial`;
       ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
       ctx.fillText(`$${this.value.toFixed(2)}`, this.x - offsetX, this.y - offsetY);
     }
+    
   }
   
 
@@ -135,7 +138,7 @@ const FunGame: React.FC = () => {
       ctx.arc(this.x - offsetX, this.y - offsetY, this.size, 0, Math.PI * 2);
       ctx.fillStyle = this.color;
       ctx.fill();
-
+    
       const borderThickness = this.size * 0.06;
       ctx.beginPath();
       ctx.arc(this.x - offsetX, this.y - offsetY, this.size - borderThickness, 0, Math.PI * 2);
@@ -143,10 +146,11 @@ const FunGame: React.FC = () => {
       ctx.strokeStyle = "rgba(0, 0, 0, 0.1)";
       ctx.stroke();
       ctx.closePath();
-
+    
       ctx.fillStyle = '#000';
       ctx.font = `${Math.max(14, this.size * 0.3)}px Arial`;
       ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
       ctx.fillText(`$${this.value.toFixed(2)}`, this.x - offsetX, this.y - offsetY);
     }
   }
@@ -193,6 +197,7 @@ const FunGame: React.FC = () => {
           bots.current.splice(i, 1);
           updateUserCoin(bot.value);
         } else {
+          setEaten(true)
           setGameOver(true);
           setGameRunning(false);
           return;
@@ -230,10 +235,10 @@ const FunGame: React.FC = () => {
   };
   
   useEffect(() => {
-    if (gameOver) {
+    if (eaten) {
       removeUserCoin();
     }
-  }, [gameOver])
+  }, [eaten])
 
   let lastMoveTime = Date.now();
   let isInactive = false;
@@ -320,7 +325,7 @@ const FunGame: React.FC = () => {
           height={window.innerHeight}
           style={{ backgroundColor: '#f0f0f0', display: 'block' }}
         />
-        <p style={{ position: 'absolute', top: '230px', right: '10px' }}>Game Over: {gameTime}</p>
+        <p style={{ position: 'absolute', top: '230px', right: '20px' }}>Game Over: {gameTime}</p>
 
         <Minimap 
           playerBubble={{

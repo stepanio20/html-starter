@@ -101,7 +101,7 @@ const DepositModal = () => {
                   style={{ marginTop: '10px' }} 
                 />
                 <p 
-                style={{fontSize: '12px', marginTop: '5px', maxWidth: '320px', opacity: '55%'}}
+                style={{fontSize: '12px', marginTop: '5px', maxWidth: '320px', opacity: '55%', color: 'black'}}
                 >Deposits are made in TON and auto converted in USD based on current market rate, please input amount of USD to deposit (min 1$)
                 </p>
               </div>

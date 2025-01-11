@@ -19,6 +19,7 @@ export function Home() {
   const dispatch = useDispatch()
   const {balance, userId} = useSelector((state: RootState) => state?.user)
   const [isLandscape, setIsLandscape] = useState<boolean>(window.innerWidth > window.innerHeight);
+  let isMob = window.innerHeight <= 431
 
   const checkOrientation = () => {
     setIsLandscape(window.innerWidth > window.innerHeight);
@@ -53,23 +54,38 @@ export function Home() {
             <DepositModal/>
             <PlayFunModal/>
           </>
+        ) : isMob ? (
+          <>
+          <PlayModal/>
+          <PlayFunModal/>
+          <button 
+            onClick={goToGame}
+            disabled={true}
+            className={styles.settingButton}
+          >
+            SETTINGS
+          </button>
+          <div className={styles.isMobile}>
+            <DepositModal/>
+            <WithdrawModal/>
+          </div>
+        </>
         ) : (
           <>
-            <PlayModal/>
-            <PlayFunModal/>
-            <DepositModal/>
-            <div className={styles.isMobile}>
-                <button 
-                onClick={goToGame}
-                disabled={true}
-                className={styles.settingButton}
-              >
-                SETTINGS
-              </button>
-              <WithdrawModal/>
-            </div>
+          <PlayModal/>
+          <PlayFunModal/>
+          <DepositModal/>
+          <button 
+              onClick={goToGame}
+              disabled={true}
+              className={styles.settingButton}
+          >
+            SETTINGS
+          </button>
+            <WithdrawModal/>
           </>
-        )}
+        )
+        }
       </div>
       <DropCoin/>
     </div>

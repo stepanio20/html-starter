@@ -338,6 +338,8 @@ const App: React.FC = () => {
                     const remainingTime = Math.max(0, endTime - now);
                     setTimeLeft(Math.ceil(remainingTime / 1000));
                 }
+                const clientTimestamp = Date.now();
+                connection.invoke("CheckPing", clientTimestamp);
             });
 
             connection.on('PlayerEaten', (playerState: PlayerEatenDto) => {
