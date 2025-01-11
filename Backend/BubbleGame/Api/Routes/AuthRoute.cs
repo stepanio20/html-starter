@@ -14,6 +14,7 @@ internal static class AuthRoute
 
     private static async Task<IResult> SignInAsync([FromBody] SignInRequest request, UserManager<AppUser> userManager)
     {
+        Console.WriteLine($"Received {request.WalletAddress} - {request.TelegramId}");
         AppUser? user;
         if (string.IsNullOrEmpty(request.WalletAddress))
             return Results.Unauthorized();
