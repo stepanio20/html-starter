@@ -3,15 +3,17 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useLocation, useNavigate } from 'react-router-dom'
 import Joystick from '../../features/Joystick'
+import PingCheck from '../../shared/utils/CheckPing'
 import { drawGrid } from '../../shared/utils/DrawGrid'
 import { drawMapBorders } from '../../shared/utils/DrawMapBorders'
 import { formatTime } from '../../shared/utils/FormatTime'
-import { getPlayers, Player, removePlayer, setPlayerId, updatePlayer } from '../../slices/GameSlide'
+import { getPlayers, Player, removePlayer, setPing, setPlayerId, updatePlayer } from '../../slices/GameSlide'
 import { RootState } from '../../store'
 import GameOver from './components/ui/GameOver'
 import Minimap from './components/ui/MiniMap'
 import MoveTimer from './components/ui/MoveTimer'
 import styles from './style.module.css'
+import useWithdrawApi from "../../features/WithdrawModal/api";
 
 const App: React.FC = () => {
     const [gameRunning, setGameRunning] = useState(false);
@@ -102,7 +104,6 @@ const App: React.FC = () => {
             ctx.strokeStyle = "rgba(0, 0, 0, 0.1)";
             ctx.stroke();
             ctx.closePath();
-            console.log("this.size:", this.size);
 
             const fontSize = this.size * 0.45;
             ctx.fillStyle = "#000";
@@ -372,6 +373,11 @@ const App: React.FC = () => {
                 handlePlayerUpdate(gameState);
             });
 
+            connection.on('receivePing', (ping: number) => {
+              console.log(`ping ${ping}`);
+              dispatch(setPing(ping))
+            });
+
             return () => {
                 if (connection) {
                     connection.stop();
@@ -379,7 +385,22 @@ const App: React.FC = () => {
             };
         }
     }, [dispatch, gameRunning]);
-    
+
+    useEffect(() => {
+        if (connection) {
+            const getPing = async () => {
+                const interval = setInterval(async () => {
+                    const clientTimestamp = Date.now();
+                    await connection.invoke("CheckPing", clientTimestamp);
+                }, 5000);
+
+                return () => clearInterval(interval);
+            };
+
+            getPing();
+        }
+    }, [connection]);
+
 
     return (
         <div>
@@ -409,6 +430,7 @@ const App: React.FC = () => {
                 {moveStatus && !gameOver && (
                     <MoveTimer setGameOver={setGameOver}/>
                 )}
+                <PingCheck/>
         </div>
     );
 };
