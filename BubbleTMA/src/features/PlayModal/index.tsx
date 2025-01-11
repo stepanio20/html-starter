@@ -62,6 +62,10 @@ const PlayModal = () => {
                 value={amount}
                 onChange={handleAmountChange} />
             </div>
+            <p 
+            style={{fontSize: '12px', marginTop: '15px', maxWidth: '320px', opacity: '55%', color: 'black'}}>
+              Deposits are limited 1-10$
+            </p>
             <div className={styles.percentageButtons}>
               <button onClick={() => setAmountByPercentage(10)}>10%</button>
               <button onClick={() => setAmountByPercentage(25)}>25%</button>
