@@ -1,6 +1,6 @@
 import { useTonAddress } from '@tonconnect/ui-react'
 import React, { useEffect, useRef, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { useLocation, useNavigate } from 'react-router-dom'
 import Joystick from '../../features/Joystick'
 import useGetDemoCoinApi from '../../shared/api/get-demoCoin'
@@ -27,7 +27,6 @@ const FunGame: React.FC = () => {
   const { userId } = useSelector((state: RootState) => state.user)
   const userFriendlyAddress = useTonAddress()
   const { updateDemoCoin, updateDemoCoinWithoutAuth, removeDemoCoinWithoutAuth, removeDemoCoin } = useGetDemoCoinApi()
-  const dispatch = useDispatch()
 
   const updateUserCoin = (amount: number | string) => {
     let uuId = localStorage.getItem('userId')
