@@ -67,8 +67,15 @@ const FunGame: React.FC = () => {
       this.x = x;
       this.y = y;
       this.value = value;
-      this.size = (this.value >= 100 && window.innerHeight < 431) ? Math.sqrt(value) * 6 : Math.sqrt(value) * 15;
       this.speed = 0.2;
+      this.size = (this.value >= 100 && window.innerHeight < 431) ? Math.sqrt(value) * 6 : Math.sqrt(value) * 15;
+      this.calculateSpeed();
+    }
+  
+    calculateSpeed() {
+      const baseSpeed = 0.2;
+      const sizeFactor = 0.01; 
+      this.speed = baseSpeed / (1 + sizeFactor * this.value);
     }
   
     draw(ctx: CanvasRenderingContext2D, offsetX: number, offsetY: number) {
@@ -91,8 +98,8 @@ const FunGame: React.FC = () => {
       ctx.textBaseline = 'middle';
       ctx.fillText(`$${this.value.toFixed(2)}`, this.x - offsetX, this.y - offsetY);
     }
-    
   }
+  
   
 
   class Bubble {
@@ -104,27 +111,34 @@ const FunGame: React.FC = () => {
     dx: number;
     dy: number;
     speed: number;
-
+  
     constructor(x: number, y: number, value: number, color?: string) {
       this.value = value;
       this.size = Math.sqrt(value) * 15;
       this.x = x;
       this.y = y;
+      this.speed = 0.2;
       this.color = color || this.getRandomColor();
       this.dx = Math.random() * 2 - 1;
       this.dy = Math.random() * 2 - 1;
-      this.speed = Math.max(0.2, 3 / Math.sqrt(this.size));
+      this.calculateSpeed();
     }
-
+  
+    calculateSpeed() {
+      const baseSpeed = 0.2;
+      const sizeFactor = 0.01; 
+      this.speed = baseSpeed / (1 + sizeFactor * this.value);
+    }
+  
     private getRandomColor() {
       const colors = ['#00C100', '#0098E0', '#ED1B24', '#EADD00', '#6B00EB', '#FF7F00', '#B6E51D'];
       return colors[Math.floor(Math.random() * colors.length)];
     }
-
+  
     moveRandom() {
       this.x += this.dx * this.speed;
       this.y += this.dy * this.speed;
-
+  
       if (this.x - this.size < 0 || this.x + this.size > mapWidth) {
         this.dx *= -1;
       }
@@ -132,7 +146,7 @@ const FunGame: React.FC = () => {
         this.dy *= -1;
       }
     }
-
+  
     draw(ctx: CanvasRenderingContext2D, offsetX: number, offsetY: number) {
       ctx.beginPath();
       ctx.arc(this.x - offsetX, this.y - offsetY, this.size, 0, Math.PI * 2);
@@ -154,6 +168,7 @@ const FunGame: React.FC = () => {
       ctx.fillText(`$${this.value.toFixed(2)}`, this.x - offsetX, this.y - offsetY);
     }
   }
+  
 
   const playerBubble = useRef(new PlayerBubble(mapWidth / 2, mapHeight / 2, Number(amount)));
   const bots = useRef<Bubble[]>([]);
@@ -189,22 +204,23 @@ const FunGame: React.FC = () => {
       const dx = playerBubble.current?.x - bot.x;
       const dy = playerBubble.current?.y - bot.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
-
+  
       if (distance < (playerBubble.current?.size ?? 0) + bot.size) {
         if (playerBubble.current?.size! > bot.size) {
           playerBubble.current.size += bot.size * 0.2;
           playerBubble.current.value += bot.value;
+          playerBubble.current.calculateSpeed();
           bots.current.splice(i, 1);
           updateUserCoin(bot.value);
         } else {
-          setEaten(true)
+          setEaten(true);
           setGameOver(true);
           setGameRunning(false);
           return;
         }
       }
     }
-
+  
     for (let i = bots.current.length - 1; i >= 0; i--) {
       const bot1 = bots.current[i];
     
@@ -223,16 +239,19 @@ const FunGame: React.FC = () => {
           if (bot1.size > bot2.size) {
             bot1.size += bot2.size * 0.2;
             bot1.value += bot2.value;
+            bot1.calculateSpeed();
             bots.current.splice(j, 1);
           } else {
             bot2.size += bot1.size * 0.2;
             bot2.value += bot1.value;
+            bot2.calculateSpeed();
             bots.current.splice(i, 1);
           }
         }
       }
     }
   };
+  
   
   useEffect(() => {
     if (eaten) {
