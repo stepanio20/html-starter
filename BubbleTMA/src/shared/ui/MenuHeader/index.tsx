@@ -18,7 +18,7 @@ export default function MenuHeader() {
 				</div>
 				<div className={styles.balance}>
 					{demoBalance.toFixed(2)}
-					<img src={UsdIcon} alt="" />
+					<p>Points</p>
 				</div>
 				<div className={styles.balance}>
 					{balance}

@@ -29,13 +29,15 @@ button {
   outline: none;
 }
 
-body {
-	margin: 0;
-	min-height: 100vh;
-	display: flex;
-	flex-direction: column;
-	font-family: 'Rubik', sans-serif;
+body, html {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  color: black;
+  overflow: hidden;
 }
+
 *,
 *::before,
 *::after {

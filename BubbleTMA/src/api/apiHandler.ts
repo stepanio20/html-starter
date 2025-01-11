@@ -5,7 +5,6 @@ const useApi = () => {
     const { setError } = useError();
 
     const baseURL = "https://lexcore.devmainops.store/";
-    console.log(`api url ${baseURL}`);
 
     const api = axios.create({
         baseURL: baseURL,
