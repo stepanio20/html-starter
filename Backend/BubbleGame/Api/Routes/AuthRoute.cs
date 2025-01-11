@@ -16,8 +16,6 @@ internal static class AuthRoute
     {
         Console.WriteLine($"Received {request.WalletAddress} - {request.TelegramId}");
         AppUser? user;
-        if (string.IsNullOrEmpty(request.WalletAddress))
-            return Results.Unauthorized();
 
         user = await userManager.Users.FirstOrDefaultAsync(x => x.Address.Equals(request.WalletAddress));
         if (user == null)
@@ -27,7 +25,7 @@ internal static class AuthRoute
                 TelegramId = request.TelegramId,
                 Balance = 0,
                 Address = request.WalletAddress ?? string.Empty,
-                UserName = request.WalletAddress ?? string.Empty,
+                UserName = request.TelegramId.ToString() ?? request.WalletAddress,
                 Email = request.TelegramId.ToString(),
                 DemoCoin = 1000
             };
