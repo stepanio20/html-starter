@@ -36,8 +36,9 @@ public class GameHub(
     public async Task CheckPing(long clientTimestamp)
     {
         var serverTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-
-        await Clients.Caller.SendAsync("ReceivePing", serverTimestamp - clientTimestamp);
+        var ping = serverTimestamp - clientTimestamp;
+    
+        await Clients.Caller.SendAsync("ReceivePing", ping);
     }
 
     public override async Task OnConnectedAsync()
