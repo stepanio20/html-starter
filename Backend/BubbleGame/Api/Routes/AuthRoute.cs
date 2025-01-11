@@ -49,6 +49,6 @@ internal static class AuthRoute
     private class SignInRequest
     {
         public string WalletAddress { get; set; }
-        public int? TelegramId { get; set; }
+        public long? TelegramId { get; set; }
     }
 }
