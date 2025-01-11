@@ -13,6 +13,7 @@ import GameOver from './components/ui/GameOver'
 import Minimap from './components/ui/MiniMap'
 import MoveTimer from './components/ui/MoveTimer'
 import styles from './style.module.css'
+import useWithdrawApi from "../../features/WithdrawModal/api";
 
 const App: React.FC = () => {
     const [gameRunning, setGameRunning] = useState(false);
@@ -387,14 +388,19 @@ const App: React.FC = () => {
 
     useEffect(() => {
         if (connection) {
-            const interval = setInterval(() => {
-                const clientTimestamp = Date.now();
-                connection.invoke("CheckPing", clientTimestamp);
-            }, 5000);
+            const getPing = async () => {
+                const interval = setInterval(async () => {
+                    const clientTimestamp = Date.now();
+                    await connection.invoke("CheckPing", clientTimestamp);
+                }, 5000);
 
-            return () => clearInterval(interval);
+                return () => clearInterval(interval);
+            };
+
+            getPing();
         }
     }, [connection]);
+
 
     return (
         <div>
