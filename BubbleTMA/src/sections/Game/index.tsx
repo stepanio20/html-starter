@@ -13,7 +13,6 @@ import GameOver from './components/ui/GameOver'
 import Minimap from './components/ui/MiniMap'
 import MoveTimer from './components/ui/MoveTimer'
 import styles from './style.module.css'
-import useWithdrawApi from "../../features/WithdrawModal/api";
 
 const App: React.FC = () => {
     const [gameRunning, setGameRunning] = useState(false);
