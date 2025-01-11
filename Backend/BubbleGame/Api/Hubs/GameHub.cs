@@ -32,6 +32,13 @@ public class GameHub(
         var index = random.Next(Colors.Count);
         return Colors[index];
     }
+    
+    public async Task CheckPing(long clientTimestamp)
+    {
+        var serverTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+        await Clients.Caller.SendAsync("ReceivePing", serverTimestamp - clientTimestamp);
+    }
 
     public override async Task OnConnectedAsync()
     {
