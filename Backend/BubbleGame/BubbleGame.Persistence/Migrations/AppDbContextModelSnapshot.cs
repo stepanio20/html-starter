@@ -129,8 +129,8 @@ namespace BubbleGame.Persistence.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
-                    b.Property<int?>("TelegramId")
-                        .HasColumnType("integer");
+                    b.Property<long?>("TelegramId")
+                        .HasColumnType("bigint");
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");

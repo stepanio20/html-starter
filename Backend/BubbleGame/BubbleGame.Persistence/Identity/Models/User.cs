@@ -6,7 +6,7 @@ public class AppUser : IdentityUser
 {
     public string Address { get; set; }
     public decimal Balance { get; set; }
-    public int? TelegramId { get; set; }
+    public long? TelegramId { get; set; }
     public decimal DemoCoin { get; set; }
     public decimal BlockedFiats { get; set; }
 }
