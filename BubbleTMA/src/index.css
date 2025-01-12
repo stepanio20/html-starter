@@ -28,6 +28,12 @@ button {
   border: none;
   outline: none;
 }
+#app {
+  height: 100%;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
 
 body, html {
   height: 100%;
