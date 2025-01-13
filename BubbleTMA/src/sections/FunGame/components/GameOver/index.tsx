@@ -6,9 +6,13 @@ import useGetDemoCoinApi from '../../../../shared/api/get-demoCoin'
 import { useTelegram } from '../../../../shared/hooks/useTelegram'
 import { RootState } from '../../../../store'
 import styles from './styles.module.scss'
-
-const GameOver = () => {
-	const {demoBalance, userId} = useSelector((root: RootState) => root.user)
+interface Props {
+	amount: number;
+	eaten:boolean;
+	playerBalance:number
+}
+const GameOver = ({amount, eaten, playerBalance}:Props) => {
+	const {userId} = useSelector((root: RootState) => root.user)
 	const navigate = useNavigate()
 	const {getDemoCoin, getDemoWithoutAuth} = useGetDemoCoinApi()
 	const {telegramId} = useTelegram()
@@ -26,7 +30,7 @@ const GameOver = () => {
 			<div className={styles.content}>
 				<div className={styles.balance}>
 					<p style={{margin: '0'}}>GAME OVER</p>
-					<p style={{marginTop: '1vh'}}>{demoBalance.toFixed(2)}$</p>
+					<p style={{marginTop: '1vh'}}>{eaten ? `-${amount}` : (playerBalance - amount).toFixed(2)}$ {!eaten && '+'}</p>
 				</div>
 				<div style={
 					{width: '100%',
