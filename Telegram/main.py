@@ -16,18 +16,6 @@ WEB_APP = 'https://h2441kvp-5173.euw.devtunnels.ms/'
 API_URL = 'https://tgmochapi.devmainops.store'#todo
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
-app = FastAPI()
-origins = ["*"]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-welcome_text = """Bubble tea"""
-
 
 async def send_welcome_async(message: types.Message):
     button_start = InlineKeyboardButton(text="Start🚀", web_app=WebAppInfo(url=WEB_APP))
@@ -51,16 +39,10 @@ async def run_bot():
     await dp.start_polling(bot)
 
 
-async def on_startup():
-    print('start')
-    config = uvicorn.Config(app, host="0.0.0.0", port=8555)
-    server = uvicorn.Server(config)
-    task = asyncio.create_task(server.serve())
-    print('done')
 
 
 async def main():
-    await asyncio.gather(run_bot(), on_startup())
+    await run_bot()
 
 
 if __name__ == "__main__":
