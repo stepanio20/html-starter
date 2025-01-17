@@ -3,8 +3,7 @@ import { useError } from '../app/errorContext'
 
 const useApi = () => {
     const { setError } = useError();
-
-    const baseURL = "https://lexcore.devmainops.store/";
+    const baseURL = "https://apiv2.camelracing.io/";
 
     const api = axios.create({
         baseURL: baseURL,

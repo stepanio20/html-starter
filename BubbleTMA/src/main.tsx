@@ -1,3 +1,4 @@
+import { init } from '@telegram-apps/sdk'
 import { THEME, TonConnectUIProvider, useTonAddress } from '@tonconnect/ui-react'
 import { StrictMode, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -9,6 +10,7 @@ import './index.css'
 import useGetAddressApi from './shared/api/get-adress.ts'
 import useGetDemoCoinApi from './shared/api/get-demoCoin.ts'
 import useGetInfoApi from './shared/api/get-info.ts'
+import { TonClientProvider } from './shared/context/ton-client-context.tsx'
 import { useTelegram } from './shared/hooks/useTelegram.tsx'
 import SnackBarError from './shared/ui/Snackbar/SnackBarError.tsx'
 import { setUserId } from './slices/UserSlide.ts'
@@ -18,11 +20,13 @@ createRoot(document.getElementById('root')!).render(
     <TonConnectUIProvider
       manifestUrl={`https://tgmochispa.devmainops.store/tonconnect-manifest.json`}
       uiPreferences={{ theme: THEME.DARK }}>
-      <Provider store={store}>
-        <ErrorProvider>
-          <AppContent/>
-        </ErrorProvider>
-      </Provider>
+        <TonClientProvider>
+          <Provider store={store}>
+            <ErrorProvider>
+              <AppContent/>
+            </ErrorProvider>
+          </Provider>
+      </TonClientProvider>
     </TonConnectUIProvider>
   </StrictMode>,
 )
@@ -52,6 +56,7 @@ function AppContent() {
     if (telegramId) {
       tg?.disableVerticalSwipes()
       tg.requestFullscreen();
+      init()
     }
     window.addEventListener('resize', checkOrientation);
     window.addEventListener('orientationchange', checkOrientation);
@@ -67,7 +72,7 @@ function AppContent() {
       let uuId = localStorage.getItem('userId');
       if (telegramId || userFriendlyAddress) {
         try {
-          const response = await fetch('https://lexcore.devmainops.store/api/auth/sign-in', {
+          const response = await fetch('https://apiv2.camelracing.io/api/auth/sign-in', {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',

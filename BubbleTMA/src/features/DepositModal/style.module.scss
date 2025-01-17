@@ -33,7 +33,8 @@
 }
 
 .confirmButton {
-  margin-top: 30px;
+  position: absolute;
+  bottom: 20px;
   max-width: 196px;
   width: 100%;
   height: 55px;
@@ -46,8 +47,6 @@
   box-shadow: 0px 2px 0px 0px #0098E0;
 }
 
-
-
 .modalOverlay.active {
   visibility: visible;
   opacity: 1;
@@ -58,6 +57,7 @@
   background: #fff;
   border-radius: 8px;
   width: 100%;
+  min-height: 380px;
   max-width: 402px;
   padding: 20px 0;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -104,3 +104,20 @@
   text-decoration-skip-ink: none;
   color: #000000;
 }
+
+.toggleContainer {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0;
+    gap: 15px;
+
+    button {
+      width: 100%;
+      height: 40px;
+      border-radius: 10px;
+    }
+    .activeButton {
+      background-color: #0098E0;
+      color: white;
+    }
+} 
