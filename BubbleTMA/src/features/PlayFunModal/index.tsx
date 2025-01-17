@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import close from '../../assets/close.svg'
+import PointIcon from '../../assets/valute/points.svg'
 import { RootState } from '../../store'
 import styles from "./style.module.scss"
 
@@ -52,7 +53,7 @@ const PlayFunModal = () => {
           <p className={styles.title}>PLAY FOR FUN</p>
           <div className={styles.balance}>
             <p>{demoBalance.toFixed(2)}</p>
-             Points
+            <img src={PointIcon} alt="" />
           </div>
           <div className={styles.fill}>
             <div>

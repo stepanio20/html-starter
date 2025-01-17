@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
+import PointIcon from '../../../assets/valute/points.svg'
 import UsdIcon from '../../../assets/valute/usd.svg'
 import { RootState } from '../../../store'
 import useGetPlayersApi from '../../api/get-players'
@@ -16,9 +17,9 @@ export default function MenuHeader() {
 				<div className={styles.player}>
 					Players: {PlayersOnline}
 				</div>
-				<div className={styles.balance}>
+				<div className={styles.pointBalance}>
 					{demoBalance.toFixed(2)}
-					<p>Points</p>
+					<img src={PointIcon} alt="" />
 				</div>
 				<div className={styles.balance}>
 					{balance}
