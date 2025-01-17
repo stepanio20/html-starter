@@ -20,6 +20,7 @@
     "@tonclient/lib-web": "^1.30.0",
     "@tonconnect/ui-react": "^2.0.9",
     "axios": "^1.7.9",
+    "buffer": "^6.0.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-redux": "^9.2.0",
