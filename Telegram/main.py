@@ -11,8 +11,8 @@ from aiogram.types import (
     InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 )
 
-API_TOKEN = '8144138853:AAGJRyyNQXpTMrQdtsTAUHyreunLQVES-_Q'
-WEB_APP = 'https://client.camelracing.io/'
+API_TOKEN = '7614536190:AAGuGQHxHu-iv8B_4KsVT9TA8wKuyJeuHjA'
+WEB_APP = 'https://h2441kvp-5173.euw.devtunnels.ms/'
 API_URL = 'https://tgmochapi.devmainops.store'#todo
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()

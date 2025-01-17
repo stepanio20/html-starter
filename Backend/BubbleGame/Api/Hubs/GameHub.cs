@@ -17,7 +17,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Api.Hubs;
 
 public class GameHub(
-    IPlayerGameService playerGameService, 
+    IPlayerGameService playerGameService,
     UserManager<AppUser> userManager,
     AppDbContext context) : Hub
 {
@@ -32,35 +32,31 @@ public class GameHub(
         var index = random.Next(Colors.Count);
         return Colors[index];
     }
-    
+
     public async Task CheckPing(long clientTimestamp)
     {
         var serverTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         var ping = serverTimestamp - clientTimestamp;
-    
+
         await Clients.Caller.SendAsync("ReceivePing", ping);
     }
 
     public override async Task OnConnectedAsync()
     {
+        bool firstInRoom = false;
         var httpContext = Context.GetHttpContext();
         var userId = httpContext?.Request.Query["userId"];
         var amountString = httpContext?.Request.Query["amount"];
         decimal amount = 0;
 
         if (string.IsNullOrEmpty(amountString))
-        {
             throw new HubException("Amount parameter is missing");
-        }
 
         if (!decimal.TryParse(amountString, NumberStyles.Number, CultureInfo.InvariantCulture, out amount))
-        {
             throw new HubException($"Invalid amount value {amountString}");
-        }
 
         if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userId.ToString()))
             return;
-
 
         var user = await userManager.FindByIdAsync(userId.ToString());
         if (user == null)
@@ -70,7 +66,9 @@ public class GameHub(
             throw new HubException("User balance is less than 0");
 
         var timeNow = DateTime.UtcNow;
-        var game = await context.Games.FirstOrDefaultAsync(x => x.EndTime >  timeNow);
+        var game = await context.Games.FirstOrDefaultAsync(x => x.EndTime > timeNow);
+
+        // Если игры нет, создаем новую
         if (game == null)
         {
             game = new Game
@@ -80,51 +78,13 @@ public class GameHub(
             };
 
             await context.Games.AddAsync(game);
-            var cacheGame =  new GameCache
+            var cacheGame = new GameCache
             {
                 Id = game.Id
             };
             await playerGameService.CreateGame(cacheGame);
-            
             await context.SaveChangesAsync();
-        }
-
-        if (game is not null)
-        {
-            var cacheGame = await playerGameService.GetGameById(game.Id);
-            if (cacheGame is null)
-                throw new HubException("Game not found");
-
-            decimal count = 0;
-            foreach (var playerId in cacheGame.Players)
-            {
-                var cachePlayer = await playerGameService.GetById($"player-{playerId}");
-                if (cachePlayer is null)
-                    continue;
-                
-                if(cachePlayer.GameId != game.Id)
-                    continue;
-
-                count += cachePlayer.Size;
-            }
-
-            if (count > 50)
-            {
-                game = new Game
-                {
-                    EndTime = timeNow.AddSeconds(40),
-                    StartTime = timeNow,
-                };
-
-                await context.Games.AddAsync(game);
-                var newCacheGame =  new GameCache
-                {
-                    Id = game.Id
-                };
-                await playerGameService.CreateGame(newCacheGame);
-            
-                await context.SaveChangesAsync();
-            }
+            firstInRoom = true;
         }
 
         var player = new Player
@@ -149,8 +109,18 @@ public class GameHub(
                     player.PositionY,
                     player.Size, player.Color, game.EndTime));
 
-        var players = await playerGameService.GetAsync(player.GameId);
-        foreach (var otherPlayer in players)
+        if (firstInRoom)
+            await Clients.Client(Context.ConnectionId).SendAsync("WAITING_FOR_PLAYER");
+        else
+        {
+            var players = await playerGameService.GetAsync(player.GameId);
+            if (players.Count == 2)
+                await Clients.Group(game.Id.ToString()).SendAsync("START_GAME");
+        }
+
+        var playersInGame = await playerGameService.GetAsync(player.GameId);
+        foreach (var otherPlayer in playersInGame)
+        {
             await Clients.Client(Context.ConnectionId)
                 .SendAsync(SocketMessages.PLAYER_POSITION_UPDATED,
                     new PlayerDto(
@@ -159,6 +129,7 @@ public class GameHub(
                         otherPlayer.PositionX,
                         otherPlayer.PositionY,
                         otherPlayer.Size, player.Color));
+        }
 
         await base.OnConnectedAsync();
     }

@@ -1,8 +1,9 @@
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, Request
 from pydantic import BaseModel
 
-from core.config import ACCESS_TOKEN
+from services.conv import convert_ton_to_usdt
 from services.withdraw import transfer_coins
+from utils.authorize import authorize
 
 app = FastAPI()
 
@@ -10,8 +11,16 @@ class WithdrawSchema(BaseModel):
     amount: float
     address: str
 
+class ConvertSchema(BaseModel):
+    amount: float
+
 @app.post('/withdraw')
-async def withdraw(schema: WithdrawSchema, X_TOKEN:str):
-    if X_TOKEN != ACCESS_TOKEN:
-        raise HTTPException(detail='Not authorized', status_code=401)
+@authorize()
+async def withdraw(schema: WithdrawSchema, request: Request):
     await transfer_coins(amount=schema.amount, address=schema.address)
+
+
+@app.post('/convert')
+@authorize()
+async def convert(schema: ConvertSchema, request: Request):
+    return await convert_ton_to_usdt(amount=schema.amount)

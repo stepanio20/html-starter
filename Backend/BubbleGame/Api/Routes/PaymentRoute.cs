@@ -13,12 +13,12 @@ internal static class PaymentRoute
     public static void AddPaymentRoute(this IEndpointRouteBuilder app)
     {
         app.MapPost("/api/payments/top-up", TopUpAsync);
+        app.MapPost("/api/payments/withdraw", WithdrawAsync);
         app.MapGet("/api/payments/get-usdt-price", async (AppDbContext context) =>
         {
             var fiat = await context.Fiats.FirstOrDefaultAsync();
             return fiat == null ? Results.NotFound() : Results.Ok(fiat.UsdtTon);
         });
-        app.MapPost("/api/payments/withdraw", WithdrawAsync);
         app.MapGet("/api/payments/get-address", () => "EQCwEsU0ATLKAFsoyIs4KjHOWZL7Z4px-pnO1PuxAtYerBh4");
     }
 
@@ -56,5 +56,12 @@ internal static class PaymentRoute
     {
         public string UserId { get; set; }
         public decimal Amount { get; set; }
+        public FiatType FiatType { get; set; }
+    }
+    
+    private enum FiatType
+    {
+        USDT,
+        TON
     }
 }
