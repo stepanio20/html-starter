@@ -1,7 +1,5 @@
 {
-  "manifest_url": "https://client.camelracing.io/tonconnect-manifest.json",
-  "name": "My TON App",
-  "description": "A sample TON Connect application.",
-  "url": "https://t.me/MushroomsApp_bot",
-  "icon_url": "https://st.depositphotos.com/2001755/3622/i/450/depositphotos_36220949-stock-photo-beautiful-landscape.jpg"
+  "url": "https://client.camelracing.io",
+  "name": "BubbleGame",
+  "iconUrl": "https://tgmochi.ams3.cdn.digitaloceanspaces.com/tgmochi_icon.png"
 }
