@@ -13,6 +13,8 @@ from config_reader import Config
 
 config = Config()
 
+API_TOKEN = '7614536190:AAGuGQHxHu-iv8B_4KsVT9TA8wKuyJeuHjA'
+API_URL = 'https://tgmochapi.devmainops.store'
 WEB_APP_URL = "https://client.camelracing.io/"
 bot = Bot(token="7614536190:AAGuGQHxHu-iv8B_4KsVT9TA8wKuyJeuHjA")
 dp = Dispatcher()

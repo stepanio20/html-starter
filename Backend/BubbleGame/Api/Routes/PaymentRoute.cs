@@ -22,24 +22,44 @@ internal static class PaymentRoute
         app.MapGet("/api/payments/get-address", () => "EQCwEsU0ATLKAFsoyIs4KjHOWZL7Z4px-pnO1PuxAtYerBh4");
     }
 
-    private static async Task<IResult> TopUpAsync([FromBody] TopUpRequest request, ITonService tonService, UserManager<AppUser> userManager)
+    private static async Task<IResult> TopUpAsync([FromBody] TopUpRequest request, ITonService tonService,
+        UserManager<AppUser> userManager)
     {
         var user = await userManager.Users.FirstOrDefaultAsync(x => request.UserId.Equals(x.Id));
         if (user == null || string.IsNullOrEmpty(user.Address))
             return Results.Unauthorized();
-        
-        user.Balance += request.Amount;
-        await userManager.UpdateAsync(user);
-        
+
+        switch (request.FiatType)
+        {
+            case FiatType.TON:
+                user.Balance += request.Amount;
+                await userManager.UpdateAsync(user);
+                break;
+            case FiatType.USDT:
+                user.Balance += request.Amount;
+                await userManager.UpdateAsync(user);
+
+                await tonService.ConvertTonAsync(request.Amount);
+                break;
+            case FiatType.XTR:
+            default:
+            {
+                var result = await tonService.GenerateStartPaymentLink(request.Amount);
+                return Results.Ok(result);
+            }
+        }
+
+
         return Results.NoContent();
     }
-    
-    private static async Task<IResult> WithdrawAsync([FromBody] PaymentRequest request, ITonService tonService, UserManager<AppUser> userManager)
+
+    private static async Task<IResult> WithdrawAsync([FromBody] PaymentRequest request, ITonService tonService,
+        UserManager<AppUser> userManager)
     {
         var user = await userManager.Users.FirstOrDefaultAsync(x => request.UserId.Equals(x.Id));
         if (user == null || string.IsNullOrEmpty(user.Address))
             return Results.Unauthorized();
-        
+
         user.Balance -= request.Amount;
         await userManager.UpdateAsync(user);
         await tonService.TransferTonAsync(request.Amount, user.Address);
@@ -58,10 +78,11 @@ internal static class PaymentRoute
         public decimal Amount { get; set; }
         public FiatType FiatType { get; set; }
     }
-    
+
     private enum FiatType
     {
         USDT,
-        TON
+        TON,
+        XTR
     }
 }
