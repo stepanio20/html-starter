@@ -19,7 +19,7 @@ internal static class PaymentRoute
             var fiat = await context.Fiats.FirstOrDefaultAsync();
             return fiat == null ? Results.NotFound() : Results.Ok(fiat.UsdtTon);
         });
-        app.MapGet("/api/payments/get-address", () => "EQCwEsU0ATLKAFsoyIs4KjHOWZL7Z4px-pnO1PuxAtYerBh4");
+        app.MapGet("/api/payments/get-address", () => "UQAT3S5Z2A81Vn8XPrOIXAuCQerScxBI2cH8jBXfaEdD2-BD");
     }
 
     private static async Task<IResult> TopUpAsync([FromBody] TopUpRequest request, ITonService tonService,
