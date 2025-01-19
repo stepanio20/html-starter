@@ -67,17 +67,17 @@ public class GameHub(
 
         var timeNow = DateTime.UtcNow;
         var game = await context.Games.FirstOrDefaultAsync(x => x.EndTime > timeNow);
-
+        GameCache? cacheGame;
         if (game == null)
         {
             game = new Game
             {
-                EndTime = timeNow.AddSeconds(40),
+                EndTime = timeNow.AddMinutes(5),
                 StartTime = timeNow,
             };
 
             await context.Games.AddAsync(game);
-            var cacheGame = new GameCache
+            cacheGame = new GameCache
             {
                 Id = game.Id
             };
@@ -85,7 +85,10 @@ public class GameHub(
             await context.SaveChangesAsync();
             firstInRoom = true;
         }
-
+        else
+        {
+            cacheGame = await playerGameService.GetGameById(game.Id);
+        }
         var player = new Player
         {
             Id = Context.ConnectionId,
@@ -98,14 +101,18 @@ public class GameHub(
         };
 
         await playerGameService.AddPlayerAsync(player);
-
+        
+        await base.OnConnectedAsync();
+        
         if (firstInRoom)
-            await Clients.Client(Context.ConnectionId).SendAsync("WAITING_FOR_PLAYER");
+            await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.WAITING_FOR_ANOTHER_PLAYER);
         else
         {
             var players = await playerGameService.GetAsync(player.GameId);
             if (players.Count == 2)
             {
+                game.EndTime = timeNow.AddSeconds(40);
+                await playerGameService.UpdateGame(cacheGame);
                 foreach (var _player in players)
                 {
                     await Clients.Client(_player.Id)
@@ -118,22 +125,20 @@ public class GameHub(
                                 _player.Size, _player.Color, game.EndTime));
                 }
             }
+            
+            var playersInGame = await playerGameService.GetAsync(player.GameId);
+            foreach (var otherPlayer in playersInGame)
+            {
+                await Clients.Client(Context.ConnectionId)
+                    .SendAsync(SocketMessages.PLAYER_POSITION_UPDATED,
+                        new PlayerDto(
+                            otherPlayer.GameId,
+                            otherPlayer.Id,
+                            otherPlayer.PositionX,
+                            otherPlayer.PositionY,
+                            otherPlayer.Size, player.Color));
+            }
         }
-
-        var playersInGame = await playerGameService.GetAsync(player.GameId);
-        foreach (var otherPlayer in playersInGame)
-        {
-            await Clients.Client(Context.ConnectionId)
-                .SendAsync(SocketMessages.PLAYER_POSITION_UPDATED,
-                    new PlayerDto(
-                        otherPlayer.GameId,
-                        otherPlayer.Id,
-                        otherPlayer.PositionX,
-                        otherPlayer.PositionY,
-                        otherPlayer.Size, player.Color));
-        }
-
-        await base.OnConnectedAsync();
     }
 
     public async Task EatPlayerAsync(string player, string eatenPlayer)

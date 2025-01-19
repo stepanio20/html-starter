@@ -25,7 +25,7 @@ internal static class AuthRoute
                 TelegramId = request.TelegramId,
                 Balance = 0,
                 Address = request.WalletAddress ?? string.Empty,
-                UserName = request.TelegramId.ToString() ?? request.WalletAddress,
+                UserName = string.IsNullOrEmpty(request.TelegramId.ToString()) ? request.WalletAddress : request.TelegramId.ToString(),
                 Email = request.TelegramId.ToString(),
                 DemoCoin = 1000
             };

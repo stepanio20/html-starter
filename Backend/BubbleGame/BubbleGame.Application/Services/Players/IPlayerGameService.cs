@@ -13,6 +13,7 @@ public interface IPlayerGameService
     Task<GameCache> GetGameById(Guid id);
     Task RemovePlayerAsync(Player id);
     Task CreateGame(GameCache gameCache);
+    Task UpdateGame(GameCache gameCache);
     Task DisconnectPlayer(string playerId);
     Task FlushBufferAsync();
 }

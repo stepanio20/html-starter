@@ -53,6 +53,11 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
         await cache.SaveAsync($"game-{gameCache.Id}", gameCache);
     }
 
+    public async Task UpdateGame(GameCache gameCache)
+    {
+        await cache.SaveAsync($"game-{gameCache.Id}", gameCache);
+    }
+
     public async Task DisconnectPlayer(string playerId)
     {
         try
