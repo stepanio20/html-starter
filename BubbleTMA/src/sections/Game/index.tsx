@@ -269,7 +269,7 @@ const App: React.FC = () => {
     useEffect(() => {
         if (gameRunning) {
             const connection = new HubConnectionBuilder()
-                .withUrl(`https://lexcore.devmainops.store/gameHub?userid=${userId}&amount=${amount}`)
+                .withUrl(`https://apiv2.camelracing.io/gameHub?userid=${userId}&amount=${amount}`)
                 .build();
 
             setConnection(connection);

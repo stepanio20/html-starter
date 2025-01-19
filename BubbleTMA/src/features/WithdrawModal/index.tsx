@@ -52,7 +52,7 @@ const WithdrawModal = () => {
       <button
         onClick={toggleModal}
         className={styles.withdrawButton}>
-        Withdraw
+        WITHDRAW
       </button>
 
       <div className={`${styles.modalOverlay} ${isOpen ? styles.active : ""}`}>

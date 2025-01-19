@@ -18,7 +18,7 @@ import Router from './Router'
 export default function Root() {
 	return (
 		<TonConnectUIProvider
-			manifestUrl={`https://tgmochispa.devmainops.store/tonconnect-manifest.json`}
+			manifestUrl={`https://client.camelracing.io/tonconnect-manifest.json`}
 			uiPreferences={{ theme: THEME.DARK }}>
 				<TonClientProvider>
 					<Provider store={store}>

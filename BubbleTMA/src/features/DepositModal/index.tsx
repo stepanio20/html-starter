@@ -1,5 +1,5 @@
 import { invoice } from '@telegram-apps/sdk'
-import { JettonMaster } from '@ton/ton'
+import { Address, JettonMaster } from '@ton/ton'
 import { SendTransactionRequest, useTonAddress, useTonConnectUI } from '@tonconnect/ui-react'
 import { useEffect, useState } from "react"
 import { useSelector } from 'react-redux'
@@ -7,7 +7,7 @@ import close from '../../assets/close.svg'
 import useGetInfoApi from '../../shared/api/get-info'
 import useInvoiceApi from '../../shared/api/get-invoice'
 import useGetCoinRate from '../../shared/api/get-rate'
-import { INVOICE_WALLET_ADDRESS, USDT_MASTER_ADDRESS } from '../../shared/constants/common-constants'
+import { USDT_MASTER_ADDRESS } from '../../shared/constants/common-constants'
 import { JETTON_TRANSFER_GAS_FEES } from '../../shared/constants/fees.constants'
 import { calculateUsdtAmount } from '../../shared/helpers/common-helpers'
 import { useGenerateId } from '../../shared/hooks/useGenerateId'
@@ -32,30 +32,28 @@ const DepositModal = () => {
   const {getInvoiceAddress} = useInvoiceApi()
   const {telegramId} = useTelegram()
 
-
   const handleCurrencyChange = (newCurrency:string) => {
     setCurrency(newCurrency);
   };
-
 
   useEffect(() => {
     getUsdtRate()
   },[])
 
-  
- const handleConnectWallet = async () => {
-  try {
-    await tonConnectUI.connectWallet();
-    console.log("Wallet connected successfully");
-  } catch (error) {
-    console.error("Error connecting wallet:", error);
-  }
-};
+  const handleConnectWallet = async () => {
+    try {
+      await tonConnectUI.connectWallet();
+      console.log("Wallet connected successfully");
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+    }
+  };
 
-  const handleDeposit = async() => {
+  const handleDeposit = async(type: number) => {
     if (!userId) return
-    await deposit(userId, Number(amount))
+    await deposit(userId, Number(amount), type)
   }
+
   const toggleModal = () => {
     setIsOpen(!isOpen);
   };
@@ -79,10 +77,11 @@ const DepositModal = () => {
         fwdAmount: 1n,
         comment: orderId,
         jettonAmount: calculateUsdtAmount(Number(amount) * 100),
-        toAddress: INVOICE_WALLET_ADDRESS,
+        toAddress: Address.parse(depositAddress),
         value: JETTON_TRANSFER_GAS_FEES,
       });
-      
+      handleDeposit(0)
+      await getInfo(userId);
     } catch (error) {
       console.log('Error during transaction check:', error);
     }
@@ -109,7 +108,7 @@ const DepositModal = () => {
         const result = await tonConnectUI.sendTransaction(transactionParams);
         console.log("Transaction successful:", result);
         setIsOpen(false);
-        await handleDeposit();
+        await handleDeposit(1);
         await getInfo(userId);
       } else {
         console.error("sendTransaction function not found");
@@ -126,7 +125,6 @@ const DepositModal = () => {
       invoice.open(invoiceUrl)
     }
   };
-  
 
   return (
     <>
@@ -192,9 +190,11 @@ const DepositModal = () => {
             </button>
           </div>
         ) : (
-          <button className={styles.confirmButton} onClick={handleConnectWallet}>
+          <div className={styles.fill}>
+          <button className={styles.connect} onClick={handleConnectWallet}>
             CONNECT WALLET
           </button>
+          </div>
         )}
       </div>
     </div>

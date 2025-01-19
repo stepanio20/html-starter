@@ -13,12 +13,14 @@ export default function useWithdrawApi() {
    return res
   };
 
-  const deposit = async (userId: string, amount: number) => {
+  const deposit = async (userId: string, amount: number, fiatType:number) => {
     const res = await api({
      url: `/api/payments/top-up`,
      method: 'POST',
      data: {
-       userId, amount
+       userId, 
+       amount,
+       fiatType
      }
     })
     return res

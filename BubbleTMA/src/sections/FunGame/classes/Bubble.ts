@@ -10,7 +10,7 @@ export class Bubble {
 	
 		constructor(x: number, y: number, value: number, color?: string) {
 			this.value = value;
-			this.size = Math.sqrt(value) * 15;
+			this.size = (this.value >= 100 && window.innerHeight < 431) ? Math.sqrt(value) * 6 : Math.sqrt(value) * 15;
 			this.x = x;
 			this.y = y;
 			this.speed = 0.2;
@@ -21,7 +21,7 @@ export class Bubble {
 		}
 	
 		calculateSpeed() {
-			const baseSpeed = 0.2;
+			const baseSpeed = 0.8;
 			const sizeFactor = 0.01; 
 			this.speed = baseSpeed / (1 + sizeFactor * this.value);
 		}
