@@ -60,13 +60,23 @@ const FunGame: React.FC = () => {
   const bots = useRef<Bubble[]>([]);
 
   const initializeGame = () => {
+    if (!amount) return;
+    const userAmount = Number(amount);
+    const botRangeMin = Math.max(userAmount * 0.7, 5);
+    const botRangeMax = Math.min(userAmount * 1.3, userAmount + 50);
+  
     setGameRunning(true);
     setGameOver(false);
     bots.current = Array.from({ length: 20 }, () => {
-      const value = Math.random() * 10 + 5;
-      return new Bubble(Math.random() * mapWidth, Math.random() * mapHeight, value);
+      const botValue = Math.random() * (botRangeMax - botRangeMin) + botRangeMin;
+      return new Bubble(
+        Math.random() * mapWidth,
+        Math.random() * mapHeight,
+        botValue
+      );
     });
   };
+  
 
   const checkCollisions = () => {
     for (let i = bots.current.length - 1; i >= 0; i--) {
