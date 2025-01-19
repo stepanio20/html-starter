@@ -68,7 +68,6 @@ public class GameHub(
         var timeNow = DateTime.UtcNow;
         var game = await context.Games.FirstOrDefaultAsync(x => x.EndTime > timeNow);
 
-        // Если игры нет, создаем новую
         if (game == null)
         {
             game = new Game
@@ -100,22 +99,25 @@ public class GameHub(
 
         await playerGameService.AddPlayerAsync(player);
 
-        await Clients.Client(Context.ConnectionId)
-            .SendAsync(SocketMessages.CONNECTED,
-                new FirstConnectionDto(
-                    player.GameId,
-                    player.Id,
-                    player.PositionX,
-                    player.PositionY,
-                    player.Size, player.Color, game.EndTime));
-
         if (firstInRoom)
             await Clients.Client(Context.ConnectionId).SendAsync("WAITING_FOR_PLAYER");
         else
         {
             var players = await playerGameService.GetAsync(player.GameId);
             if (players.Count == 2)
-                await Clients.Group(game.Id.ToString()).SendAsync("START_GAME");
+            {
+                foreach (var _player in players)
+                {
+                    await Clients.Client(_player.Id)
+                        .SendAsync(SocketMessages.CONNECTED,
+                            new FirstConnectionDto(
+                                _player.GameId,
+                                _player.Id,
+                                _player.PositionX,
+                                _player.PositionY,
+                                _player.Size, _player.Color, game.EndTime));
+                }
+            }
         }
 
         var playersInGame = await playerGameService.GetAsync(player.GameId);
