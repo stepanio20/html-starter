@@ -1,5 +1,7 @@
 import useApi from '../../../api/apiHandler'
-
+interface XTRInvoice{
+  invoice_link?: string
+}
 export default function useWithdrawApi() {
   const api = useApi()
   const withdraw = async (userId: string, amount: number) => {
@@ -14,7 +16,7 @@ export default function useWithdrawApi() {
   };
 
   const deposit = async (userId: string, amount: number, fiatType:number) => {
-    const res = await api({
+    const res = await api<XTRInvoice>({
      url: `/api/payments/top-up`,
      method: 'POST',
      data: {
@@ -23,7 +25,7 @@ export default function useWithdrawApi() {
        fiatType
      }
     })
-    return res
+    return res.data
    };
 
   return { withdraw, deposit };

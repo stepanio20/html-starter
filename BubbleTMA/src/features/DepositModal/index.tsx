@@ -5,7 +5,6 @@ import { useEffect, useState } from "react"
 import { useSelector } from 'react-redux'
 import close from '../../assets/close.svg'
 import useGetInfoApi from '../../shared/api/get-info'
-import useInvoiceApi from '../../shared/api/get-invoice'
 import useGetCoinRate from '../../shared/api/get-rate'
 import { USDT_MASTER_ADDRESS } from '../../shared/constants/common-constants'
 import { JETTON_TRANSFER_GAS_FEES } from '../../shared/constants/fees.constants'
@@ -29,7 +28,6 @@ const DepositModal = () => {
   const { sender, walletAddress, tonClient } = useTonConnect();
   const orderId = useGenerateId();
   const [currency, setCurrency] = useState("TON");
-  const {getInvoiceAddress} = useInvoiceApi()
   const {telegramId} = useTelegram()
 
   const handleCurrencyChange = (newCurrency:string) => {
@@ -51,7 +49,8 @@ const DepositModal = () => {
 
   const handleDeposit = async(type: number) => {
     if (!userId) return
-    await deposit(userId, Number(amount), type)
+    const res = await deposit(userId, Number(amount), type)
+    return res
   }
 
   const toggleModal = () => {
@@ -119,9 +118,9 @@ const DepositModal = () => {
   };
 
   const sendPaymentRequestinStars = async () => {
-    const res = await getInvoiceAddress(Number(amount));
-    if (res) {
-      const invoiceUrl = res.replace("https://t.me/$", "");
+    const res = await handleDeposit(Number(amount));
+    if (res?.invoice_link) {
+      const invoiceUrl = res?.invoice_link.replace("https://t.me/$", "");
       invoice.open(invoiceUrl)
     }
   };
