@@ -1,9 +1,6 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-using BubbleGame.Application.Services.Players;
+﻿using BubbleGame.Application.Services.Players;
 using BubbleGame.Core.Games;
 using BubbleGame.Core.Players;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Hosting;
 
 namespace BubbleGame.Cache.Services;
@@ -17,7 +14,7 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
     {
         var game = await cache.GetByKeyAsync<GameCache>(gameId.ToString());
         if (game is null)
-            return new();
+            return [];
         var players = new List<Player>();
         foreach (var playerId in game.Players)
         {

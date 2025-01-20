@@ -19,7 +19,16 @@ internal static class PaymentRoute
             var fiat = await context.Fiats.FirstOrDefaultAsync();
             return fiat == null ? Results.NotFound() : Results.Ok(fiat.UsdtTon);
         });
-        app.MapGet("/api/payments/get-address", () => "UQAT3S5Z2A81Vn8XPrOIXAuCQerScxBI2cH8jBXfaEdD2-BD");
+        app.MapGet("/top-up-stars", async (decimal amount, long userTgId, UserManager<AppUser> context) =>
+        {
+            var user = await context.Users.FirstOrDefaultAsync(x => x.TelegramId.Equals(userTgId));
+            if(user is null)
+                return Results.NotFound();
+
+            user.Balance += amount;
+            return Results.Ok();
+        });
+        app.MapGet("/api/payments/get-address", () => "EQCwEsU0ATLKAFsoyIs4KjHOWZL7Z4px-pnO1PuxAtYerBh4");
     }
 
     private static async Task<IResult> TopUpAsync([FromBody] TopUpRequest request, ITonService tonService,

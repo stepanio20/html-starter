@@ -15,12 +15,12 @@ class ConvertSchema(BaseModel):
     amount: float
 
 @app.post('/withdraw')
-@authorize()
+#@authorize()todo
 async def withdraw(schema: WithdrawSchema, request: Request):
     await transfer_coins(amount=schema.amount, address=schema.address)
 
 
 @app.post('/convert')
-@authorize()
+#@authorize()todo
 async def convert(schema: ConvertSchema, request: Request):
     return await convert_ton_to_usdt(amount=schema.amount)

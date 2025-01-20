@@ -16,7 +16,7 @@ from starlette.responses import JSONResponse
 
 API_TOKEN = '7614536190:AAGuGQHxHu-iv8B_4KsVT9TA8wKuyJeuHjA'
 WEB_APP = 'https://h2441kvp-5173.euw.devtunnels.ms/'
-API_URL = 'https://localhost:7073/'#todo
+API_URL = 'https://apiv2.camelracing.io/'#todo
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
 
@@ -43,7 +43,7 @@ async def start(message: types.Message):
     await send_welcome_async(message)
 
 @dp.callback_query(F.data)
-async def process_callback(callback_query: types.CallbackQuery):
+async def process_callback():
     pass
 
 @app.post("/api/donate", response_class=JSONResponse)
