@@ -6,7 +6,7 @@ export interface InvoiceResponse {
 const useInvoiceApi = () => {
 	const getInvoiceAddress = async (amount:number) => {
 		try {
-			const response = await axios.post<InvoiceResponse>(`http://localhost:8000/api/donate`, {
+			const response = await axios.post<InvoiceResponse>(`https://api.camelracing.io/api/donate`, {
 				amount: amount,
 			});
 			return response.data?.invoice_link;

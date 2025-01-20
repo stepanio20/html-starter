@@ -10,6 +10,18 @@ services:
     networks:
       - app_network
 
+  telegram-bot:
+    build:
+      context: ../Telegram
+      dockerfile: Dockerfile
+    ports:
+      - '8555:8555'
+    networks:
+      - app_network
+    command: >
+      sh -c "pip install -r requirements.txt &&
+             python main.py"
+
   backend:
     build:
       context: ../Backend/BubbleGame
