@@ -15,7 +15,7 @@ services:
       context: ../Telegram
       dockerfile: Dockerfile
     ports:
-      - '8001:8001'
+      - '8555:8555'
     networks:
       - app_network
 
