@@ -82,7 +82,7 @@ async def successful_payment(message: types.Message) -> None:
 
 
 async def start_api():
-    config_uvicorn = uvicorn.Config(app, host='localhost', port=8555, log_level="info")
+    config_uvicorn = uvicorn.Config(app, host="0.0.0.0", port=8002, log_level="info")
     server = uvicorn.Server(config_uvicorn)
     await server.serve()
 
