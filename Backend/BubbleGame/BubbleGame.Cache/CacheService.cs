@@ -38,9 +38,10 @@ internal sealed class CacheService(IDistributedCache cache) : ICacheService
     {
         var serializedValue = JsonSerializer.Serialize(value, new JsonSerializerOptions
         {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,  
-            WriteIndented = true                                           
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            WriteIndented = true
         });
+
         await cache.SetStringAsync(key, serializedValue);
     }
     

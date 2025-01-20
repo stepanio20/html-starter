@@ -15,12 +15,13 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
 
     public async Task<List<Player>> GetAsync(Guid gameId)
     {
-        var game = await cache.GetByKeyAsync<GameCache>($"game-{gameId}");
-        
+        var game = await cache.GetByKeyAsync<GameCache>(gameId.ToString());
+        if (game is null)
+            return new();
         var players = new List<Player>();
         foreach (var playerId in game.Players)
         {
-            var player = await cache.GetByKeyAsync<Player>($"player-{playerId}");
+            var player = await cache.GetByKeyAsync<Player>(playerId);
             if (player is null)
                 continue;
             
@@ -32,30 +33,30 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
     
     public async Task<Player> GetById(string playerId)
     {
-        var player = await cache.GetByKeyAsync<Player>($"player-{playerId}");
+        var player = await cache.GetByKeyAsync<Player>(playerId);
         return player;
     }
 
     public async Task TopUpBalance(Player entity)
     {
-        var key = $"player-{entity.Id}";
+        var key = entity.Id;
         await cache.SaveAsync(key, entity);    
     }
 
     public async Task<GameCache> GetGameById(Guid id)
     {
-       var game = await cache.GetByKeyAsync<GameCache>($"game-{id}");
+       var game = await cache.GetByKeyAsync<GameCache>(id.ToString());
        return game;
     }
 
     public async Task CreateGame(GameCache gameCache)
     {
-        await cache.SaveAsync($"game-{gameCache.Id}", gameCache);
+        await cache.SaveAsync(gameCache.Id.ToString(), gameCache);
     }
 
     public async Task UpdateGame(GameCache gameCache)
     {
-        await cache.SaveAsync($"game-{gameCache.Id}", gameCache);
+        await cache.SaveAsync(gameCache.Id.ToString(), gameCache);
     }
 
     public async Task DisconnectPlayer(string playerId)
@@ -74,15 +75,17 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
     {
         try
         {
-            var game = await cache.GetByKeyAsync<GameCache>($"game-{player.GameId}");
+            var game = await cache.GetByKeyAsync<GameCache>(player.GameId.ToString());
             if (game == null)
                 throw new InvalidOperationException("Game not found.");
             
             game.AppendPlayer(player.Id);
             
-            var key = $"player-{player.Id}";
+            var key = player.Id;
+            await cache.SaveAsync(player.GameId.ToString(), game);
             await cache.SaveAsync(key, player);
-            await cache.SaveAsync($"game-{player.GameId}", game);
+
+            var pl1 = await cache.GetByKeyAsync<Player>(key);
         }
         catch (Exception ex)
         {
@@ -92,14 +95,14 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
 
     public async Task RemovePlayerAsync(Player player)
     {
-        var game = await cache.GetByKeyAsync<GameCache>($"game-{player.GameId}");
-        if (game == null)
-            throw new InvalidOperationException("Game not found.");
-
-        game.Remove(player.Id); 
-        await cache.SaveAsync($"game-{player.GameId}", game);
-        var playerKey = $"player-{player.Id}";
-        await cache.DeleteAsync(playerKey);
+        // var game = await cache.GetByKeyAsync<GameCache>($"game-{player.GameId}");
+        // if (game == null)
+        //     throw new InvalidOperationException("Game not found.");
+        //
+        // game.Remove(player.Id); 
+        // await cache.SaveAsync($"game-{player.GameId}", game);
+        // var playerKey = $"player-{player.Id}";
+        // await cache.DeleteAsync(playerKey);
     }
 
     
@@ -132,7 +135,7 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
 
         foreach (var player in playersToUpdate.Values)
         {
-            var playerKey = $"player-{player.Id}";
+            var playerKey = player.Id;
             await cache.SaveAsync(playerKey, player);
         }
     }

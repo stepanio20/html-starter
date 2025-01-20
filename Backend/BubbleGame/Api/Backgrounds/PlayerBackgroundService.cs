@@ -35,26 +35,26 @@ public class PlayerLastUpdateBackgroundService : BackgroundService
             try
             {
                 var hubContext = _serviceProvider.GetRequiredService<IHubContext<GameHub>>();
-
+        
                 var timeNow = DateTime.UtcNow;
                 var games = await _context.Games.Where(x => x.EndTime > timeNow)
                     .ToListAsync(cancellationToken: stoppingToken);
-
+        
                 foreach (var game in games)
                 {
                     var cacheGame = await _cacheService.GetByKeyAsync<GameCache>($"game-{game.Id}");
-
+        
                     var players = new List<Player>();
                     foreach (var playerId in cacheGame.Players)
                     {
                         var player = await _cacheService.GetByKeyAsync<Player>($"player-{playerId}");
                         if (player is null)
                             continue;
-
+        
                         if (player.GameId == game.Id && player.LastUpdated < timeNow.AddSeconds(-15))
                             players.Add(player);
                     }
-
+        
                     foreach (var player in players)
                     {
                         await _cacheService.DeleteAsync("player-" + player.Id);
@@ -65,7 +65,7 @@ public class PlayerLastUpdateBackgroundService : BackgroundService
                         );
                     }
                 }
-
+        
                 await Task.Delay(1000, stoppingToken);
             }
             catch(Exception ex)

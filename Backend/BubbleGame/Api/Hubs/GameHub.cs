@@ -1,11 +1,8 @@
-using System.Collections.Concurrent;
 using System.Globalization;
 using Api.Common.Dtos.Game;
 using Api.Common.Game;
-using Api.Common.Static;
 using Api.Common.Static.Sockets;
 using BubbleGame.Application.Services.Players;
-using BubbleGame.Cache.Services;
 using BubbleGame.Core.Games;
 using BubbleGame.Core.Players;
 using BubbleGame.Persistence.DAL;
@@ -88,6 +85,8 @@ public class GameHub(
         else
         {
             cacheGame = await playerGameService.GetGameById(game.Id);
+            if (cacheGame is not null && cacheGame.Players.Count < 1)
+                firstInRoom = true;
         }
         var player = new Player
         {
@@ -103,12 +102,11 @@ public class GameHub(
         await playerGameService.AddPlayerAsync(player);
         
         await base.OnConnectedAsync();
-        
         if (firstInRoom)
             await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.WAITING_FOR_ANOTHER_PLAYER);
         else
         {
-            var players = await playerGameService.GetAsync(player.GameId);
+            var players = await playerGameService.GetAsync(cacheGame.Id);
             if (players.Count == 2)
             {
                 game.EndTime = timeNow.AddSeconds(40);
