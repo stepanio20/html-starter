@@ -13,7 +13,7 @@ internal sealed class TonService(string endpoint) : ITonService
     {
         try
         {
-        var endpoint = "http://199.247.6.31:8002/api/donate";
+            var endpoint = "http://199.247.6.31:8002/api/donate";
         var data = new
         {
             amount, 
@@ -26,7 +26,15 @@ internal sealed class TonService(string endpoint) : ITonService
             var res = await client.PostAsync(endpoint, content);
             if (res.IsSuccessStatusCode)
             {
-                return await res.Content.ReadAsStringAsync();
+                var responseContent = await res.Content.ReadAsStringAsync();
+
+                var jsonDoc = JsonDocument.Parse(responseContent);
+                if (jsonDoc.RootElement.TryGetProperty("invoice_link", out var invoiceLink))
+                {
+                    return invoiceLink.GetString();
+                }
+
+                throw new Exception("'invoice_link' was not found");
             }
         }
         catch (Exception ex)
