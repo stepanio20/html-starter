@@ -11,7 +11,7 @@ internal sealed class TonService(string endpoint) : ITonService
 
     public async Task<string> GenerateStartPaymentLink(decimal amount)
     {
-        var endpoint = "http://localhost:8555/api/donate";
+        var endpoint = "http://199.247.6.31:8002/api/donate";
         var data = new
         {
             amount, 
