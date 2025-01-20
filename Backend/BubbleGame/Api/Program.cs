@@ -57,6 +57,9 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
+builder.Logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
+builder.Logging.AddFilter("System", LogLevel.Warning); 
+builder.Logging.AddFilter("Microsoft", LogLevel.Warning);
 
 var app = builder.Build();
 
@@ -78,6 +81,20 @@ app.UseHttpsRedirection();
         c.RoutePrefix = "docs";
     });
 // }
+
+    app.Use(async (context, next) =>
+    {
+        try
+        {
+            await next();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.WriteLine(ex.StackTrace);
+            throw;
+        }
+    });
 
 app.MapGet("/health-check", IResult () => Results.Ok());
 app.AddGameRoute();
