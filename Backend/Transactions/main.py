@@ -3,7 +3,6 @@ from pydantic import BaseModel
 
 from services.conv import convert_ton_to_usdt
 from services.withdraw import transfer_coins
-from utils.authorize import authorize
 
 app = FastAPI()
 
