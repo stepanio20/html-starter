@@ -3,7 +3,7 @@
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100%;
+  height: 100vh;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
@@ -135,4 +135,8 @@
   box-shadow: 0px 4px 88.5px 0px #D9BEF940 inset;
   box-shadow: 0px 9px 81.7px 0px #D9BEF940;
   box-shadow: 0px 2px 0px 0px #0098E0;
+}
+
+.inactiveButton {
+  background-color: #EAEAEB;
 }
