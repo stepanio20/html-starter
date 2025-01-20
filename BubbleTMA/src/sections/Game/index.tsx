@@ -13,6 +13,7 @@ import { PlayerBubble } from './classes/PlayerBubble'
 import GameOver from './components/ui/GameOver'
 import Minimap from './components/ui/MiniMap'
 import MoveTimer from './components/ui/MoveTimer'
+import WaitingPlayers from './components/ui/WaitingPlayers'
 import styles from './style.module.css'
 
 const App: React.FC = () => {
@@ -35,6 +36,9 @@ const App: React.FC = () => {
     const once = useRef(false)
     const [moveStatus, setMoveStatus] = useState<boolean>(false)
     const location = useLocation();
+    const [waiting, setWaiting] = useState<boolean>(false)
+
+
     const { amount } = location.state || {}
 
     if (!amount) navigate(-1)
@@ -276,6 +280,10 @@ const App: React.FC = () => {
             
             connection.start().catch(err => console.error('Connection failed: ', err));
 
+            connection.on('WaitingForPlayer', () => {
+                setWaiting(true)
+            })
+
             connection.on('Connected', (data: PlayerDto) => {
                 if (data) {
                     playerBubble.current.x = data.positionX;
@@ -288,6 +296,7 @@ const App: React.FC = () => {
                     const now = Date.now();
                     const remainingTime = Math.max(0, endTime - now);
                     setTimeLeft(Math.ceil(remainingTime / 1000));
+                    setWaiting(false)
                 }
                 const clientTimestamp = Date.now();
                 connection.invoke("CheckPing", clientTimestamp);
@@ -353,7 +362,6 @@ const App: React.FC = () => {
         }
     }, [connection]);
 
-
     return (
         <div>
                 <div>
@@ -381,6 +389,9 @@ const App: React.FC = () => {
                 )}
                 {moveStatus && !gameOver && (
                     <MoveTimer setGameOver={setGameOver}/>
+                )}
+                {waiting && (
+                    <WaitingPlayers/>
                 )}
                 <PingCheck/>
         </div>
