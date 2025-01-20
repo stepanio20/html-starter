@@ -82,6 +82,20 @@ app.UseHttpsRedirection();
     });
 // }
 
+    app.Use(async (context, next) =>
+    {
+        try
+        {
+            await next();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.WriteLine(ex.StackTrace);
+            throw;
+        }
+    });
+
 app.MapGet("/health-check", IResult () => Results.Ok());
 app.AddGameRoute();
 app.AddPaymentRoute();

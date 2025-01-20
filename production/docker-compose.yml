@@ -15,12 +15,9 @@ services:
       context: ../Telegram
       dockerfile: Dockerfile
     ports:
-      - '8555:8555'
+      - '8002:8002'
     networks:
       - app_network
-    command: >
-      sh -c "pip install -r requirements.txt &&
-             python main.py"
 
   backend:
     build:

@@ -3,3 +3,5 @@ FastAPI
 pytonlib
 requests
 TonTools
+pytoniq_core
+tonutils

@@ -14,9 +14,9 @@ from aiogram.types import (
 )
 from starlette.responses import JSONResponse
 
-API_TOKEN = '7614536190:AAGuGQHxHu-iv8B_4KsVT9TA8wKuyJeuHjA'
-WEB_APP = 'https://h2441kvp-5173.euw.devtunnels.ms/'
-API_URL = 'https://apiv2.camelracing.io/'#todo
+API_TOKEN = '8144138853:AAGJRyyNQXpTMrQdtsTAUHyreunLQVES-_Q'
+WEB_APP = 'https://client.camelracing.io/'
+API_URL = 'https://apiv2.camelracing.io/'
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
 
@@ -82,7 +82,7 @@ async def successful_payment(message: types.Message) -> None:
 
 
 async def start_api():
-    config_uvicorn = uvicorn.Config(app, host='localhost', port=8555, log_level="info")
+    config_uvicorn = uvicorn.Config(app, host="0.0.0.0", port=8002, log_level="info")
     server = uvicorn.Server(config_uvicorn)
     await server.serve()
 
