@@ -92,14 +92,14 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
 
     public async Task RemovePlayerAsync(Player player)
     {
-        // var game = await cache.GetByKeyAsync<GameCache>($"game-{player.GameId}");
-        // if (game == null)
-        //     throw new InvalidOperationException("Game not found.");
-        //
-        // game.Remove(player.Id); 
-        // await cache.SaveAsync($"game-{player.GameId}", game);
-        // var playerKey = $"player-{player.Id}";
-        // await cache.DeleteAsync(playerKey);
+        var game = await cache.GetByKeyAsync<GameCache>(player.GameId.ToString());
+        if (game == null)
+            throw new InvalidOperationException("Game not found.");
+        
+        game.Remove(player.Id); 
+        await cache.SaveAsync(player.GameId.ToString(), game);
+        var playerKey = player.Id;
+        await cache.DeleteAsync(playerKey);
     }
 
     
