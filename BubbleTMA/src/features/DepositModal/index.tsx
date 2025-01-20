@@ -50,6 +50,7 @@ const DepositModal = () => {
   const handleDeposit = async(type: number) => {
     if (!userId) return
     const res = await deposit(userId, Number(amount), type)
+    
     return res
   }
 
@@ -119,8 +120,8 @@ const DepositModal = () => {
 
   const sendPaymentRequestinStars = async () => {
     const res = await handleDeposit(Number(amount));
-    if (res?.invoice_link) {
-      const invoiceUrl = res?.invoice_link.replace("https://t.me/$", "");
+    if (res) {
+      const invoiceUrl = res.replace("https://t.me/$", "");
       invoice.open(invoiceUrl)
     }
   };
@@ -158,7 +159,7 @@ const DepositModal = () => {
                   Pay with USDT
                 </button>
               </div>
-              {telegramId && (
+              {true && (
                 <div
                   className={styles.toggleContainer}>
                   <button

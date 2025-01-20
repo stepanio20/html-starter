@@ -71,35 +71,46 @@ function AppContent() {
   useEffect(() => {
     const authenticateUser = async () => {
       let uuId = localStorage.getItem('userId');
-      if (telegramId || userFriendlyAddress) {
-        try {
-          const response = await fetch('https://apiv2.camelracing.io/api/auth/sign-in', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                WalletAddress: userFriendlyAddress,
-                TelegramId: telegramId,
-              }),
-          });
-
-          const data:string = await response.json();
-          dispatch(setUserId(data))
-          Promise.all([getInfo(data), getAddress(), getDemoCoin(data)])
-        } catch (error) {
-          console.error(error);
+  
+      const waitForAddress = async () => {
+        while (!userFriendlyAddress) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
         }
-      } else if (!uuId) {
+        return userFriendlyAddress;
+      };
+  
+      try {
+        const address = userFriendlyAddress || (await waitForAddress());
+  
+        if (telegramId || address) {
+          const response = await fetch('https://apiv2.camelracing.io/api/auth/sign-in', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              WalletAddress: address,
+              TelegramId: telegramId,
+            }),
+          });
+  
+          const data = await response.json();
+          dispatch(setUserId(data));
+  
+          await Promise.all([getInfo(data), getAddress(), getDemoCoin(data)]);
+        } else if (!uuId) {
           uuId = generateUUID();
           localStorage.setItem('userId', uuId);
-      } else {
-          getDemoWithoutAuth(uuId)
+        } else {
+          getDemoWithoutAuth(uuId);
+        }
+      } catch (error) {
+        console.error(error);
       }
     };
-
+  
     authenticateUser();
-  }, [userFriendlyAddress, telegramId]);
+  }, [telegramId, userFriendlyAddress]);
 
 
   return (
