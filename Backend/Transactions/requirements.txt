@@ -5,4 +5,3 @@ requests
 TonTools
 pytoniq_core
 tonutils
-tonutils.jetton.dex.stonfi
