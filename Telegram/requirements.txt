@@ -1,6 +1,5 @@
-requests~=2.32.3
-uvicorn~=0.32.0
-aiogram~=3.0.0
-starlette~=0.40.0
-fastapi~=0.109.1
+aiogram==3.*
+requests
+fastapi
+uvicorn
 httpx
