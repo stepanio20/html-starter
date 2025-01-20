@@ -1,5 +1,6 @@
 import asyncio
 
+import httpx
 from aiogram.filters import Command
 from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
@@ -15,7 +16,7 @@ from starlette.responses import JSONResponse
 
 API_TOKEN = '7614536190:AAGuGQHxHu-iv8B_4KsVT9TA8wKuyJeuHjA'
 WEB_APP = 'https://h2441kvp-5173.euw.devtunnels.ms/'
-API_URL = 'https://tgmochapi.devmainops.store'#todo
+API_URL = 'https://localhost:7073/'#todo
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
 
@@ -65,7 +66,20 @@ async def pre_checkout_query(event: PreCheckoutQuery) -> None:
 
 @dp.message(F.successful_payment)
 async def successful_payment(message: types.Message) -> None:
-    await message.answer("Thanks for donate")
+    try:
+        async with httpx.AsyncClient(verify=False) as client:
+            response = await client.get(
+                f"{API_URL}top-up-stars",
+                params={
+                    "amount": message.successful_payment.total_amount,
+                    "userTgId": message.from_user.id,
+                },
+            )
+            if response.status_code == 200:
+                await message.answer("Your balance has been successfully updated. Thank you for your donation!")
+    except Exception as e:
+        print(e)
+
 
 async def start_api():
     config_uvicorn = uvicorn.Config(app, host='localhost', port=8555, log_level="info")
