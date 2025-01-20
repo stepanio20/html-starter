@@ -10,6 +10,15 @@ services:
     networks:
       - app_network
 
+  telegram-bot:
+    build:
+      context: ../Telegram
+      dockerfile: Dockerfile
+    ports:
+      - '8001:8001'
+    networks:
+      - app_network
+
   backend:
     build:
       context: ../Backend/BubbleGame
