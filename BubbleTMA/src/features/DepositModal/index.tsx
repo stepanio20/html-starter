@@ -159,7 +159,7 @@ const DepositModal = () => {
                   Pay with USDT
                 </button>
               </div>
-              {true && (
+              {telegramId && (
                 <div
                   className={styles.toggleContainer}>
                   <button
