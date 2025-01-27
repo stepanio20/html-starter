@@ -18,6 +18,8 @@ export default function useGetDemoCoinApi() {
 			url: `/api/games/get-demo-coin-without-auth?sessionId=${uuId}`,
 			method: 'POST'
 		})
+		console.log(res);
+		
 		dispatch(setDemoBalance(res.data as number))
 	}
 	const updateDemoCoinWithoutAuth = async(uuId: string, amount: string | number) => {

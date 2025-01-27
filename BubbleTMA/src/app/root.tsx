@@ -71,46 +71,45 @@ function AppContent() {
   useEffect(() => {
     const authenticateUser = async () => {
       let uuId = localStorage.getItem('userId');
-  
-      const waitForAddress = async () => {
-        while (!userFriendlyAddress) {
-          await new Promise((resolve) => setTimeout(resolve, 100));
-        }
-        return userFriendlyAddress;
-      };
-  
+
       try {
-        const address = userFriendlyAddress || (await waitForAddress());
-  
-        if (telegramId || address) {
-          const response = await fetch('https://apiv2.camelracing.io/api/auth/sign-in', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              WalletAddress: address,
-              TelegramId: telegramId,
-            }),
-          });
-  
-          const data = await response.json();
-          dispatch(setUserId(data));
-  
-          await Promise.all([getInfo(data), getAddress(), getDemoCoin(data)]);
-        } else if (!uuId) {
-          uuId = generateUUID();
-          localStorage.setItem('userId', uuId);
-        } else {
-          getDemoWithoutAuth(uuId);
+        if (!userFriendlyAddress && !telegramId) {
+          if (!uuId) {
+            uuId = generateUUID();
+            localStorage.setItem('userId', uuId);
+          }
+          await getDemoWithoutAuth(uuId);
+          return;
         }
+  
+        const response = await fetch('https://apiv2.camelracing.io/api/auth/sign-in', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            WalletAddress: userFriendlyAddress,
+            TelegramId: telegramId,
+          }),
+        });
+  
+        if (!response.ok) {
+          throw new Error(`Failed to authenticate: ${response.statusText}`);
+        }
+  
+        const data = await response.json();
+        dispatch(setUserId(data));
+  
+        await Promise.all([getInfo(data), getAddress(), getDemoCoin(data)]);
       } catch (error) {
-        console.error(error);
+        console.error('Error during authentication:', error);
       }
     };
   
     authenticateUser();
   }, [telegramId, userFriendlyAddress]);
+  
+  
 
 
   return (
