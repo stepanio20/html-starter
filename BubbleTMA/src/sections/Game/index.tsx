@@ -14,6 +14,7 @@ import GameOver from './components/ui/GameOver'
 import Minimap from './components/ui/MiniMap'
 import MoveTimer from './components/ui/MoveTimer'
 import WaitingPlayers from './components/ui/WaitingPlayers'
+import { generateBinoculars, generateMagnets, generateParticles } from './GameItems/GameObject'
 import styles from './style.module.css'
 
 const App: React.FC = () => {
@@ -37,6 +38,11 @@ const App: React.FC = () => {
     const [moveStatus, setMoveStatus] = useState<boolean>(false)
     const location = useLocation();
     const [waiting, setWaiting] = useState<boolean>(false)
+    const particlesRef = useRef<{ x: number, y: number, size: number, color: string }[]>([]);
+    const binocularsRef = useRef<{ x: number, y: number, size: number }[]>([]);
+    const zoomedOutRef = useRef(false);
+    const magnetsRef = useRef<{ x: number, y: number, strength: number, isActive: boolean }[]>([]);
+    const magnitActive = useRef<boolean>(false)
 
 
     const { amount } = location.state || {}
@@ -68,7 +74,6 @@ const App: React.FC = () => {
 
         dispatch(updatePlayer(player));
     };
-    
 
     const playerBubble = useRef(new PlayerBubble(mapWidth / 2, mapHeight / 2, 0, 'red'));
 
@@ -78,6 +83,12 @@ const App: React.FC = () => {
         setGameRunning(true);
         setGameOver(false);
         setEatenPlayers(new Set());
+        const particles = generateParticles(500, mapWidth, mapHeight);
+        particlesRef.current = particles
+        const binoculars = generateBinoculars(300, mapWidth, mapHeight);
+        binocularsRef.current = binoculars
+        const magnets = generateMagnets(200, mapWidth, mapHeight);
+        magnetsRef.current = magnets
     };
 
     const endGame = () => {
@@ -104,7 +115,81 @@ const App: React.FC = () => {
 
     let lastMoveTime = Date.now();
     let isInactive = false;
+    const handleParticleCollision = () => {
+        let updatedParticles = particlesRef.current.filter((particle) => {
+            const dx = playerBubble.current.x - particle.x;
+            const dy = playerBubble.current.y - particle.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
     
+            return distance >= playerBubble.current.size;
+        });
+    
+        particlesRef.current = updatedParticles;
+    };
+
+    const activateZoomOut = () => {
+        if (zoomedOutRef.current) return;
+    
+        zoomedOutRef.current = true
+    
+        setTimeout(() => {
+            zoomedOutRef.current = false;
+        }, 10000);
+    };
+    
+    const handleBinocularCollision = () => {
+        let updatedBinoculars = binocularsRef.current.filter((binocular) => {
+            const dx = playerBubble.current.x - binocular.x;
+            const dy = playerBubble.current.y - binocular.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+    
+            if (distance < playerBubble.current.size) {
+                activateZoomOut();
+                return false;
+            }
+            return true;
+        });
+    
+        binocularsRef.current = updatedBinoculars;
+    };
+
+    const handleMagnetAttraction = () => {
+        particlesRef.current.forEach((particle, index) => {
+            const dx = playerBubble.current.x - particle.x;
+            const dy = playerBubble.current.y - particle.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+    
+            if (distance < 100 && magnitActive.current) {
+                const force = (100 - distance) * 0.1;
+                const angle = Math.atan2(dy, dx);
+    
+                particle.x += Math.cos(angle) * force;
+                particle.y += Math.sin(angle) * force;
+    
+                if (distance < 5) {
+                    particlesRef.current.splice(index, 1);
+                }
+            }
+        });
+    };
+    
+      const checkMagnetCollision = () => {
+        magnetsRef.current.forEach((magnet, index) => {
+            const dx = playerBubble.current.x - magnet.x;
+            const dy = playerBubble.current.y - magnet.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+    
+            if (distance < 20) {
+                magnetsRef.current.splice(index, 1);
+                magnitActive.current = true
+                setTimeout(() => {
+                magnitActive.current = false
+                }, 10000);
+                console.log(`Игрок забрал магнит на позиции (${magnet.x}, ${magnet.y})`);
+            }
+        });
+    };
+
     const animate = () => {
         if (!gameRunning) return;
     
@@ -127,13 +212,56 @@ const App: React.FC = () => {
             Math.min(playerBubble.current.y, mapHeight - playerBubble.current.size)
         );
 
-        const scale = 1.9
+        const scale = zoomedOutRef.current ? 2.2 : 1.9;
     
         const offsetX = playerBubble.current.x - canvas.width / 2;
         const offsetY = playerBubble.current.y - canvas.height / 2;
         
         drawGrid(ctx, canvas.width, canvas.height, 100 / scale, offsetX, offsetY, scale);
+
+        particlesRef.current.forEach((particle) => {
+            ctx.beginPath();
+            ctx.arc(
+                particle.x - offsetX,
+                particle.y - offsetY,
+                particle.size,
+                0,
+                Math.PI * 2
+            );
+            ctx.fillStyle = particle.color;
+            ctx.fill();
+            ctx.closePath();
+        });
+
+        magnetsRef.current.forEach((magnet) => {
+            const screenX = magnet.x - offsetX;
+            const screenY = magnet.y - offsetY;
+        
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, 10, 0, Math.PI * 2);
+            ctx.fillStyle = "#FF6347";
+            ctx.fill();
+            ctx.closePath();
+        });
     
+        binocularsRef.current.forEach((binocular) => {
+            ctx.beginPath();
+            ctx.arc(
+                binocular.x - offsetX,
+                binocular.y - offsetY,
+                binocular.size,
+                0,
+                Math.PI * 2
+            );
+            ctx.fillStyle = "#8A2BE2";
+            ctx.fill();
+            ctx.closePath();
+        });
+        
+        handleMagnetAttraction();
+        checkMagnetCollision();
+        handleBinocularCollision();
+        handleParticleCollision()
         drawMapBorders(
             ctx,
             mapWidth,
