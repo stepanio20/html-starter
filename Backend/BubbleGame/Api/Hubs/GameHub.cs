@@ -113,8 +113,8 @@ public class GameHub(
         else
         {
             var players = await playerGameService.GetAsync(cacheGame.Id);
-            if (players.Count == 2)
-            {
+            // if (players.Count == 2)
+            // {
                 game.EndTime = timeNow.AddSeconds(40);
                 await roomGameService.UpdateGame(cacheGame);
 
@@ -130,7 +130,7 @@ public class GameHub(
                             game.EndTime))
                 );
                 await Task.WhenAll(tasks);
-            }
+            //}todo
 
             var tasksForPlayers = players.Select(otherPlayer =>
                 Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.PLAYER_POSITION_UPDATED,
