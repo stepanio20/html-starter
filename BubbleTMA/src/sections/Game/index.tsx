@@ -14,8 +14,14 @@ import GameOver from './components/ui/GameOver'
 import Minimap from './components/ui/MiniMap'
 import MoveTimer from './components/ui/MoveTimer'
 import WaitingPlayers from './components/ui/WaitingPlayers'
-import { generateBinoculars, generateMagnets, generateParticles } from './GameItems/GameObject'
+import { generateBinoculars, generateMagnets } from './GameItems/GameObject'
 import styles from './style.module.css'
+
+interface ParticlesInt {
+    id: string,
+    positionX:number,
+    positionY:number
+}
 
 const App: React.FC = () => {
     const [gameRunning, setGameRunning] = useState(false);
@@ -38,7 +44,7 @@ const App: React.FC = () => {
     const [moveStatus, setMoveStatus] = useState<boolean>(false)
     const location = useLocation();
     const [waiting, setWaiting] = useState<boolean>(false)
-    const particlesRef = useRef<{ x: number, y: number, size: number, color: string }[]>([]);
+    const particlesRef = useRef<ParticlesInt[]>([]);
     const binocularsRef = useRef<{ x: number, y: number, size: number }[]>([]);
     const zoomedOutRef = useRef(false);
     const magnetsRef = useRef<{ x: number, y: number, strength: number, isActive: boolean }[]>([]);
@@ -83,8 +89,6 @@ const App: React.FC = () => {
         setGameRunning(true);
         setGameOver(false);
         setEatenPlayers(new Set());
-        const particles = generateParticles(500, mapWidth, mapHeight);
-        particlesRef.current = particles
         const binoculars = generateBinoculars(300, mapWidth, mapHeight);
         binocularsRef.current = binoculars
         const magnets = generateMagnets(200, mapWidth, mapHeight);
@@ -116,16 +120,20 @@ const App: React.FC = () => {
     let lastMoveTime = Date.now();
     let isInactive = false;
     const handleParticleCollision = () => {
-        let updatedParticles = particlesRef.current.filter((particle) => {
-            const dx = playerBubble.current.x - particle.x;
-            const dy = playerBubble.current.y - particle.y;
+        particlesRef.current.forEach((particle) => {
+            const dx = playerBubble.current.x - particle.positionX;
+            const dy = playerBubble.current.y - particle.positionY;
             const distance = Math.sqrt(dx * dx + dy * dy);
     
-            return distance >= playerBubble.current.size;
+            if (distance < playerBubble.current.size) {
+                console.log(particle.id);
+                
+                connection?.invoke("EatDustAsync", playerId, particle.id)
+                    .catch(err => console.error(err.toString()));
+            }
         });
-    
-        particlesRef.current = updatedParticles;
     };
+    
 
     const activateZoomOut = () => {
         if (zoomedOutRef.current) return;
@@ -155,16 +163,16 @@ const App: React.FC = () => {
 
     const handleMagnetAttraction = () => {
         particlesRef.current.forEach((particle, index) => {
-            const dx = playerBubble.current.x - particle.x;
-            const dy = playerBubble.current.y - particle.y;
+            const dx = playerBubble.current.x - particle.positionX;
+            const dy = playerBubble.current.y - particle.positionY;
             const distance = Math.sqrt(dx * dx + dy * dy);
     
             if (distance < 100 && magnitActive.current) {
                 const force = (100 - distance) * 0.1;
                 const angle = Math.atan2(dy, dx);
     
-                particle.x += Math.cos(angle) * force;
-                particle.y += Math.sin(angle) * force;
+                particle.positionX += Math.cos(angle) * force;
+                particle.positionY += Math.sin(angle) * force;
     
                 if (distance < 5) {
                     particlesRef.current.splice(index, 1);
@@ -222,13 +230,13 @@ const App: React.FC = () => {
         particlesRef.current.forEach((particle) => {
             ctx.beginPath();
             ctx.arc(
-                particle.x - offsetX,
-                particle.y - offsetY,
-                particle.size,
+                particle.positionX - offsetX,
+                particle.positionY - offsetY,
+                50,
                 0,
                 Math.PI * 2
             );
-            ctx.fillStyle = particle.color;
+            ctx.fillStyle = 'blue';
             ctx.fill();
             ctx.closePath();
         });
@@ -306,7 +314,6 @@ const App: React.FC = () => {
                     playerBubble.current.y,
                     playerBubble.current.size,
                 );
-    
                 lastPosition = { x: playerBubble.current.x, y: playerBubble.current.y };
             }
         }
@@ -401,7 +408,7 @@ const App: React.FC = () => {
     useEffect(() => {
         if (gameRunning) {
             const connection = new HubConnectionBuilder()
-                .withUrl(`https://apiv2.camelracing.io/gameHub?userid=${userId}&amount=${amount}`)
+                .withUrl(`http://localhost:5225/gameHub?userid=${userId}&amount=${amount}`)
                 .build();
 
             setConnection(connection);
@@ -430,6 +437,8 @@ const App: React.FC = () => {
                 connection.invoke("CheckPing", clientTimestamp);
             });
 
+            
+
             connection.on('PlayerEaten', (playerState: PlayerEatenDto) => {
                 if (playerState.playerId === userGameIdRef.current) {
                     endGame()
@@ -438,6 +447,22 @@ const App: React.FC = () => {
                     setEatenPlayers(prev => new Set(prev.add(playerState.playerId)));
                     dispatch(removePlayer(playerState.playerId));
                 }
+            });
+
+            connection.on('NewDustCreated', (particleState: ParticlesInt[]) => {
+                if (!particlesRef.current) {
+                    particlesRef.current = [];
+                }
+            
+                particleState.forEach(newParticle => {
+                    const existingIndex = particlesRef.current.findIndex(p => p.id === newParticle.id);
+            
+                    if (existingIndex !== -1) {
+                        particlesRef.current[existingIndex] = newParticle;
+                    } else {
+                        particlesRef.current.push(newParticle);
+                    }
+                });
             });
 
             connection.on('PlayerDisconnected', (playerState: PlayerEatenDto) => {
