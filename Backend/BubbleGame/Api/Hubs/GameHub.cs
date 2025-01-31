@@ -108,7 +108,6 @@ public class GameHub(
         await playerGameService.AddPlayerAsync(player);
 
         firstInRoom = false;
-        await base.OnConnectedAsync();
         if (firstInRoom)
             await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.WAITING_FOR_ANOTHER_PLAYER);
         else
@@ -147,11 +146,11 @@ public class GameHub(
             
             
             var dusts = await dustService.GenerateAsync();
-            var taskForDust = dusts.Select(dust =>
-                Clients.Client(Context.ConnectionId)
-                    .SendAsync(SocketMessages.NEW_DUST_CREATED, new DustDto(dust.Id.ToString(), dust.PositionX, dust.PositionY)));
-            await Task.WhenAll(taskForDust);
+            var dustDtos = dusts.Select(dust => new DustDto(dust.Id.ToString(), dust.PositionX, dust.PositionY)).ToList();
+            await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.NEW_DUST_CREATED, dustDtos);
         }
+        
+        await base.OnConnectedAsync();
     }
 
     public async Task EatDustAsync(string playerId, string dustId)

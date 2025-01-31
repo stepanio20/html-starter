@@ -16,6 +16,7 @@ public class DustService(ICacheService cacheService) : IDustService
         {
             dustParticles.Add(new DustParticle
             {
+                Id = Guid.NewGuid(),
                 PositionX = random.Next(0, 12000),
                 PositionY = random.Next(0, 12000)
             });
