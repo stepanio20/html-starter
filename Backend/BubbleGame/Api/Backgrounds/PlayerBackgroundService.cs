@@ -42,10 +42,12 @@ public class PlayerLastUpdateBackgroundService : BackgroundService
         
                 foreach (var game in games)
                 {
-                    var cacheGame = await _cacheService.GetByKeyAsync<GameCache>($"game-{game.Id}");
+                    var cacheGame = await _cacheService.GetByKeyAsync<Room>($"game-{game.Id}");
+                    if(cacheGame is null || cacheGame.Players.Count <= 0)
+                        return;
         
                     var players = new List<Player>();
-                    foreach (var playerId in cacheGame.Players)
+                    foreach (var playerId in cacheGame?.Players ?? [])
                     {
                         var player = await _cacheService.GetByKeyAsync<Player>($"player-{playerId}");
                         if (player is null)

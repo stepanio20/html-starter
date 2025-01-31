@@ -1,18 +1,20 @@
 ﻿using BubbleGame.Application.Services.Players;
+using BubbleGame.Cache;
+using BubbleGame.Cache.Services;
 using BubbleGame.Core.Games;
 using BubbleGame.Core.Players;
 using Microsoft.Extensions.Hosting;
 
-namespace BubbleGame.Cache.Services;
+namespace BubbleGame.Persistence.Services.Players;
 
-public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
-    : BackgroundService, IPlayerGameService
+public class PlayerService(IPlayerUpdateBuffer buffer, ICacheService cache)
+    : BackgroundService, IPlayerService
 {
     private const int _flushInterval = 100;
 
     public async Task<List<Player>> GetAsync(Guid gameId)
     {
-        var game = await cache.GetByKeyAsync<GameCache>(gameId.ToString());
+        var game = await cache.GetByKeyAsync<Room>(gameId.ToString());
         if (game is null)
             return [];
         var players = new List<Player>();
@@ -27,7 +29,7 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
         }
         return players;
     }
-    
+
     public async Task<Player> GetById(string playerId)
     {
         var player = await cache.GetByKeyAsync<Player>(playerId);
@@ -40,39 +42,11 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
         await cache.SaveAsync(key, entity);    
     }
 
-    public async Task<GameCache> GetGameById(Guid id)
-    {
-       var game = await cache.GetByKeyAsync<GameCache>(id.ToString());
-       return game;
-    }
-
-    public async Task CreateGame(GameCache gameCache)
-    {
-        await cache.SaveAsync(gameCache.Id.ToString(), gameCache);
-    }
-
-    public async Task UpdateGame(GameCache gameCache)
-    {
-        await cache.SaveAsync(gameCache.Id.ToString(), gameCache);
-    }
-
-    public async Task DisconnectPlayer(string playerId)
-    {
-        try
-        {
-
-        }
-        catch(Exception ex)
-        {
-            
-        }
-    }
-
     public async Task AddPlayerAsync(Player player)
     {
         try
         {
-            var game = await cache.GetByKeyAsync<GameCache>(player.GameId.ToString());
+            var game = await cache.GetByKeyAsync<Room>(player.GameId.ToString());
             if (game == null)
                 throw new InvalidOperationException("Game not found.");
             
@@ -81,8 +55,6 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
             var key = player.Id;
             await cache.SaveAsync(player.GameId.ToString(), game);
             await cache.SaveAsync(key, player);
-
-            var pl1 = await cache.GetByKeyAsync<Player>(key);
         }
         catch (Exception ex)
         {
@@ -92,7 +64,7 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
 
     public async Task RemovePlayerAsync(Player player)
     {
-        var game = await cache.GetByKeyAsync<GameCache>(player.GameId.ToString());
+        var game = await cache.GetByKeyAsync<Room>(player.GameId.ToString());
         if (game == null)
             throw new InvalidOperationException("Game not found.");
         
@@ -102,7 +74,6 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
         await cache.DeleteAsync(playerKey);
     }
 
-    
     public void UpdatePlayer(Player player)
     {
         buffer.AddOrUpdatePlayer(player);
@@ -119,16 +90,14 @@ public class PlayerGameService(IPlayerUpdateBuffer buffer, ICacheService cache)
         }
     }
 
-    public async Task FlushBufferAsync()
+    private async Task FlushBufferAsync()
     {
         var updates = buffer.GetAndClearBuffer();
 
         var playersToUpdate = new Dictionary<string, Player>();
 
         foreach (var player in updates)
-        {
             playersToUpdate[player.Key] = player.Value;
-        }
 
         foreach (var player in playersToUpdate.Values)
         {

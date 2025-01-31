@@ -3,6 +3,7 @@ using BubbleGame.Core.Players;
 using BubbleGame.Persistence.DAL;
 using BubbleGame.Persistence.Identity.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Routes;
@@ -11,7 +12,7 @@ internal static class GameRoute
 {
     public static void AddGameRoute(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/api/get-players", async (AppDbContext context, IPlayerGameService playerGameService) =>
+        app.MapGet("/api/get-players", async ([FromServices] AppDbContext context, [FromServices] IPlayerService playerGameService) =>
         {
             var games = await context.Games.Where(x => x.EndTime > DateTime.UtcNow).ToListAsync();
             var count = 0;
@@ -20,24 +21,24 @@ internal static class GameRoute
                 var players = await playerGameService.GetAsync(game.Id);
                 count += players.Count;
             }
-            
+
             return Results.Ok(count);
         }).AllowAnonymous();
         app.MapPost("/api/games/get-info", GetUserGameInfo).AllowAnonymous();
         app.MapPost("/api/games/get-demo-coin-without-auth", async (string sessionId, AppDbContext _context) =>
         {
             var user = await _context.TemporaryPlayers.FirstOrDefaultAsync(u => u.SessionId.Equals(sessionId));
-            if (user == null)
+            if (user != null) 
+                return user.Amount;
+            
+            user = new TemporaryPlayer()
             {
-                user = new TemporaryPlayer()
-                {
-                    SessionId = sessionId,
-                    Amount = 1000
-                };
-                await _context.TemporaryPlayers.AddAsync(user);
-                await _context.SaveChangesAsync();
-            }
-                
+                SessionId = sessionId,
+                Amount = 1000
+            };
+            await _context.TemporaryPlayers.AddAsync(user);
+            await _context.SaveChangesAsync();
+
             return user.Amount;
         }).AllowAnonymous();
         app.MapPatch("/api/games/update-demo-coin-without-auth", async (string sessionId, decimal amount, AppDbContext _context) =>

@@ -1,7 +1,10 @@
+using System.Collections.Immutable;
 using System.Globalization;
 using Api.Common.Dtos.Game;
 using Api.Common.Game;
 using Api.Common.Static.Sockets;
+using BubbleGame.Application.Services.Dusts;
+using BubbleGame.Application.Services.Games;
 using BubbleGame.Application.Services.Players;
 using BubbleGame.Core.Games;
 using BubbleGame.Core.Players;
@@ -14,7 +17,9 @@ using Microsoft.EntityFrameworkCore;
 namespace Api.Hubs;
 
 public class GameHub(
-    IPlayerGameService playerGameService,
+    IPlayerService playerGameService,
+    IRoomService roomGameService,
+    IDustService dustService,
     UserManager<AppUser> userManager,
     AppDbContext context) : Hub
 {
@@ -64,7 +69,7 @@ public class GameHub(
 
         var timeNow = DateTime.UtcNow;
         var game = await context.Games.FirstOrDefaultAsync(x => x.EndTime > timeNow);
-        GameCache? cacheGame;
+        Room? cacheGame;
         if (game == null)
         {
             game = new Game
@@ -74,17 +79,18 @@ public class GameHub(
             };
 
             await context.Games.AddAsync(game);
-            cacheGame = new GameCache
+            cacheGame = new Room()
             {
                 Id = game.Id
             };
-            await playerGameService.CreateGame(cacheGame);
+            await roomGameService.CreateGame(cacheGame);
+            var dusts = await dustService.GenerateAsync();
             await context.SaveChangesAsync();
             firstInRoom = true;
         }
         else
         {
-            cacheGame = await playerGameService.GetGameById(game.Id);
+            cacheGame = await roomGameService.GetAsync(game.Id);
             if (cacheGame is not null && cacheGame.Players.Count < 1)
                 firstInRoom = true;
         }
@@ -100,7 +106,8 @@ public class GameHub(
         };
 
         await playerGameService.AddPlayerAsync(player);
-        
+
+        firstInRoom = false;
         await base.OnConnectedAsync();
         if (firstInRoom)
             await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.WAITING_FOR_ANOTHER_PLAYER);
@@ -110,35 +117,63 @@ public class GameHub(
             if (players.Count == 2)
             {
                 game.EndTime = timeNow.AddSeconds(40);
-                await playerGameService.UpdateGame(cacheGame);
-                foreach (var _player in players)
-                {
-                    await Clients.Client(_player.Id)
-                        .SendAsync(SocketMessages.CONNECTED,
-                            new FirstConnectionDto(
-                                _player.GameId,
-                                _player.Id,
-                                _player.PositionX,
-                                _player.PositionY,
-                                _player.Size, _player.Color, game.EndTime));
-                }
+                await roomGameService.UpdateGame(cacheGame);
+
+                var tasks = players.Select(_player =>
+                    Clients.Client(_player.Id).SendAsync(SocketMessages.CONNECTED,
+                        new FirstConnectionDto(
+                            _player.GameId,
+                            _player.Id,
+                            _player.PositionX,
+                            _player.PositionY,
+                            _player.Size,
+                            _player.Color,
+                            game.EndTime))
+                );
+                await Task.WhenAll(tasks);
             }
+
+            var tasksForPlayers = players.Select(otherPlayer =>
+                Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.PLAYER_POSITION_UPDATED,
+                    new PlayerDto(
+                        otherPlayer.GameId,
+                        otherPlayer.Id,
+                        otherPlayer.PositionX,
+                        otherPlayer.PositionY,
+                        otherPlayer.Size,
+                        otherPlayer.Color))
+            );
+            await Task.WhenAll(tasksForPlayers);
             
-            var playersInGame = await playerGameService.GetAsync(player.GameId);
-            foreach (var otherPlayer in playersInGame)
-            {
-                await Clients.Client(Context.ConnectionId)
-                    .SendAsync(SocketMessages.PLAYER_POSITION_UPDATED,
-                        new PlayerDto(
-                            otherPlayer.GameId,
-                            otherPlayer.Id,
-                            otherPlayer.PositionX,
-                            otherPlayer.PositionY,
-                            otherPlayer.Size, player.Color));
-            }
+            
+            var dusts = await dustService.GenerateAsync();
+            var taskForDust = dusts.Select(dust =>
+                Clients.Client(Context.ConnectionId)
+                    .SendAsync(SocketMessages.DUST_EATEND, new DustDto(dust.Id.ToString(), dust.PositionX, dust.PositionY)));
+            await Task.WhenAll(taskForDust);
         }
     }
 
+    public async Task EatDustAsync(string playerId, string dustId)
+    {
+        try
+        {
+            var currentPlayer = await playerGameService.GetById(playerId);
+            
+            var user = await userManager.FindByIdAsync(currentPlayer.UserId);
+            if (user == null)
+                throw new HubException("User not found");
+            
+            var dust = await dustService.GetAsync(dustId);
+            dust = await dustService.UpdateAsync(dust);
+            await Clients.All.SendAsync(SocketMessages.DUST_EATEND, new DustDto(dust.Id.ToString(), dust.PositionX, dust.PositionY));
+        }
+        catch (Exception ex)
+        {
+            //  
+        }
+    }
+    
     public async Task EatPlayerAsync(string player, string eatenPlayer)
     {
         try

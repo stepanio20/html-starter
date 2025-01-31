@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using BubbleGame.Core.Base;
+using BubbleGame.Core.DustParticles;
 using BubbleGame.Core.Players;
 
 namespace BubbleGame.Core.Games;
@@ -9,13 +10,16 @@ public class Game : BaseEntity
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }
 }
-public class GameCache : CacheEntity
+public class Room : CacheEntity
 {
     [JsonPropertyName("Id")]
     public Guid Id { get; set; }
 
     [JsonPropertyName("Players")]
-    public List<string> Players { get; set; } = new List<string>();
+    public List<string> Players { get; set; } = [];
+    
+    [JsonPropertyName("Dusts")]
+    public List<DustParticle> Dusts { get; set; } = [];
     
     public DateTime EndTime { get; set; }
     public void AppendPlayer(string playerId)

@@ -1,5 +1,6 @@
 using BubbleGame.Application.Services.Ton;
 using BubbleGame.Persistence.DAL;
+using BubbleGame.Persistence.Services;
 using BubbleGame.Persistence.Services.Ton;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,8 @@ public static class Extensions
             var apiUrl = "";
             return new TonService(apiUrl);
         });
+
+        services.AddServices(configuration);
         
         return services;
     }

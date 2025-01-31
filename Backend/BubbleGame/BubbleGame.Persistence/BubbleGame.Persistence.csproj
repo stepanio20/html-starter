@@ -30,7 +30,6 @@
 
     <ItemGroup>
       <Folder Include="Hubs\" />
-      <Folder Include="Services\GameBuffer\" />
     </ItemGroup>
 
     <ItemGroup>
