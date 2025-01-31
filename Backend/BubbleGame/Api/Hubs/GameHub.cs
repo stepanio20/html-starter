@@ -147,7 +147,7 @@ public class GameHub(
             
             var dusts = await dustService.GenerateAsync();
             var dustDtos = dusts.Select(dust => new DustDto(dust.Id.ToString(), dust.PositionX, dust.PositionY)).ToList();
-            await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.NEW_DUST_CREATED, dustDtos);
+            await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.DUST_UPDATE, dustDtos);
         }
         
         await base.OnConnectedAsync();
@@ -165,7 +165,7 @@ public class GameHub(
             
             var dust = await dustService.GetAsync(dustId);
             dust = await dustService.UpdateAsync(dust);
-            await Clients.All.SendAsync(SocketMessages.DUST_EATEND, new DustDto(dust.Id.ToString(), dust.PositionX, dust.PositionY));
+            await Clients.All.SendAsync(SocketMessages.DUST_UPDATE, new DustDto(dust.Id.ToString(), dust.PositionX, dust.PositionY));
         }
         catch (Exception ex)
         {
