@@ -149,7 +149,7 @@ public class GameHub(
             var dusts = await dustService.GenerateAsync();
             var taskForDust = dusts.Select(dust =>
                 Clients.Client(Context.ConnectionId)
-                    .SendAsync(SocketMessages.DUST_EATEND, new DustDto(dust.Id.ToString(), dust.PositionX, dust.PositionY)));
+                    .SendAsync(SocketMessages.NEW_DUST_CREATED, new DustDto(dust.Id.ToString(), dust.PositionX, dust.PositionY)));
             await Task.WhenAll(taskForDust);
         }
     }
