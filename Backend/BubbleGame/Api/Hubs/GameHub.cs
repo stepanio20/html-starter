@@ -190,6 +190,7 @@ public class GameHub(
         var binocular = await gameItemsService.GetBinocularAsync(binocularId);
         await gameItemsService.RemoveAsync(binocular);
     }
+    
     public async Task EatMagnetAsync(string playerId, string magnetId)
     {
         var currentPlayer = await playerGameService.GetById(playerId);
@@ -218,11 +219,9 @@ public class GameHub(
 
         var result = (await Task.WhenAll(updateTasks)).ToList();
         await Clients.All.SendAsync(SocketMessages.MAGNET_EATEN, magnet.Id);
-        await Clients.All.SendAsync(SocketMessages.DUST_UPDATE, result);
+        await Clients.All.SendAsync(SocketMessages.DUST_EATEN, result);
     }
 
-
-    
     public async Task EatPlayerAsync(string player, string eatenPlayer)
     {
         try
@@ -321,7 +320,7 @@ public class GameHub(
             player.LastUpdated = DateTime.UtcNow;
 
             playerGameService.UpdatePlayer(player);
-            await Clients.All.SendAsync(
+            await Clients.AllExcept(Context.ConnectionId).SendAsync(
                 SocketMessages.PLAYER_POSITION_UPDATED,
                 new PlayerDto(
                     player.GameId,
