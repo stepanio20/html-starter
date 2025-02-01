@@ -8,7 +8,30 @@ namespace BubbleGame.Persistence.Services.Dusts;
 
 public class GameItemsService(ICacheService cacheService) : IGameItemsService
 {
-    public async Task<List<Magnet>> GetAllMagnetsAsync(int count = 5)
+    public async Task<List<Binocular>> GenerateBinoculars(int count = 20)
+    {
+        var random = new Random();
+        var binoculars = new List<Binocular>();
+
+        for (var i = 0; i < count; i++)
+        {
+            binoculars.Add(new Binocular()
+            {
+                Id = Guid.NewGuid(),
+                PositionX = random.Next(0, 12000),
+                PositionY = random.Next(0, 12000)
+            });
+        }
+
+        var saveTasks = binoculars
+            .Select(binocular => cacheService.SaveAsync(binocular.Id.ToString(), binocular))
+            .ToList();
+
+        await Task.WhenAll(saveTasks);
+
+        return binoculars;
+    }
+    public async Task<List<Magnet>> GenerateMagnets(int count = 20)
     {
         var random = new Random();
         var magnets = new List<Magnet>();

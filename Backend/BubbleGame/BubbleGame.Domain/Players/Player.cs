@@ -24,8 +24,15 @@ public class Player : CacheEntity
     public DateTime LastUpdated { get; set; }
 
     [JsonPropertyName("Size")] 
-    public decimal Size { get; set; }
+    public float Size { get; set; }
     
     [JsonPropertyName("Color")]
     public string Color { get; set; }
+    
+    [JsonPropertyName("Deposit")]
+    public decimal Deposit { get; set; }
+    
+    [JsonPropertyName("DustCount")]
+    public int DustCount { get; set; }
+    
 }

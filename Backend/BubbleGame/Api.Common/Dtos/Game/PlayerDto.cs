@@ -6,6 +6,7 @@ public record DustDto(
     float PositionY
     );
 
+public record BinocularDto(Guid Id, float PositionX, float PositionY);
 public record MagnetDto(Guid Id, float PositionX, float PositionY);
 
 public record PlayerDto(
@@ -13,15 +14,19 @@ public record PlayerDto(
     string PlayerId, 
     float PositionX, 
     float PositionY, 
-    decimal BallSize,
-    string Color
+    decimal Deposit,
+    string Color,
+    float Size,
+    int Dusts
     );
 public record FirstConnectionDto(
     Guid GameId,
     string PlayerId, 
     float PositionX, 
     float PositionY, 
-    decimal BallSize,
+    float BallSize,
     string Color,
-    DateTime EndAt
+    DateTime EndAt,
+    decimal Deposit,
+    int Dusts
 );

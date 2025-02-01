@@ -80,12 +80,17 @@ internal sealed class GameService(
             UserId = userId.ToString(),
             PositionX = new Random().Next(0, 12000),
             PositionY = new Random().Next(0, 12000),
-            Size = amount,
+            Size = GetSize(),
             Color = GetRandomColors().ToLower()
         };
 
         await playerService.AddPlayerAsync(player);
 
         return firstInRoom;
+    }
+    
+    private static float GetSize()
+    {
+        return 0;
     }
 }

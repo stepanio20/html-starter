@@ -26,7 +26,7 @@ public class GameHub(
     [
         "Red", "Green", "Blue", "Yellow", "Orange", "Purple", "Pink"
     ];
-
+    
     private static string GetRandomColors()
     {
         var random = new Random();
@@ -40,6 +40,11 @@ public class GameHub(
         var ping = serverTimestamp - clientTimestamp;
 
         await Clients.Caller.SendAsync("ReceivePing", ping);
+    }
+
+    private float GetSize()
+    {
+        return 0;
     }
 
     public override async Task OnConnectedAsync()
@@ -82,8 +87,6 @@ public class GameHub(
                 Id = game.Id
             };
             await roomGameService.CreateGame(cacheGame);
-            var dusts = await gameItemsService.GenerateAsync();
-            var magnets = await gameItemsService.GenerateAsync();
             await context.SaveChangesAsync();
             firstInRoom = true;
         }
@@ -100,7 +103,7 @@ public class GameHub(
             UserId = userId.ToString(),
             PositionX = new Random().Next(0, 12000),
             PositionY = new Random().Next(0, 12000),
-            Size = amount,
+            Deposit = amount,
             Color = GetRandomColors().ToLower()
         };
 
@@ -126,7 +129,9 @@ public class GameHub(
                             _player.PositionY,
                             _player.Size,
                             _player.Color,
-                            game.EndTime))
+                            game.EndTime,
+                            _player.Deposit,
+                            _player.DustCount))
                 );
                 await Task.WhenAll(tasks);
             //}todo
@@ -138,8 +143,10 @@ public class GameHub(
                         otherPlayer.Id,
                         otherPlayer.PositionX,
                         otherPlayer.PositionY,
+                        otherPlayer.Deposit,
+                        otherPlayer.Color,
                         otherPlayer.Size,
-                        otherPlayer.Color))
+                        otherPlayer.DustCount))
             );
             await Task.WhenAll(tasksForPlayers);
             
@@ -147,9 +154,13 @@ public class GameHub(
             var dustDtos = dusts.Select(dust => new DustDto(dust.Id.ToString(), dust.PositionX, dust.PositionY)).ToList();
             await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.DUST_UPDATE, dustDtos);
             
-            var magnets = await gameItemsService.GetAllMagnetsAsync();
+            var magnets = await gameItemsService.GenerateMagnets();
             var magnetDtos = magnets.Select(x => new MagnetDto(x.Id, x.PositionX, x.PositionY)).ToList();
             await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.MAGNET_CREATED, magnetDtos);
+
+            var binoculars = await gameItemsService.GenerateBinoculars();
+            var binocularsDtos = binoculars.Select(x => new BinocularDto(x.Id, x.PositionX, x.PositionY)).ToList();
+            await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.BINOCULAR_CREATED, binocularsDtos);
         }
         
         await base.OnConnectedAsync();
@@ -164,7 +175,8 @@ public class GameHub(
             dust = await gameItemsService.UpdateAsync(dust);
             await Clients.All.SendAsync(SocketMessages.DUST_UPDATE, new DustDto(dust.Id.ToString(), dust.PositionX, dust.PositionY));
             
-            currentPlayer.Size += (decimal)dust.Size;
+            currentPlayer.Size += dust.Size;
+            currentPlayer.DustCount += 1;
         }
         catch (Exception ex)
         {
@@ -224,8 +236,8 @@ public class GameHub(
                 var otherPlayer = await userManager.Users.FirstOrDefaultAsync(x => x.Id == targetPlayer.UserId);
                 if (otherPlayer != null)
                 {
-                    user.Balance += targetPlayer.Size;
-                    otherPlayer.Balance -= targetPlayer.Size;
+                    user.Balance += targetPlayer.Deposit;
+                    otherPlayer.Balance -= targetPlayer.Deposit;
                 }
 
                 await playerGameService.RemovePlayerAsync(targetPlayer);
@@ -238,8 +250,15 @@ public class GameHub(
 
                 await Clients.All.SendAsync(
                     SocketMessages.PLAYER_POSITION_UPDATED,
-                    new PlayerDto(currentPlayer.GameId, currentPlayer.Id, currentPlayer.PositionX,
-                        currentPlayer.PositionY, currentPlayer.Size, currentPlayer.Color)
+                    new PlayerDto(
+                        currentPlayer.GameId,
+                        currentPlayer.Id,
+                        currentPlayer.PositionX,
+                        currentPlayer.PositionY,
+                        currentPlayer.Deposit,
+                        currentPlayer.Color,
+                        currentPlayer.Size,
+                        currentPlayer.DustCount)
                 );
             }
             else
@@ -251,8 +270,8 @@ public class GameHub(
                 var mainPlayer = await userManager.Users.FirstOrDefaultAsync(x => x.Id == currentPlayer.UserId);
                 if (mainPlayer != null)
                 {
-                    user.Balance += currentPlayer.Size;
-                    mainPlayer.Balance -= currentPlayer.Size;
+                    user.Balance += currentPlayer.Deposit;
+                    mainPlayer.Balance -= currentPlayer.Deposit;
                 }
 
                 await playerGameService.RemovePlayerAsync(currentPlayer);
@@ -265,8 +284,15 @@ public class GameHub(
 
                 await Clients.All.SendAsync(
                     SocketMessages.PLAYER_POSITION_UPDATED,
-                    new PlayerDto(targetPlayer.GameId, targetPlayer.Id, targetPlayer.PositionX,
-                        targetPlayer.PositionY, targetPlayer.Size, currentPlayer.Color)
+                    new PlayerDto(
+                        targetPlayer.GameId,
+                        targetPlayer.Id,
+                        targetPlayer.PositionX,
+                        targetPlayer.PositionY,
+                        targetPlayer.Deposit,
+                        targetPlayer.Color,
+                        targetPlayer.Size,
+                        targetPlayer.DustCount)
                 );
             }
         }
@@ -291,7 +317,15 @@ public class GameHub(
             playerGameService.UpdatePlayer(player);
             await Clients.All.SendAsync(
                 SocketMessages.PLAYER_POSITION_UPDATED,
-                new PlayerDto(player.GameId, player.Id, player.PositionX, player.PositionY, player.Size, player.Color)
+                new PlayerDto(
+                    player.GameId,
+                    player.Id,
+                    player.PositionX,
+                    player.PositionY,
+                    player.Deposit,
+                    player.Color,
+                    player.Size,
+                    player.DustCount)
             );
         }
         catch (Exception ex)
