@@ -240,6 +240,7 @@ const App: React.FC = () => {
             ctx.fill();
             ctx.closePath();
         });
+        
 
         magnetsRef.current.forEach((magnet) => {
             const screenX = magnet.x - offsetX;
@@ -344,17 +345,30 @@ const App: React.FC = () => {
     }, [timeLeft]);
     
 
-    const sendPlayerPosition = (gameId: string, playerId: string, x: number, y: number, ballSize: number) => {
-        const playerDto = {
-            GameId: gameId,
-            PlayerId: playerId,
-            PositionX: x,
-            PositionY: y,
-            BallSize: ballSize
-        };
+    let requestCount = 0;
+    const MAX_REQUESTS_PER_SECOND = 60;
 
-        connection?.invoke("UpdatePlayerPosition", playerDto)
-            .catch(err => console.error(err.toString()));
+    setInterval(() => {
+        requestCount = 0;
+    }, 1000);
+
+    const sendPlayerPosition = (gameId: string, playerId: string, x: number, y: number, ballSize: number) => {
+        if (requestCount < MAX_REQUESTS_PER_SECOND) {
+            const playerDto = {
+                GameId: gameId,
+                PlayerId: playerId,
+                PositionX: x,
+                PositionY: y,
+                BallSize: ballSize
+            };
+
+            connection?.invoke("UpdatePlayerPosition", playerDto)
+                .catch(err => console.error(err.toString()));
+
+            requestCount++;
+        } else {
+            console.log('Превышен лимит запросов на эту секунду');
+        }
     };
 
     useEffect(() => {
@@ -449,21 +463,33 @@ const App: React.FC = () => {
                 }
             });
 
-            connection.on('NewDustCreated', (particleState: ParticlesInt[]) => {
+            connection.on('NewDustCreated', (particleState: ParticlesInt[] | ParticlesInt) => {
                 if (!particlesRef.current) {
                     particlesRef.current = [];
                 }
+
+                console.log(particleState);
+                console.log(Array.isArray(particleState));
+                 
             
-                particleState.forEach(newParticle => {
-                    const existingIndex = particlesRef.current.findIndex(p => p.id === newParticle.id);
-            
-                    if (existingIndex !== -1) {
-                        particlesRef.current[existingIndex] = newParticle;
-                    } else {
-                        particlesRef.current.push(newParticle);
-                    }
-                });
+                if (Array.isArray(particleState)) {
+                    particleState.forEach(newParticle => {
+                        const existingIndex = particlesRef.current.findIndex(p => p.id === newParticle.id);
+                
+                        if (existingIndex !== -1) {
+                            particlesRef.current[existingIndex] = newParticle;
+                        } else {
+                            particlesRef.current.push(newParticle);
+                        }
+                    });
+                } else {
+                    particlesRef.current = particlesRef.current.filter(p => p.id !== particleState.id);
+                    particlesRef.current.push(particleState);
+                }
             });
+            
+            
+            
 
             connection.on('PlayerDisconnected', (playerState: PlayerEatenDto) => {
                 if (playerState.playerId === userGameIdRef.current) {
@@ -474,9 +500,7 @@ const App: React.FC = () => {
             });
 
             connection.on('PlayerPositionUpdated', (gameState: PlayerDto) => {
-                console.log(gameState)
                 if (!gameState.playerId || gameState.positionY === undefined || gameState.positionX === undefined) {
-                    console.error("Ошибка: данные игрока некорректны", gameState);
                     return;
                 }
                 if (eatenPlayers.has(gameState.playerId)) {
@@ -488,7 +512,6 @@ const App: React.FC = () => {
             });
 
             connection.on('receivePing', (ping: number) => {
-              console.log(`ping ${ping}`);
               dispatch(setPing(ping))
             });
 
@@ -499,6 +522,9 @@ const App: React.FC = () => {
             };
         }
     }, [dispatch, gameRunning]);
+
+    console.log(particlesRef.current.length);
+    
 
     useEffect(() => {
         if (connection) {
