@@ -6,10 +6,10 @@ namespace BubbleGame.Application.Services.Dusts;
 public interface IGameItemsService
 {
     Task<Magnet> GetMagnetByIdAsync(string id);
-    Task<List<Binocular>> GenerateBinoculars(int count = 20);
+    Task<List<Binocular>> GenerateBinoculars(int count = 100);
     Task<List<DustParticle>> GetDustByGameIdAsync(string id);
     Task<List<DustParticle>> GenerateAsync(int count = 1000);
-    Task<List<Magnet>> GenerateMagnets(int count = 5);
+    Task<List<Magnet>> GenerateMagnets(int count = 100);
     Task<DustParticle> GetAsync(string id);
     Task<Binocular> GetBinocularAsync(string id);
     Task RemoveAsync(DustParticle dustParticle);
