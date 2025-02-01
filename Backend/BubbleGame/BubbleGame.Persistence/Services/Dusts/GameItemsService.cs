@@ -9,7 +9,7 @@ namespace BubbleGame.Persistence.Services.Dusts;
 
 public class GameItemsService(ICacheService cacheService) : IGameItemsService
 {
-    public async Task<List<Binocular>> GenerateBinoculars(int count = 20)
+    public async Task<List<Binocular>> GenerateBinoculars(int count = 100)
     {
         var random = new Random();
         var binoculars = new List<Binocular>();
@@ -32,7 +32,7 @@ public class GameItemsService(ICacheService cacheService) : IGameItemsService
 
         return binoculars;
     }
-    public async Task<List<Magnet>> GenerateMagnets(int count = 20)
+    public async Task<List<Magnet>> GenerateMagnets(int count = 100)
     {
         var random = new Random();
         var magnets = new List<Magnet>();
