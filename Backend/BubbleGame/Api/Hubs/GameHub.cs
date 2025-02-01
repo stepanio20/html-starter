@@ -5,6 +5,7 @@ using Api.Common.Static.Sockets;
 using BubbleGame.Application.Services.Dusts;
 using BubbleGame.Application.Services.Games;
 using BubbleGame.Application.Services.Players;
+using BubbleGame.Core.DustParticles;
 using BubbleGame.Core.Games;
 using BubbleGame.Core.Players;
 using BubbleGame.Persistence.DAL;
@@ -184,6 +185,11 @@ public class GameHub(
         }
     }
 
+    public async Task EatBinocularAsync(string playerId, string binocularId)
+    {
+        var binocular = await gameItemsService.GetBinocularAsync(binocularId);
+        await gameItemsService.RemoveAsync(binocular);
+    }
     public async Task EatMagnetAsync(string playerId, string magnetId)
     {
         var currentPlayer = await playerGameService.GetById(playerId);

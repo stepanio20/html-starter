@@ -1,5 +1,6 @@
 using BubbleGame.Application.Services.Dusts;
 using BubbleGame.Cache;
+using BubbleGame.Core.Base;
 using BubbleGame.Core.DustParticles;
 using BubbleGame.Core.GameItems;
 using BubbleGame.Core.Games;
@@ -55,6 +56,12 @@ public class GameItemsService(ICacheService cacheService) : IGameItemsService
         return magnets;
     }
 
+    public async Task<Binocular> GetBinocularAsync(string id)
+    {
+        var binocular = await cacheService.GetByKeyAsync<Binocular>(id);
+        return binocular;
+    }
+
     public async Task<Magnet> GetMagnetByIdAsync(string id)
         => await cacheService.GetByKeyAsync<Magnet>(id);
 
@@ -92,6 +99,11 @@ public class GameItemsService(ICacheService cacheService) : IGameItemsService
     {
         var dust = await cacheService.GetByKeyAsync<DustParticle>(dustId);
         return dust;
+    }
+
+    public Task RemoveAsync(Binocular dustParticle)
+    {
+        throw new NotImplementedException();
     }
 
     public async Task<DustParticle> UpdateAsync(DustParticle dustParticle)

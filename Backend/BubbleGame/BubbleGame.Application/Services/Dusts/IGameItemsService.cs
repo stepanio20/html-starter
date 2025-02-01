@@ -10,8 +10,10 @@ public interface IGameItemsService
     Task<List<DustParticle>> GetDustByGameIdAsync(string id);
     Task<List<DustParticle>> GenerateAsync(int count = 1000);
     Task<List<Magnet>> GenerateMagnets(int count = 5);
-    Task<DustParticle> GetAsync(string dustId);
+    Task<DustParticle> GetAsync(string id);
+    Task<Binocular> GetBinocularAsync(string id);
     Task RemoveAsync(DustParticle dustParticle);
+    Task RemoveAsync(Binocular dustParticle);
     Task<DustParticle> UpdateAsync(DustParticle dustParticle);
     Task RemoveAsync(Magnet dustParticle);
     Task<List<DustParticle>> GetByGameAsync(string gameId);
