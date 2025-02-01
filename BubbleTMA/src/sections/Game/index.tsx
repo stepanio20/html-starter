@@ -14,10 +14,16 @@ import GameOver from './components/ui/GameOver'
 import Minimap from './components/ui/MiniMap'
 import MoveTimer from './components/ui/MoveTimer'
 import WaitingPlayers from './components/ui/WaitingPlayers'
-import { generateBinoculars, generateMagnets } from './GameItems/GameObject'
+import { generateBinoculars } from './GameItems/GameObject'
 import styles from './style.module.css'
 
 interface ParticlesInt {
+    id: string,
+    positionX:number,
+    positionY:number
+}
+
+interface MagnetInt {
     id: string,
     positionX:number,
     positionY:number
@@ -47,7 +53,7 @@ const App: React.FC = () => {
     const particlesRef = useRef<ParticlesInt[]>([]);
     const binocularsRef = useRef<{ x: number, y: number, size: number }[]>([]);
     const zoomedOutRef = useRef(false);
-    const magnetsRef = useRef<{ x: number, y: number, strength: number, isActive: boolean }[]>([]);
+    const magnetsRef = useRef<MagnetInt[]>([]);
     const magnitActive = useRef<boolean>(false)
 
 
@@ -73,8 +79,8 @@ const App: React.FC = () => {
             id: gameState.playerId,
             x: gameState.positionX,
             y: gameState.positionY,
-            size: Math.sqrt(gameState.ballSize) * 15,
-            value: gameState.ballSize,
+            size: Math.sqrt(gameState.deposit) * 15,
+            value: gameState.deposit,
             color: gameState.color,
         };
 
@@ -91,8 +97,6 @@ const App: React.FC = () => {
         setEatenPlayers(new Set());
         const binoculars = generateBinoculars(300, mapWidth, mapHeight);
         binocularsRef.current = binoculars
-        const magnets = generateMagnets(200, mapWidth, mapHeight);
-        magnetsRef.current = magnets
     };
 
     const endGame = () => {
@@ -113,6 +117,8 @@ const App: React.FC = () => {
         ballSize: number;
         color: string;
         endAt: string
+        deposit:number,
+        dusts:number
     }
 
     let lastPosition = { x: 0, y: 0 };
@@ -160,129 +166,85 @@ const App: React.FC = () => {
     
         binocularsRef.current = updatedBinoculars;
     };
-
-    const handleMagnetAttraction = () => {
-        particlesRef.current.forEach((particle, index) => {
-            const dx = playerBubble.current.x - particle.positionX;
-            const dy = playerBubble.current.y - particle.positionY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
     
-            if (distance < 100 && magnitActive.current) {
-                const force = (100 - distance) * 0.1;
-                const angle = Math.atan2(dy, dx);
-    
-                particle.positionX += Math.cos(angle) * force;
-                particle.positionY += Math.sin(angle) * force;
-    
-                if (distance < 5) {
-                    particlesRef.current.splice(index, 1);
-                }
-            }
-        });
-    };
-    
-      const checkMagnetCollision = () => {
+    const checkMagnetCollision = () => {
         magnetsRef.current.forEach((magnet, index) => {
-            const dx = playerBubble.current.x - magnet.x;
-            const dy = playerBubble.current.y - magnet.y;
+            const dx = playerBubble.current.x - magnet.positionX;
+            const dy = playerBubble.current.y - magnet.positionY;
             const distance = Math.sqrt(dx * dx + dy * dy);
     
             if (distance < 20) {
+                connection?.invoke("EatMagnetAsync", playerId, magnet.id)
+                .catch(err => console.error(err.toString()));
                 magnetsRef.current.splice(index, 1);
-                magnitActive.current = true
-                setTimeout(() => {
-                magnitActive.current = false
-                }, 10000);
-                console.log(`Игрок забрал магнит на позиции (${magnet.x}, ${magnet.y})`);
             }
         });
     };
 
-    const animate = () => {
+    let lastTime = 0;
+    const targetFPS = 60;
+    const targetFrameDuration = 1000 / targetFPS;
+
+    const animate = (time:number) => {
+    const deltaTime = time - lastTime;
+
+    if (deltaTime >= targetFrameDuration) {
+        lastTime = time;
+
         if (!gameRunning) return;
-    
+
         const canvas = canvasRef.current!;
         const ctx = canvas.getContext("2d")!;
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
         playerBubble.current.calculateSpeed();
-    
-    
         playerBubble.current.x += joystickRef.current.deltaX * playerBubble.current.speed * 5;
         playerBubble.current.y += joystickRef.current.deltaY * playerBubble.current.speed * 5;
-    
-        playerBubble.current.x = Math.max(
-            playerBubble.current.size,
-            Math.min(playerBubble.current.x, mapWidth - playerBubble.current.size)
-        );
-        playerBubble.current.y = Math.max(
-            playerBubble.current.size,
-            Math.min(playerBubble.current.y, mapHeight - playerBubble.current.size)
-        );
+
+        playerBubble.current.x = Math.max(playerBubble.current.size, Math.min(playerBubble.current.x, mapWidth - playerBubble.current.size));
+        playerBubble.current.y = Math.max(playerBubble.current.size, Math.min(playerBubble.current.y, mapHeight - playerBubble.current.size));
 
         const scale = zoomedOutRef.current ? 2.2 : 1.9;
-    
         const offsetX = playerBubble.current.x - canvas.width / 2;
         const offsetY = playerBubble.current.y - canvas.height / 2;
-        
+
         drawGrid(ctx, canvas.width, canvas.height, 100 / scale, offsetX, offsetY, scale);
 
         particlesRef.current.forEach((particle) => {
             ctx.beginPath();
-            ctx.arc(
-                particle.positionX - offsetX,
-                particle.positionY - offsetY,
-                50,
-                0,
-                Math.PI * 2
-            );
+            ctx.arc(particle.positionX - offsetX, particle.positionY - offsetY, 50, 0, Math.PI * 2);
             ctx.fillStyle = 'blue';
             ctx.fill();
             ctx.closePath();
         });
-        
 
         magnetsRef.current.forEach((magnet) => {
-            const screenX = magnet.x - offsetX;
-            const screenY = magnet.y - offsetY;
-        
+            const screenX = magnet.positionX - offsetX;
+            const screenY = magnet.positionY - offsetY;
             ctx.beginPath();
-            ctx.arc(screenX, screenY, 10, 0, Math.PI * 2);
+            ctx.arc(screenX, screenY, 50, 0, Math.PI * 2);
             ctx.fillStyle = "#FF6347";
             ctx.fill();
             ctx.closePath();
         });
-    
+
         binocularsRef.current.forEach((binocular) => {
             ctx.beginPath();
-            ctx.arc(
-                binocular.x - offsetX,
-                binocular.y - offsetY,
-                binocular.size,
-                0,
-                Math.PI * 2
-            );
+            ctx.arc(binocular.x - offsetX, binocular.y - offsetY, binocular.size, 0, Math.PI * 2);
             ctx.fillStyle = "#8A2BE2";
             ctx.fill();
             ctx.closePath();
         });
-        
-        handleMagnetAttraction();
+
         checkMagnetCollision();
         handleBinocularCollision();
-        handleParticleCollision()
-        drawMapBorders(
-            ctx,
-            mapWidth,
-            mapHeight,
-            offsetX,
-            offsetY,
-            canvas.width,
-            canvas.height 
-        );
-    
+        handleParticleCollision();
+
+        drawMapBorders(ctx, mapWidth, mapHeight, offsetX, offsetY, canvas.width, canvas.height);
+
         playerBubble.current.draw(ctx, offsetX, offsetY, playerBubble.current.color);
-    
+
         playersRef.current
             .filter(player => !eatenPlayers.has(player.id))
             .forEach((player) => {
@@ -293,37 +255,33 @@ const App: React.FC = () => {
             });
 
         handlePlayerCollision(playerBubble.current, playersRef.current);
-        ctx.restore();
-    
+
         const currentTime = Date.now();
-    
-        if (
-            playerBubble.current.x !== lastPosition.x ||
-            playerBubble.current.y !== lastPosition.y
-        ) {
+        if (playerBubble.current.x !== lastPosition.x || playerBubble.current.y !== lastPosition.y) {
             lastMoveTime = currentTime;
             if (isInactive) {
                 setMoveStatus(false);
                 isInactive = false;
             }
-    
+
             if (playerId) {
                 sendPlayerPosition(
                     "f2940113-723e-4339-a32b-49d901b44b6c",
                     playerId,
                     playerBubble.current.x,
                     playerBubble.current.y,
-                    playerBubble.current.size,
+                    playerBubble.current.size
                 );
                 lastPosition = { x: playerBubble.current.x, y: playerBubble.current.y };
             }
         }
-    
+
         if (currentTime - lastMoveTime > 10000 && !isInactive) {
             setMoveStatus(true);
             isInactive = true;
         }
-    
+    }
+
         requestAnimationFrame(animate);
     };
 
@@ -373,7 +331,7 @@ const App: React.FC = () => {
 
     useEffect(() => {
         if (gameRunning && playerId) {
-            animate();
+            requestAnimationFrame(animate);
         }
     }, [gameRunning, playerId]);
 
@@ -419,6 +377,25 @@ const App: React.FC = () => {
         });
     };
 
+    const handleMagnetAttraction = (eatenParticles: ParticlesInt[]) => {
+        const eatenIds = new Set(eatenParticles.map(p => p.id));
+    
+        particlesRef.current.forEach((particle) => {
+            if (eatenIds.has(particle.id) && magnitActive.current) {
+                const dx = playerBubble.current.x - particle.positionX;
+                const dy = playerBubble.current.y - particle.positionY;
+                const angle = Math.atan2(dy, dx);
+                const force = 5;
+                particle.positionX += Math.cos(angle) * force;
+                particle.positionY += Math.sin(angle) * force;
+            }
+        });
+    
+        setTimeout(() => {
+            particlesRef.current = particlesRef.current.filter(p => !eatenIds.has(p.id));
+        }, 300);
+    };
+
     useEffect(() => {
         if (gameRunning) {
             const connection = new HubConnectionBuilder()
@@ -437,8 +414,8 @@ const App: React.FC = () => {
                 if (data) {
                     playerBubble.current.x = data.positionX;
                     playerBubble.current.y = data.positionY;
-                    playerBubble.current.size = data.ballSize;
-                    playerBubble.current.value = Math.sqrt(data.ballSize) * 15;
+                    playerBubble.current.size = data.deposit;
+                    playerBubble.current.value = Math.sqrt(data.deposit) * 15;
                     playerBubble.current.color = data.color
                     dispatch(setPlayerId(data?.playerId));
                     const endTime = new Date(data.endAt).getTime();
@@ -450,8 +427,6 @@ const App: React.FC = () => {
                 const clientTimestamp = Date.now();
                 connection.invoke("CheckPing", clientTimestamp);
             });
-
-            
 
             connection.on('PlayerEaten', (playerState: PlayerEatenDto) => {
                 if (playerState.playerId === userGameIdRef.current) {
@@ -488,9 +463,25 @@ const App: React.FC = () => {
                 }
             });
             
-            
-            
+            connection.on("DustEaten", (particleState: ParticlesInt[]) => {
+                handleMagnetAttraction(particleState);
+                setTimeout(() => {
+                    particleState.forEach((newParticle) => {
+                        const existingIndex = particlesRef.current.findIndex(p => p.id === newParticle.id);
+                        if (existingIndex !== -1) {
+                            particlesRef.current[existingIndex] = newParticle;
+                        }
+                    });
+                }, 300);
+            });
 
+            connection.on('MagnetCreated', (magnetState: MagnetInt[]) => {
+                if (!particlesRef.current) {
+                    particlesRef.current = [];
+                }
+                magnetsRef.current = magnetState
+            });
+            
             connection.on('PlayerDisconnected', (playerState: PlayerEatenDto) => {
                 if (playerState.playerId === userGameIdRef.current) {
                     navigate('/')
@@ -523,7 +514,6 @@ const App: React.FC = () => {
         }
     }, [dispatch, gameRunning]);
 
-    console.log(particlesRef.current.length);
     
 
     useEffect(() => {

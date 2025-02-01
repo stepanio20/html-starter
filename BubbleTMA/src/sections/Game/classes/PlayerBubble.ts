@@ -16,7 +16,7 @@ export class PlayerBubble {
 		}
 
 		calculateSpeed() {
-				const baseSpeed = 0.2;
+				const baseSpeed = 0.4;
 				const sizeFactor = 0.01; 
 				this.speed = baseSpeed / (1 + sizeFactor * this.value);
 		}
