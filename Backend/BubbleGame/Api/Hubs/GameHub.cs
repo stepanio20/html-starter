@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using System.Globalization;
 using Api.Common.Dtos.Game;
 using Api.Common.Game;
@@ -19,7 +18,7 @@ namespace Api.Hubs;
 public class GameHub(
     IPlayerService playerGameService,
     IRoomService roomGameService,
-    IDustService dustService,
+    IGameItemsService gameItemsService,
     UserManager<AppUser> userManager,
     AppDbContext context) : Hub
 {
@@ -45,16 +44,15 @@ public class GameHub(
 
     public override async Task OnConnectedAsync()
     {
-        bool firstInRoom = false;
+        var firstInRoom = false;
         var httpContext = Context.GetHttpContext();
         var userId = httpContext?.Request.Query["userId"];
         var amountString = httpContext?.Request.Query["amount"];
-        decimal amount = 0;
 
         if (string.IsNullOrEmpty(amountString))
             throw new HubException("Amount parameter is missing");
 
-        if (!decimal.TryParse(amountString, NumberStyles.Number, CultureInfo.InvariantCulture, out amount))
+        if (!decimal.TryParse(amountString, NumberStyles.Number, CultureInfo.InvariantCulture, out var amount))
             throw new HubException($"Invalid amount value {amountString}");
 
         if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userId.ToString()))
@@ -79,12 +77,13 @@ public class GameHub(
             };
 
             await context.Games.AddAsync(game);
-            cacheGame = new Room()
+            cacheGame = new Room
             {
                 Id = game.Id
             };
             await roomGameService.CreateGame(cacheGame);
-            var dusts = await dustService.GenerateAsync();
+            var dusts = await gameItemsService.GenerateAsync();
+            var magnets = await gameItemsService.GenerateAsync();
             await context.SaveChangesAsync();
             firstInRoom = true;
         }
@@ -112,7 +111,7 @@ public class GameHub(
             await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.WAITING_FOR_ANOTHER_PLAYER);
         else
         {
-            var players = await playerGameService.GetAsync(cacheGame.Id);
+            var players = await playerGameService.GetAsync(cacheGame!.Id);
             // if (players.Count == 2)
             // {
                 game.EndTime = timeNow.AddSeconds(40);
@@ -144,34 +143,67 @@ public class GameHub(
             );
             await Task.WhenAll(tasksForPlayers);
             
-            
-            var dusts = await dustService.GenerateAsync();
+            var dusts = await gameItemsService.GenerateAsync();
             var dustDtos = dusts.Select(dust => new DustDto(dust.Id.ToString(), dust.PositionX, dust.PositionY)).ToList();
             await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.DUST_UPDATE, dustDtos);
+            
+            var magnets = await gameItemsService.GetAllMagnetsAsync();
+            var magnetDtos = magnets.Select(x => new MagnetDto(x.Id, x.PositionX, x.PositionY)).ToList();
+            await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.MAGNET_CREATED, magnetDtos);
         }
         
         await base.OnConnectedAsync();
     }
-
+    
     public async Task EatDustAsync(string playerId, string dustId)
     {
         try
         {
             var currentPlayer = await playerGameService.GetById(playerId);
-            
-            var user = await userManager.FindByIdAsync(currentPlayer.UserId);
-            if (user == null)
-                throw new HubException("User not found");
-            
-            var dust = await dustService.GetAsync(dustId);
-            dust = await dustService.UpdateAsync(dust);
+            var dust = await gameItemsService.GetAsync(dustId);
+            dust = await gameItemsService.UpdateAsync(dust);
             await Clients.All.SendAsync(SocketMessages.DUST_UPDATE, new DustDto(dust.Id.ToString(), dust.PositionX, dust.PositionY));
+            
+            currentPlayer.Size += (decimal)dust.Size;
         }
         catch (Exception ex)
         {
             //  
         }
     }
+
+    public async Task EatMagnetAsync(string playerId, string magnetId)
+    {
+        var currentPlayer = await playerGameService.GetById(playerId);
+        var magnet = await gameItemsService.GetMagnetByIdAsync(magnetId);
+        var dusts = await gameItemsService.GetDustByGameIdAsync(magnet.GameId.ToString());
+
+        var nearDusts = dusts
+            .Select(dust => new 
+            {
+                Dust = dust, 
+                Distance = Math.Sqrt(Math.Pow(dust.PositionX - currentPlayer.PositionX, 2) +
+                                     Math.Pow(dust.PositionY - currentPlayer.PositionY, 2))
+            })
+            .OrderBy(d => d.Distance)
+            .Take(15)
+            .Select(d => d.Dust)
+            .ToList();
+
+        await gameItemsService.RemoveAsync(magnet);
+        
+        var updateTasks = nearDusts.Select(async nearDust =>
+        {
+            var dust = await gameItemsService.UpdateAsync(nearDust);
+            return new DustDto(dust.Id.ToString(), dust.PositionX, dust.PositionY);
+        });
+
+        var result = (await Task.WhenAll(updateTasks)).ToList();
+        await Clients.All.SendAsync(SocketMessages.MAGNET_EATEN, magnet.Id);
+        await Clients.All.SendAsync(SocketMessages.DUST_UPDATE, result);
+    }
+
+
     
     public async Task EatPlayerAsync(string player, string eatenPlayer)
     {
@@ -243,7 +275,6 @@ public class GameHub(
             Console.WriteLine($"Error during player eat: {ex}");
         }
     }
-
 
     public async Task UpdatePlayerPosition(PlayerDto playerDto)
     {

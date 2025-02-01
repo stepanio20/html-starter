@@ -2,7 +2,6 @@ using Api.Backgrounds;
 using Api.Common.Static.Sockets;
 using Api.Hubs;
 using Api.Routes;
-using BubbleGame.Application.Services.Ton;
 using BubbleGame.Cache;
 using BubbleGame.Persistence;
 using BubbleGame.Persistence.Backgrounds;

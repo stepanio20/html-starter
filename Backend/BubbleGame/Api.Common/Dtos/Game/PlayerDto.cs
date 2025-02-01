@@ -6,6 +6,8 @@ public record DustDto(
     float PositionY
     );
 
+public record MagnetDto(Guid Id, float PositionX, float PositionY);
+
 public record PlayerDto(
     Guid GameId,
     string PlayerId, 

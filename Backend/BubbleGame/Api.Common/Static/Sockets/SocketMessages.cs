@@ -9,4 +9,6 @@ public static class SocketMessages
     public static string PLAYER_DISCONNECTED  = "PlayerDisconnected";
     public static string WAITING_FOR_ANOTHER_PLAYER = "WaitingForPlayer";
     public static string DUST_UPDATE = "NewDustCreated";
+    public static string MAGNET_CREATED = "MagnetCreated";
+    public static string MAGNET_EATEN = "MagnetEaten";
 }

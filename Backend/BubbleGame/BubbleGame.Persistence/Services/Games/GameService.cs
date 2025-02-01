@@ -20,7 +20,7 @@ internal sealed class GameService(
     AppDbContext context,
     IRoomService roomService,
     IPlayerService playerService,
-    IDustService dustService)
+    IGameItemsService gameItemsService)
     : IGameService
 {
     private static readonly List<string> Colors =
@@ -63,7 +63,7 @@ internal sealed class GameService(
                 Id = game.Id
             };
             await roomService.CreateGame(cacheGame);
-            await dustService.GenerateAsync();
+            await gameItemsService.GenerateAsync();
             await context.SaveChangesAsync();
             firstInRoom = true;
         }

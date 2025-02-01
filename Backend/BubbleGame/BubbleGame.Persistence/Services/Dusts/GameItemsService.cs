@@ -1,12 +1,46 @@
 using BubbleGame.Application.Services.Dusts;
 using BubbleGame.Cache;
 using BubbleGame.Core.DustParticles;
+using BubbleGame.Core.GameItems;
 using BubbleGame.Core.Games;
 
 namespace BubbleGame.Persistence.Services.Dusts;
 
-public class DustService(ICacheService cacheService) : IDustService
+public class GameItemsService(ICacheService cacheService) : IGameItemsService
 {
+    public async Task<List<Magnet>> GetAllMagnetsAsync(int count = 5)
+    {
+        var random = new Random();
+        var magnets = new List<Magnet>();
+
+        for (var i = 0; i < count; i++)
+        {
+            magnets.Add(new Magnet()
+            {
+                Id = Guid.NewGuid(),
+                PositionX = random.Next(0, 12000),
+                PositionY = random.Next(0, 12000)
+            });
+        }
+
+        var saveTasks = magnets
+            .Select(dustParticle => cacheService.SaveAsync(dustParticle.Id.ToString(), dustParticle))
+            .ToList();
+
+        await Task.WhenAll(saveTasks);
+
+        return magnets;
+    }
+
+    public async Task<Magnet> GetMagnetByIdAsync(string id)
+        => await cacheService.GetByKeyAsync<Magnet>(id);
+
+    public async Task<List<DustParticle>> GetDustByGameIdAsync(string id)
+    {
+        var room = await cacheService.GetByKeyAsync<Room>(id);
+        return room == null ? default : room.Dusts;
+    }
+
     public async Task<List<DustParticle>> GenerateAsync(int count = 1000)
     {
         var random = new Random();
@@ -46,6 +80,9 @@ public class DustService(ICacheService cacheService) : IDustService
         await cacheService.SaveAsync(dustParticle.Id.ToString(), dustParticle);
         return dustParticle;
     }
+
+    public async Task RemoveAsync(Magnet dustParticle)
+        => await cacheService.DeleteAsync(dustParticle.Id.ToString());
 
     public async Task<List<DustParticle>> GetByGameAsync(string gameId)
     {

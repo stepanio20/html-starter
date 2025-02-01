@@ -21,7 +21,7 @@ public static class Extensions
             
         services.AddScoped<IPlayerService, PlayerService>();
         services.AddScoped<IRoomService, Games.RoomService>();
-        services.AddScoped<IDustService, DustService>();
+        services.AddScoped<IGameItemsService, GameItemsService>();
         services.AddHostedService<PlayerService>();
 
         return services;
