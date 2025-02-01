@@ -9,7 +9,7 @@ namespace BubbleGame.Persistence.Services.Dusts;
 
 public class GameItemsService(ICacheService cacheService) : IGameItemsService
 {
-    public async Task<List<Binocular>> GenerateBinoculars(int count = 100)
+    public async Task<List<Binocular>> GenerateBinoculars(Guid roomId, int count = 100)
     {
         var random = new Random();
         var binoculars = new List<Binocular>();
@@ -19,6 +19,7 @@ public class GameItemsService(ICacheService cacheService) : IGameItemsService
             binoculars.Add(new Binocular()
             {
                 Id = Guid.NewGuid(),
+                GameId = roomId,
                 PositionX = random.Next(0, 12000),
                 PositionY = random.Next(0, 12000)
             });
@@ -32,7 +33,8 @@ public class GameItemsService(ICacheService cacheService) : IGameItemsService
 
         return binoculars;
     }
-    public async Task<List<Magnet>> GenerateMagnets(int count = 100)
+
+    public async Task<List<Magnet>> GenerateMagnets(Guid roomId, int count = 100)
     {
         var random = new Random();
         var magnets = new List<Magnet>();
@@ -41,6 +43,7 @@ public class GameItemsService(ICacheService cacheService) : IGameItemsService
         {
             magnets.Add(new Magnet()
             {
+                GameId = roomId,
                 Id = Guid.NewGuid(),
                 PositionX = random.Next(0, 12000),
                 PositionY = random.Next(0, 12000)
@@ -64,34 +67,37 @@ public class GameItemsService(ICacheService cacheService) : IGameItemsService
 
     public async Task<Magnet> GetMagnetByIdAsync(string id)
         => await cacheService.GetByKeyAsync<Magnet>(id);
-
+    
     public async Task<List<DustParticle>> GetDustByGameIdAsync(string id)
     {
         var room = await cacheService.GetByKeyAsync<Room>(id);
         return room == null ? default : room.Dusts;
     }
 
-    public async Task<List<DustParticle>> GenerateAsync(int count = 1000)
+    public async Task<List<DustParticle>> GenerateAsync(Room room, int count = 1000)
     {
         var random = new Random();
         var dustParticles = new List<DustParticle>();
 
         for (var i = 0; i < count; i++)
         {
-            dustParticles.Add(new DustParticle
+            var dust = new DustParticle
             {
                 Id = Guid.NewGuid(),
                 PositionX = random.Next(0, 12000),
                 PositionY = random.Next(0, 12000)
-            });
+            };
+            dustParticles.Add(dust);
+            room.Dusts.Add(dust);
         }
 
+        await cacheService.SaveAsync(room.Id.ToString(), room);
         var saveTasks = dustParticles
             .Select(dustParticle => cacheService.SaveAsync(dustParticle.Id.ToString(), dustParticle))
             .ToList();
 
         await Task.WhenAll(saveTasks);
-
+        
         return dustParticles;
     }
 
@@ -99,6 +105,11 @@ public class GameItemsService(ICacheService cacheService) : IGameItemsService
     {
         var dust = await cacheService.GetByKeyAsync<DustParticle>(dustId);
         return dust;
+    }
+
+    public Task<Binocular> GetBinocularAsync(Guid roomId, string id)
+    {
+        throw new NotImplementedException();
     }
 
     public Task RemoveAsync(Binocular dustParticle)

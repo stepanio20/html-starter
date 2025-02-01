@@ -63,7 +63,7 @@ internal sealed class GameService(
                 Id = game.Id
             };
             await roomService.CreateGame(cacheGame);
-            await gameItemsService.GenerateAsync();
+            await gameItemsService.GenerateAsync(cacheGame);
             await context.SaveChangesAsync();
             firstInRoom = true;
         }

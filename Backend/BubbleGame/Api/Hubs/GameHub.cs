@@ -78,7 +78,7 @@ public class GameHub(
         {
             game = new Game
             {
-                EndTime = timeNow.AddMinutes(5),
+                EndTime = timeNow.AddSeconds(40),
                 StartTime = timeNow,
             };
 
@@ -151,15 +151,15 @@ public class GameHub(
             );
             await Task.WhenAll(tasksForPlayers);
             
-            var dusts = await gameItemsService.GenerateAsync();
+            var dusts = await gameItemsService.GenerateAsync(cacheGame);
             var dustDtos = dusts.Select(dust => new DustDto(dust.Id.ToString(), dust.PositionX, dust.PositionY)).ToList();
             await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.DUST_UPDATE, dustDtos);
             
-            var magnets = await gameItemsService.GenerateMagnets();
+            var magnets = await gameItemsService.GenerateMagnets(cacheGame.Id);
             var magnetDtos = magnets.Select(x => new MagnetDto(x.Id, x.PositionX, x.PositionY)).ToList();
             await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.MAGNET_CREATED, magnetDtos);
 
-            var binoculars = await gameItemsService.GenerateBinoculars();
+            var binoculars = await gameItemsService.GenerateBinoculars(cacheGame.Id);
             var binocularsDtos = binoculars.Select(x => new BinocularDto(x.Id, x.PositionX, x.PositionY)).ToList();
             await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.BINOCULAR_CREATED, binocularsDtos);
         }

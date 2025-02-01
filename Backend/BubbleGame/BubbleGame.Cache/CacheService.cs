@@ -30,8 +30,17 @@ internal sealed class CacheService(IDistributedCache cache) : ICacheService
         };
         if(string.IsNullOrEmpty(cachedData))
             return default;
+
+        try
+        {
+            return JsonSerializer.Deserialize<T>(cachedData, options) ?? default;
+        }
+        catch(Exception ex)
+        {
+            
+        }
         
-        return JsonSerializer.Deserialize<T>(cachedData, options) ?? default;
+        return default;
     }
 
     public async Task SaveAsync<T>(string key, T value)

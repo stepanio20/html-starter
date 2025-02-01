@@ -19,6 +19,20 @@ public static class Extensions
             options.InstanceName = "BubbleGame.Cache:";
         });
         
+        // services.AddStackExchangeRedisCache(options =>
+        // {
+        //     options.Configuration = "199.247.6.31:6379";
+        //     options.InstanceName = "BubbleGame";
+        //     options.ConfigurationOptions = new ConfigurationOptions
+        //     {
+        //         AbortOnConnectFail = false,
+        //         ConnectTimeout = 10000,
+        //         SyncTimeout = 10000, 
+        //         AsyncTimeout = 10000, 
+        //     };
+        // });
+
+        
         services.AddSingleton<ICacheService, CacheService>();
         services.AddSingleton<IPlayerUpdateBuffer, PlayerUpdateBuffer>(); 
 
