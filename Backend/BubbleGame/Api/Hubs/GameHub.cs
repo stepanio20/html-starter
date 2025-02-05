@@ -24,6 +24,8 @@ public class GameHub(
     UserManager<AppUser> userManager,
     AppDbContext context) : Hub
 {
+    private readonly Random Random = new Random();
+
     private static readonly List<string> Colors =
     [
         "Red", "Green", "Blue", "Yellow", "Orange", "Purple", "Pink"
@@ -47,6 +49,7 @@ public class GameHub(
     private static readonly Dictionary<Guid, Dictionary<string, Player>> ActivePlayers = new();
     private static readonly Dictionary<Guid, DustParticle> Dusts = new();
     private static readonly Dictionary<Guid, Magnet> Magnets = new();
+    private static readonly Dictionary<Guid, Binocular> Binoculars = new();
 
     private float GetSize()
     {
@@ -142,14 +145,14 @@ public class GameHub(
         var random = new Random();
         var dustDtos = new List<DustParticle>();
 
-        for (var i = 0; i < 5000; i++)
+        for (var i = 0; i < 3000; i++)
         {
             var dust = new DustParticle
             {
                 Id = Guid.NewGuid(),
-                PositionX = random.Next(0, 12000),
-                PositionY = random.Next(0, 12000),
-                Size = 20
+                PositionX = random.Next(0, 4000),
+                PositionY = random.Next(0, 4000),
+                Size = 6
             };
             dustDtos.Add(dust);
             Dusts.Add(dust.Id, dust);
@@ -157,14 +160,14 @@ public class GameHub(
         await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.DUST_UPDATE, dustDtos);
         
         var magnets = new List<Magnet>();
-        for (var i = 0; i < 5000; i++)
+        for (var i = 0; i < 100; i++)
         {
             var magnet = new Magnet()
             {
                 Id = Guid.NewGuid(),
                 GameId = gameId,
-                PositionX = random.Next(0, 12000),
-                PositionY = random.Next(0, 12000)
+                PositionX = random.Next(0, 4000),
+                PositionY = random.Next(0, 4000)
             };
             magnets.Add(magnet);
             Magnets.Add(magnet.Id, magnet);
@@ -172,19 +175,36 @@ public class GameHub(
 
         var magnetDtos = magnets.Select(x => new MagnetDto(x.Id, x.PositionX, x.PositionY)).ToList();
         await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.MAGNET_CREATED, magnetDtos);
-
-        //var binoculars = await gameItemsService.GenerateBinoculars(cacheGame.Id);
-        //var binocularsDtos = binoculars.Select(x => new BinocularDto(x.Id, x.PositionX, x.PositionY)).ToList();
-        //await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.BINOCULAR_CREATED, binocularsDtos);
+        
+        var binoculars = new List<BinocularDto>();
+        for (var i = 0; i < 100; i++)
+        {
+            var binocular = new Binocular()
+            {
+                Id = Guid.NewGuid(),
+                GameId = gameId,
+                PositionX = random.Next(0, 4000),
+                PositionY = random.Next(0, 4000)
+            };
+            binoculars.Add(new BinocularDto(binocular.Id, binocular.PositionX, binocular.PositionY));
+            Binoculars.Add(binocular.Id, binocular);
+        }
+        
+        await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.BINOCULAR_CREATED, binoculars);
         await base.OnConnectedAsync();
     }    
-    public async Task EatDustAsync(string playerId, string dustId)
+    public async Task EatDustAsync(string playerId, Guid dustId)
     {
         try
         {
-            var currentPlayer = await playerGameService.GetById(playerId);
-            var dust = await gameItemsService.GetAsync(dustId);
-            dust = await gameItemsService.UpdateAsync(dust);
+            var currentPlayer = ActivePlayers
+                .SelectMany(game => game.Value)
+                .FirstOrDefault(pair => pair.Key == playerId)
+                .Value;
+
+            var dustExist = Dusts.TryGetValue(dustId, out var dust);
+            dust.PositionX = Random.Next(0, 4000);
+            dust.PositionY = Random.Next(0, 4000);
             await Clients.All.SendAsync(SocketMessages.DUST_UPDATE, new DustDto(dust.Id.ToString(), dust.PositionX, dust.PositionY));
             
             currentPlayer.Size += dust.Size;
