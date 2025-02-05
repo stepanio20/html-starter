@@ -241,10 +241,9 @@ public class GameHub(
         }
     }
 
-    public async Task EatBinocularAsync(string playerId, string binocularId)
+    public async Task EatBinocularAsync(string playerId, Guid binocularId)
     {
-        var binocular = await gameItemsService.GetBinocularAsync(binocularId);
-        await gameItemsService.RemoveAsync(binocular);
+       Binoculars.Remove(binocularId);
     }
 
     public async Task EatMagnetAsync(string playerId, Guid magnetId)
