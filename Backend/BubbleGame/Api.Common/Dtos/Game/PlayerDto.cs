@@ -1,32 +1,49 @@
+using System.Text.Json.Serialization;
+
 namespace Api.Common.Game;
 
-public record DustDto(
-    string Id, 
-    float PositionX,
-    float PositionY
-    );
+public class DustDto
+{
+    public string Id { get; set; }
+    public float PositionX { get; set; }
+    public float PositionY { get; set; }
+}
 
-public record BinocularDto(Guid Id, float PositionX, float PositionY);
-public record MagnetDto(Guid Id, float PositionX, float PositionY);
+public class BinocularDto
+{
+    public Guid Id { get; set; }
+    public float PositionX { get; set; }
+    public float PositionY { get; set; }
+}
 
-public record PlayerDto(
-    Guid GameId,
-    string PlayerId, 
-    float PositionX, 
-    float PositionY, 
-    decimal Deposit,
-    string Color,
-    float Size,
-    int Dusts
-    );
-public record FirstConnectionDto(
-    Guid GameId,
-    string PlayerId, 
-    float PositionX, 
-    float PositionY, 
-    float BallSize,
-    string Color,
-    DateTime EndAt,
-    decimal Deposit,
-    int Dusts
-);
+public class MagnetDto
+{
+    public Guid Id { get; set; }
+    public float PositionX { get; set; }
+    public float PositionY { get; set; }
+}
+
+public class PlayerDto
+{
+    public Guid GameId { get; set; }
+    public string PlayerId { get; set; }
+    public float PositionX { get; set; }
+    public float PositionY { get; set; }
+    public decimal Deposit { get; set; }
+    public string Color { get; set; }
+    public float Size { get; set; }
+    public int Dusts { get; set; }
+}
+
+public class FirstConnectionDto
+{
+    public Guid GameId { get; set; }
+    public string PlayerId { get; set; }
+    public float PositionX { get; set; }
+    public float PositionY { get; set; }
+    public float BallSize { get; set; }
+    public string Color { get; set; }
+    public DateTime EndAt { get; set; }
+    public decimal Deposit { get; set; }
+    public int Dusts { get; set; }
+}
