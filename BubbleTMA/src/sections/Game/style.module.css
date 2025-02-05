@@ -30,3 +30,21 @@
     top: 160px;
   }
 }
+
+.boostButton {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 15px 30px;
+  font-size: 18px;
+  background-color: #ff4500;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  z-index: 9999;
+  cursor: pointer;
+}
+
+.boostButton:active {
+  background-color: #cc3700;
+}

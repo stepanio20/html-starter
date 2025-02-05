@@ -5,14 +5,16 @@ export const drawGrid = (
   baseCellSize: number,
   offsetX: number,
   offsetY: number,
+  playerSize: number,
   scale: number
 ) => {
   ctx.save();
 
   ctx.strokeStyle = "rgba(192, 192, 192, 0.5)";
-  ctx.lineWidth = 1;
-  
-  const adjustedCellSize = Math.max(baseCellSize / (scale), 10);
+  ctx.lineWidth = 2;
+
+  const gridScaleFactor = Math.max(1, playerSize / 200);
+  const adjustedCellSize = Math.max(baseCellSize / (scale * gridScaleFactor), 10);
 
   const startX = -offsetX % adjustedCellSize;
   const startY = -offsetY % adjustedCellSize;

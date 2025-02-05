@@ -3,6 +3,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 interface PlayerState {
   userId: string,
   playerId: string,
+  gameId:string,
   balance: number,
   demoBalance: number,
   depositAddress: string,
@@ -13,6 +14,7 @@ interface PlayerState {
 const initialState: PlayerState = {
   userId: '',
   playerId: '',
+  gameId:'',
   balance: 0,
   demoBalance: 0,
   depositAddress: '',
@@ -49,8 +51,11 @@ const userSlice = createSlice({
     setPlayersOnline: (state, action: PayloadAction<number>) => {
       state.PlayersOnline = action.payload
     },
+    setGameId: (state, action: PayloadAction<string>) => {
+      state.gameId = action.payload
+    },
   },
 });
 
-export const { setPlayerId, setUserId, setBalance, setDepositAddress, setDemoBalance, setUsdtRate, setPlayersOnline} = userSlice.actions;
+export const { setPlayerId, setUserId, setBalance, setDepositAddress, setDemoBalance, setUsdtRate, setPlayersOnline, setGameId} = userSlice.actions;
 export default userSlice.reducer;

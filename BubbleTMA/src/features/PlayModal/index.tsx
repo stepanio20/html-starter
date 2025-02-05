@@ -24,7 +24,7 @@ const PlayModal = () => {
 
   const isAmountValid = () => {
     const numericAmount = parseFloat(amount as string);
-    return !isNaN(numericAmount) && numericAmount >= 1 && numericAmount <= 10 && numericAmount <= balance;
+    return !isNaN(numericAmount) && numericAmount >= 1 && numericAmount <= 1000 && numericAmount <= balance;
   };
 
   const startGame = () => {

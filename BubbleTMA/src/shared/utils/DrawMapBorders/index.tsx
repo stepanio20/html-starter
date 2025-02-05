@@ -8,21 +8,24 @@ export const drawMapBorders = (
 	canvasHeight: number
 ) => {
 	ctx.save();
-
-	ctx.strokeStyle = "#ff0000";
+	
+	ctx.strokeStyle = "#ff0000"; // Красные границы карты
 	ctx.lineWidth = 4;
 
-	const borderX = -offsetX;
-	const borderY = -offsetY;
-
+	// Границы карты (не двигаются)
 	ctx.beginPath();
-	ctx.rect(borderX, borderY, mapWidth, mapHeight);
+	ctx.rect(-offsetX, -offsetY, mapWidth, mapHeight);
 	ctx.stroke();
 
+	// Затемненная область за картой
 	ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
 	ctx.beginPath();
+	
+	// Закрашиваем весь экран
 	ctx.rect(0, 0, canvasWidth, canvasHeight);
-	ctx.rect(borderX, borderY, mapWidth, mapHeight);
+	
+	// Вырезаем центр, чтобы осталась только темная область за картой
+	ctx.rect(-offsetX, -offsetY, mapWidth, mapHeight);
 	ctx.fill("evenodd");
 
 	ctx.restore();
