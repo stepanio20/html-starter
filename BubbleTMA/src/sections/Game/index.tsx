@@ -15,19 +15,24 @@ import GameOver from './components/ui/GameOver'
 import Minimap from './components/ui/MiniMap'
 import MoveTimer from './components/ui/MoveTimer'
 import WaitingPlayers from './components/ui/WaitingPlayers'
-import { generateBinoculars } from './GameItems/GameObject'
 import styles from './style.module.css'
 
 interface ParticlesInt {
-    Id: string,
-    PositionX:number,
-    PositionY:number,
+    id: string,
+    positionX:number,
+    positionY:number,
     color: string,
-    Size: number
+    size: number
 }
 
 interface MagnetInt {
     id: string,
+    positionX:number,
+    positionY:number
+}
+
+interface BinocularInt {
+    id:string,
     positionX:number,
     positionY:number
 }
@@ -54,7 +59,7 @@ const App: React.FC = () => {
     const location = useLocation();
     const [waiting, setWaiting] = useState<boolean>(false)
     const particlesRef = useRef<ParticlesInt[]>([]);
-    const binocularsRef = useRef<{ x: number, y: number, size: number }[]>([]);
+    const binocularsRef = useRef<BinocularInt[]>([]);
     const zoomedOutRef = useRef(false);
     const magnetsRef = useRef<MagnetInt[]>([]);
     const boosting = useRef(false)
@@ -98,8 +103,6 @@ const App: React.FC = () => {
         setGameRunning(true);
         setGameOver(false);
         setEatenPlayers(new Set());
-        const binoculars = generateBinoculars(300, mapWidth, mapHeight);
-        binocularsRef.current = binoculars
     };
 
     const endGame = () => {
@@ -130,14 +133,14 @@ const App: React.FC = () => {
     let isInactive = false;
     const handleParticleCollision = () => {
         particlesRef.current.forEach((particle) => {
-            const dx = playerBubble.current.x - particle.PositionX;
-            const dy = playerBubble.current.y - particle.PositionY;
+            const dx = playerBubble.current.x - particle.positionX;
+            const dy = playerBubble.current.y - particle.positionY;
             const distance = Math.sqrt(dx * dx + dy * dy);
     
             if (distance < playerBubble.current.size) {
-                console.log(particle.Id);
+                console.log(particle.id);
                 
-                connection?.invoke("EatDustAsync", playerId, particle.Id)
+                connection?.invoke("EatDustAsync", playerId, particle.id)
                     .catch(err => console.error(err.toString()));
             }
         });
@@ -155,13 +158,16 @@ const App: React.FC = () => {
     };
     
     const handleBinocularCollision = () => {
-        let updatedBinoculars = binocularsRef.current.filter((binocular) => {
-            const dx = playerBubble.current.x - binocular.x;
-            const dy = playerBubble.current.y - binocular.y;
+        let updatedBinoculars = binocularsRef.current.filter((binocular, index) => {
+            const dx = playerBubble.current.x - binocular.positionX;
+            const dy = playerBubble.current.y - binocular.positionY;
             const distance = Math.sqrt(dx * dx + dy * dy);
     
             if (distance < playerBubble.current.size) {
                 activateZoomOut();
+                connection?.invoke("EatBinocularAsync", playerId, binocular.id)
+                .catch(err => console.error(err.toString()));
+                binocularsRef.current.splice(index, 1);
                 return false;
             }
             return true;
@@ -220,7 +226,7 @@ const App: React.FC = () => {
                 const alpha = Math.abs(Math.sin(Date.now() / 200));
     
                 ctx.beginPath();
-                ctx.arc(particle.PositionX - offsetX, particle.PositionY - offsetY, particle.Size, 0, Math.PI * 2);
+                ctx.arc(particle.positionX - offsetX, particle.positionY - offsetY, particle.size, 0, Math.PI * 2);
                 ctx.fillStyle = particle.color;
                 ctx.globalAlpha = alpha;
                 ctx.fill();
@@ -240,7 +246,7 @@ const App: React.FC = () => {
     
             binocularsRef.current.forEach((binocular) => {
                 ctx.beginPath();
-                ctx.arc(binocular.x - offsetX, binocular.y - offsetY, binocular.size, 0, Math.PI * 2);
+                ctx.arc(binocular.positionX - offsetX, binocular.positionY - offsetY, 30, 0, Math.PI * 2);
                 ctx.fillStyle = "#8A2BE2";
                 ctx.fill();
                 ctx.closePath();
@@ -400,23 +406,23 @@ const App: React.FC = () => {
     };
 
     const handleMagnetAttraction = (eatenParticles: ParticlesInt[]) => {
-        const eatenIds = new Set(eatenParticles.map(p => p.Id));
+        const eatenIds = new Set(eatenParticles.map(p => p.id));
     
         const animate = () => {
             let hasActiveParticles = false;
     
             particlesRef.current.forEach((particle, index) => {
-                if (!eatenIds.has(particle.Id)) return;
+                if (!eatenIds.has(particle.id)) return;
     
-                const dx = playerBubble.current.x - particle.PositionX;
-                const dy = playerBubble.current.y - particle.PositionY;
+                const dx = playerBubble.current.x - particle.positionX;
+                const dy = playerBubble.current.y - particle.positionY;
                 const distance = Math.sqrt(dx * dx + dy * dy);
     
                 const angle = Math.atan2(dy, dx);
                 const force = Math.min(2, distance / 20);
     
-                particle.PositionX+= Math.cos(angle) * force;
-                particle.PositionY += Math.sin(angle) * force;
+                particle.positionX+= Math.cos(angle) * force;
+                particle.positionY += Math.sin(angle) * force;
     
                 if (distance > 5) {
                     hasActiveParticles = true;
@@ -497,7 +503,7 @@ const App: React.FC = () => {
                     particleState.forEach(newParticle => {
                         newParticle.color = getRandomColor();
                         
-                        const existingIndex = particlesRef.current.findIndex(p => p.Id === newParticle.Id);
+                        const existingIndex = particlesRef.current.findIndex(p => p.id === newParticle.id);
                         
                         if (existingIndex !== -1) {
                             particlesRef.current[existingIndex] = newParticle;
@@ -507,8 +513,7 @@ const App: React.FC = () => {
                     });
                 } else {
                     particleState.color = getRandomColor();
-                    
-                    particlesRef.current = particlesRef.current.filter(p => p.Id !== particleState.Id);
+                    particlesRef.current = particlesRef.current.filter(p => p.id !== particleState.id);
                     particlesRef.current.push(particleState);
                 }
             });
@@ -522,6 +527,10 @@ const App: React.FC = () => {
                     particlesRef.current = [];
                 }
                 magnetsRef.current = magnetState
+            });
+
+            connection.on('BinocularCreated', (binocularState: BinocularInt[]) => {
+                binocularsRef.current = binocularState
             });
             
             connection.on('PlayerDisconnected', (playerState: PlayerEatenDto) => {
@@ -551,6 +560,10 @@ const App: React.FC = () => {
             connection.on('MagnetEaten', (id: string) => {
                 magnetsRef.current = magnetsRef.current.filter(magnet => magnet.id !== id);
             });
+
+            connection.on('BinocularEaten', (id: string) => {
+                binocularsRef.current = binocularsRef.current.filter(magnet => magnet.id !== id);
+            })
 
             return () => {
                 if (connection) {
