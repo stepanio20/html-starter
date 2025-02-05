@@ -7,6 +7,7 @@ public class DustDto
     public string Id { get; set; }
     public float PositionX { get; set; }
     public float PositionY { get; set; }
+    public float Size { get; set; } = 5;
 }
 
 public class BinocularDto
