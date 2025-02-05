@@ -12,5 +12,6 @@ public static class SocketMessages
     public static string DUST_EATEN = "DustEaten";
     public static string MAGNET_CREATED = "MagnetCreated";
     public static string BINOCULAR_CREATED = "BinocularCreated";
+    public static string BINOCULAR_EATEN = "BinocularEaten";
     public static string MAGNET_EATEN = "MagnetEaten";
 }

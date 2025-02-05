@@ -244,6 +244,7 @@ public class GameHub(
     public async Task EatBinocularAsync(string playerId, Guid binocularId)
     {
        Binoculars.Remove(binocularId);
+       await Clients.All.SendAsync(SocketMessages.BINOCULAR_EATEN, binocularId);
     }
 
     public async Task EatMagnetAsync(string playerId, Guid magnetId)
