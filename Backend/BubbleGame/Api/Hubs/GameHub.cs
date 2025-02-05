@@ -6,6 +6,7 @@ using BubbleGame.Application.Services.Dusts;
 using BubbleGame.Application.Services.Games;
 using BubbleGame.Application.Services.Players;
 using BubbleGame.Core.DustParticles;
+using BubbleGame.Core.GameItems;
 using BubbleGame.Core.Games;
 using BubbleGame.Core.Players;
 using BubbleGame.Persistence.DAL;
@@ -42,6 +43,10 @@ public class GameHub(
 
         await Clients.Caller.SendAsync("ReceivePing", ping);
     }
+    
+    private static readonly Dictionary<Guid, Dictionary<string, Player>> ActivePlayers = new();
+    private static readonly Dictionary<Guid, DustParticle> Dusts = new();
+    private static readonly Dictionary<Guid, Magnet> Magnets = new();
 
     private float GetSize()
     {
@@ -50,123 +55,129 @@ public class GameHub(
 
     public override async Task OnConnectedAsync()
     {
-        var firstInRoom = false;
         var httpContext = Context.GetHttpContext();
         var userId = httpContext?.Request.Query["userId"];
         var amountString = httpContext?.Request.Query["amount"];
 
-        if (string.IsNullOrEmpty(amountString))
-            throw new HubException("Amount parameter is missing");
+        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(amountString))
+            return;
 
         if (!decimal.TryParse(amountString, NumberStyles.Number, CultureInfo.InvariantCulture, out var amount))
             throw new HubException($"Invalid amount value {amountString}");
 
-        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userId.ToString()))
-            return;
-
-        var user = await userManager.FindByIdAsync(userId.ToString());
+        var user = await userManager.FindByIdAsync(userId);
         if (user == null)
             throw new HubException("User not found");
 
         if (user.Balance < amount)
-            throw new HubException("User balance is less than 0");
+            throw new HubException("Not enough balance");
 
         var timeNow = DateTime.UtcNow;
-        var game = await context.Games.FirstOrDefaultAsync(x => x.EndTime > timeNow);
-        Room? cacheGame;
+        var game = await context.Games
+            .Where(x => x.EndTime > timeNow)
+            .OrderByDescending(x => x.EndTime)
+            .FirstOrDefaultAsync();
+
         if (game == null)
         {
             game = new Game
             {
-                EndTime = timeNow.AddSeconds(40),
-                StartTime = timeNow,
+                EndTime = timeNow.AddSeconds(40), StartTime = timeNow
             };
-
             await context.Games.AddAsync(game);
-            cacheGame = new Room
-            {
-                Id = game.Id
-            };
-            await roomGameService.CreateGame(cacheGame);
             await context.SaveChangesAsync();
-            firstInRoom = true;
         }
-        else
-        {
-            cacheGame = await roomGameService.GetAsync(game.Id);
-            if (cacheGame is not null && cacheGame.Players.Count < 1)
-                firstInRoom = true;
-        }
+
+        var gameId = game.Id;
+        var playerId = Context.ConnectionId;
+
         var player = new Player
         {
-            Id = Context.ConnectionId,
-            GameId = game.Id,
-            UserId = userId.ToString(),
-            PositionX = new Random().Next(0, 12000),
-            PositionY = new Random().Next(0, 12000),
+            Id = playerId,
+            GameId = gameId,
+            UserId = userId,
+            PositionX = new Random().Next(0, 4000),
+            PositionY = new Random().Next(0, 4000),
             Deposit = amount,
             Color = GetRandomColors().ToLower()
         };
 
-        await playerGameService.AddPlayerAsync(player);
+        if (!ActivePlayers.ContainsKey(gameId))
+            ActivePlayers[gameId] = new Dictionary<string, Player>();
 
-        firstInRoom = false;
-        if (firstInRoom)
-            await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.WAITING_FOR_ANOTHER_PLAYER);
-        else
-        {
-            var players = await playerGameService.GetAsync(cacheGame!.Id);
-            // if (players.Count == 2)
-            // {
-                game.EndTime = timeNow.AddSeconds(40);
-                await roomGameService.UpdateGame(cacheGame);
+        ActivePlayers[gameId][playerId] = player;
+        var players = ActivePlayers[gameId];
 
-                var tasks = players.Select(_player =>
-                    Clients.Client(_player.Id).SendAsync(SocketMessages.CONNECTED,
-                        new FirstConnectionDto(
-                            _player.GameId,
-                            _player.Id,
-                            _player.PositionX,
-                            _player.PositionY,
-                            _player.Size,
-                            _player.Color,
-                            game.EndTime,
-                            _player.Deposit,
-                            _player.DustCount))
-                );
-                await Task.WhenAll(tasks);
-            //}todo
+        var tasks = players.Values.Select(_player =>
+            Clients.Client(_player.Id).SendAsync(SocketMessages.CONNECTED,
+                new FirstConnectionDto(
+                    _player.GameId,
+                    _player.Id,
+                    _player.PositionX,
+                    _player.PositionY,
+                    _player.Size,
+                    _player.Color,
+                    game.EndTime,
+                    _player.Deposit,
+                    _player.DustCount))
+        );
 
-            var tasksForPlayers = players.Select(otherPlayer =>
-                Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.PLAYER_POSITION_UPDATED,
-                    new PlayerDto(
-                        otherPlayer.GameId,
-                        otherPlayer.Id,
-                        otherPlayer.PositionX,
-                        otherPlayer.PositionY,
-                        otherPlayer.Deposit,
-                        otherPlayer.Color,
-                        otherPlayer.Size,
-                        otherPlayer.DustCount))
-            );
-            await Task.WhenAll(tasksForPlayers);
-            
-            var dusts = await gameItemsService.GenerateAsync(cacheGame);
-            var dustDtos = dusts.Select(dust => new DustDto(dust.Id.ToString(), dust.PositionX, dust.PositionY)).ToList();
-            await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.DUST_UPDATE, dustDtos);
-            
-            var magnets = await gameItemsService.GenerateMagnets(cacheGame.Id);
-            var magnetDtos = magnets.Select(x => new MagnetDto(x.Id, x.PositionX, x.PositionY)).ToList();
-            await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.MAGNET_CREATED, magnetDtos);
-
-            var binoculars = await gameItemsService.GenerateBinoculars(cacheGame.Id);
-            var binocularsDtos = binoculars.Select(x => new BinocularDto(x.Id, x.PositionX, x.PositionY)).ToList();
-            await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.BINOCULAR_CREATED, binocularsDtos);
-        }
-        
-        await base.OnConnectedAsync();
-    }
+        await Task.WhenAll(tasks);
     
+        var tasksForPlayers = players.Values.Select(otherPlayer =>
+            Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.PLAYER_POSITION_UPDATED,
+                new PlayerDto(
+                    otherPlayer.GameId,
+                    otherPlayer.Id,
+                    otherPlayer.PositionX,
+                    otherPlayer.PositionY,
+                    otherPlayer.Deposit,
+                    otherPlayer.Color,
+                    otherPlayer.Size,
+                    otherPlayer.DustCount))
+        );
+
+        await Task.WhenAll(tasksForPlayers);
+        
+        var random = new Random();
+        var dustDtos = new List<DustParticle>();
+
+        for (var i = 0; i < 5000; i++)
+        {
+            var dust = new DustParticle
+            {
+                Id = Guid.NewGuid(),
+                PositionX = random.Next(0, 12000),
+                PositionY = random.Next(0, 12000),
+                Size = 20
+            };
+            dustDtos.Add(dust);
+            Dusts.Add(dust.Id, dust);
+        }
+        await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.DUST_UPDATE, dustDtos);
+        
+        var magnets = new List<Magnet>();
+        for (var i = 0; i < 5000; i++)
+        {
+            var magnet = new Magnet()
+            {
+                Id = Guid.NewGuid(),
+                GameId = gameId,
+                PositionX = random.Next(0, 12000),
+                PositionY = random.Next(0, 12000)
+            };
+            magnets.Add(magnet);
+            Magnets.Add(magnet.Id, magnet);
+        }
+
+        var magnetDtos = magnets.Select(x => new MagnetDto(x.Id, x.PositionX, x.PositionY)).ToList();
+        await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.MAGNET_CREATED, magnetDtos);
+
+        //var binoculars = await gameItemsService.GenerateBinoculars(cacheGame.Id);
+        //var binocularsDtos = binoculars.Select(x => new BinocularDto(x.Id, x.PositionX, x.PositionY)).ToList();
+        //await Clients.Client(Context.ConnectionId).SendAsync(SocketMessages.BINOCULAR_CREATED, binocularsDtos);
+        await base.OnConnectedAsync();
+    }    
     public async Task EatDustAsync(string playerId, string dustId)
     {
         try
@@ -191,13 +202,15 @@ public class GameHub(
         await gameItemsService.RemoveAsync(binocular);
     }
     
-    public async Task EatMagnetAsync(string playerId, string magnetId)
+    public async Task EatMagnetAsync(string playerId, Guid magnetId)
     {
-        var currentPlayer = await playerGameService.GetById(playerId);
-        var magnet = await gameItemsService.GetMagnetByIdAsync(magnetId);
-        var dusts = await gameItemsService.GetDustByGameIdAsync(magnet.GameId.ToString());
+        var currentPlayer = ActivePlayers
+            .SelectMany(game => game.Value)
+            .FirstOrDefault(pair => pair.Key == playerId)
+            .Value;
+        var magnet2 = Magnets.TryGetValue(magnetId, out var magnet) ? magnet : throw new HubException("Magnet not found");
 
-        var nearDusts = dusts
+        var nearDusts = Dusts.Values
             .Select(dust => new 
             {
                 Dust = dust, 
@@ -208,26 +221,29 @@ public class GameHub(
             .Take(15)
             .Select(d => d.Dust)
             .ToList();
-
-        await gameItemsService.RemoveAsync(magnet);
         
-        var updateTasks = nearDusts.Select(async nearDust =>
+        Magnets.Remove(magnetId);
+        
+        var updateTasks = nearDusts.Select(nearDust =>
         {
-            var dust = await gameItemsService.UpdateAsync(nearDust);
-            return new DustDto(dust.Id.ToString(), dust.PositionX, dust.PositionY);
+            var random = new Random();
+            nearDust.PositionX = random.Next(0, 4000);
+            nearDust.PositionY = random.Next(0, 4000);
+            return new DustDto(nearDust.Id.ToString(), nearDust.PositionX, nearDust.PositionY);
         });
 
-        var result = (await Task.WhenAll(updateTasks)).ToList();
         await Clients.All.SendAsync(SocketMessages.MAGNET_EATEN, magnet.Id);
-        await Clients.All.SendAsync(SocketMessages.DUST_EATEN, result);
+        await Clients.All.SendAsync(SocketMessages.DUST_EATEN, updateTasks);
     }
 
     public async Task EatPlayerAsync(string player, string eatenPlayer)
     {
         try
         {
-            var currentPlayer = await playerGameService.GetById(player);
-            var targetPlayer = await playerGameService.GetById(eatenPlayer);
+            var currentPlayer = ActivePlayers
+                .FirstOrDefault(g => g.Value.ContainsKey(player)).Value[player];
+            var targetPlayer = ActivePlayers
+                .FirstOrDefault(g => g.Value.ContainsKey(eatenPlayer)).Value[player];
 
             if (currentPlayer == null || targetPlayer == null)
                 return;
@@ -244,13 +260,22 @@ public class GameHub(
                     user.Balance += targetPlayer.Deposit;
                     otherPlayer.Balance -= targetPlayer.Deposit;
                 }
-
-                await playerGameService.RemovePlayerAsync(targetPlayer);
+                
                 await Clients.All.SendAsync(SocketMessages.PLAYER_EATEN,
                     new PlayerEatenDto(currentPlayer.GameId, targetPlayer.Id));
 
                 currentPlayer.Size += targetPlayer.Size;
-                await playerGameService.TopUpBalance(currentPlayer);
+                
+                var groupKey = ActivePlayers.FirstOrDefault(g => g.Value.ContainsKey(targetPlayer.Id)).Key;
+
+                if (ActivePlayers.TryGetValue(groupKey, out var group))
+                {
+                    if (group.Remove(eatenPlayer)) 
+                    {
+                        if (group.Count == 0)
+                            ActivePlayers.Remove(groupKey);
+                    }
+                }
                 await userManager.UpdateAsync(user);
 
                 await Clients.All.SendAsync(
@@ -278,13 +303,22 @@ public class GameHub(
                     user.Balance += currentPlayer.Deposit;
                     mainPlayer.Balance -= currentPlayer.Deposit;
                 }
+                
+                var groupKey = ActivePlayers.FirstOrDefault(g => g.Value.ContainsKey(currentPlayer.Id)).Key;
 
-                await playerGameService.RemovePlayerAsync(currentPlayer);
+                if (ActivePlayers.TryGetValue(groupKey, out var group))
+                {
+                    if (group.Remove(eatenPlayer)) 
+                    {
+                        if (group.Count == 0)
+                            ActivePlayers.Remove(groupKey);
+                    }
+                }
+                
                 await Clients.All.SendAsync(SocketMessages.PLAYER_EATEN,
                     new PlayerEatenDto(targetPlayer.GameId, currentPlayer.Id));
 
                 targetPlayer.Size += currentPlayer.Size;
-                await playerGameService.TopUpBalance(targetPlayer);
                 await userManager.UpdateAsync(user);
 
                 await Clients.All.SendAsync(
@@ -309,61 +343,41 @@ public class GameHub(
 
     public async Task UpdatePlayerPosition(PlayerDto playerDto)
     {
-        try
-        {
-            var player = await playerGameService.GetById(playerDto.PlayerId);
-            if (player is null)
-                return;
+        if (!ActivePlayers.ContainsKey(playerDto.GameId) || 
+            !ActivePlayers[playerDto.GameId].ContainsKey(playerDto.PlayerId))
+            return;
 
-            player.PositionX = playerDto.PositionX;
-            player.PositionY = playerDto.PositionY;
-            player.LastUpdated = DateTime.UtcNow;
+        var player = ActivePlayers[playerDto.GameId][playerDto.PlayerId];
 
-            playerGameService.UpdatePlayer(player);
-            await Clients.AllExcept(Context.ConnectionId).SendAsync(
-                SocketMessages.PLAYER_POSITION_UPDATED,
-                new PlayerDto(
-                    player.GameId,
-                    player.Id,
-                    player.PositionX,
-                    player.PositionY,
-                    player.Deposit,
-                    player.Color,
-                    player.Size,
-                    player.DustCount)
-            );
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-        }
+        if ((DateTime.UtcNow - player.LastUpdated).TotalMilliseconds < 50)
+            return;
+
+        player.PositionX = playerDto.PositionX;
+        player.PositionY = playerDto.PositionY;
+        player.LastUpdated = DateTime.UtcNow;
+
+        await Clients.AllExcept(Context.ConnectionId).SendAsync(
+            SocketMessages.PLAYER_POSITION_UPDATED, playerDto);
     }
+
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        try
-        {
-            var connectionId = Context.ConnectionId;
+        var playerId = Context.ConnectionId;
+        var gameId = ActivePlayers
+            .FirstOrDefault(g => g.Value.ContainsKey(playerId)).Key;
 
-            var player = await playerGameService.GetById(connectionId);
-            if (player is null)
-                return;
-
-            await playerGameService.RemovePlayerAsync(player);
-
-            await Clients.All.SendAsync(SocketMessages.PLAYER_DISCONNECTED, new
-            {
-                GameId = player.GameId,
-                PlayerId = player.Id
-            });
-        }
-        catch (Exception ex)
+        if (!gameId.Equals(Guid.Empty) && ActivePlayers[gameId].ContainsKey(playerId))
         {
-            Console.WriteLine($"Error during player disconnection: {ex}");
+            ActivePlayers[gameId].Remove(playerId);
+
+            if (ActivePlayers[gameId].Count == 0)
+                ActivePlayers.Remove(gameId);
         }
-        finally
-        {
-            await base.OnDisconnectedAsync(exception);
-        }
+
+        await Clients.All.SendAsync(SocketMessages.PLAYER_DISCONNECTED, new { GameId = gameId, PlayerId = playerId });
+
+        await base.OnDisconnectedAsync(exception);
     }
+
 }
